@@ -7,7 +7,7 @@ namespace llscm {
 
 	extern const int32_t ArgsAnyCount;
 
-	enum scm_type {
+	enum ScmType {
 		T_INT,
 		T_STR,
 		T_SYM,
@@ -26,121 +26,121 @@ namespace llscm {
 	 * This class hierarchy is used to generate AST.
 	 * It is created by parsing the source file.
 	 * First we just read atoms and lists creating
-	 * corresponding scm_cons cells with symbols, strings, numbers etc.
+	 * corresponding ScmCons cells with symbols, strings, numbers etc.
 	 * Then we do the semantic analysis and compile-time evaluation:
 	 * Evaluating defines, looking up functions by their names, creating nodes
 	 * for lambdas, function calls, expressions and processing macros.
 	 */
-	class scm_obj {
+	class ScmObj {
 	public:
-		scm_obj(scm_type type) {
+		ScmObj(ScmType type) {
 			t = type;
 		}
 
-		scm_type t;
+		ScmType t;
 	};
 
-	typedef shared_ptr<scm_obj> scm_obj_ptr;
+	typedef shared_ptr<ScmObj> P_ScmObj;
 	typedef char scm_op;
 
-	class scm_int: public scm_obj {
+	class ScmInt: public ScmObj {
 	public:
-		scm_int(int64_t value): scm_obj(T_INT) {
+		ScmInt(int64_t value): ScmObj(T_INT) {
 			val = value;
 		}
 
 		int64_t val;
 	};
 
-	class scm_lit: public scm_obj {
+	class ScmLit: public ScmObj {
 	public:
-		scm_lit(scm_type type, const string & value):
-			scm_obj(type), val(value) {}
+		ScmLit(ScmType type, const string & value):
+			ScmObj(type), val(value) {}
 
 		int32_t length;
 		string val;
 	};
 
-	class scm_str: public scm_lit {
+	class ScmStr: public ScmLit {
 	public:
-		scm_str(const string & value): scm_lit(T_STR, value) {}
+		ScmStr(const string & value): ScmLit(T_STR, value) {}
 	};
 
-	class scm_sym: public scm_lit {
+	class ScmSym: public ScmLit {
 	public:
-		scm_sym(const string & value): scm_lit(T_SYM, value) {}
+		ScmSym(const string & value): ScmLit(T_SYM, value) {}
 	};
 
-	class scm_cons: public scm_obj {
+	class ScmCons: public ScmObj {
 	public:
-		scm_cons(scm_obj_ptr pcar, scm_obj_ptr pcdr):
-			scm_obj(T_CONS), car(pcar), cdr(pcdr) {}
+		ScmCons(P_ScmObj pcar, P_ScmObj pcdr):
+			ScmObj(T_CONS), car(pcar), cdr(pcdr) {}
 
-		scm_obj_ptr car;
-		scm_obj_ptr cdr;
+		P_ScmObj car;
+		P_ScmObj cdr;
 	};
 
-	class scm_expr: public scm_obj {
+	class ScmExpr: public ScmObj {
 	public:
-		scm_expr(): scm_obj(T_EXPR) {}
+		ScmExpr(): ScmObj(T_EXPR) {}
 	};
 
-	// When args and bodies are set to nullptr, scm_func
+	// When args and bodies are set to nullptr, ScmFunc
 	// is a reference to an external runtime library function.
 	// There will be a compile-time environment populated with
 	// native functions that will also be updated with user definitions.
-	class scm_func: public scm_obj {
+	class ScmFunc: public ScmObj {
 	public:
-		scm_func(const string & fname, int32_t argc, scm_obj_ptr args, scm_obj_ptr bodies):
-			scm_obj(T_FUNC), name(fname), arg_list(args), body_list(bodies) {
+		ScmFunc(const string & fname, int32_t argc, P_ScmObj args, P_ScmObj bodies):
+			ScmObj(T_FUNC), name(fname), arg_list(args), body_list(bodies) {
 			argc_expected = argc;
 		}
 
 		string name;
 		int32_t argc_expected;
-		scm_obj_ptr arg_list;
-		scm_obj_ptr body_list;
+		P_ScmObj arg_list;
+		P_ScmObj body_list;
 		// scm_env def_env; // TODO
 	};
 
-	class scm_call: public scm_obj {
+	class ScmCall: public ScmObj {
 	public:
-		scm_call(scm_obj_ptr pfunc, scm_obj_ptr args):
-			scm_obj(T_CALL), func(pfunc), arg_list(args) {}
+		ScmCall(P_ScmObj pfunc, P_ScmObj args):
+			ScmObj(T_CALL), func(pfunc), arg_list(args) {}
 
-		scm_obj_ptr func;
-		scm_obj_ptr arg_list;
+		P_ScmObj func;
+		P_ScmObj arg_list;
 	};
 
-	/* Classes derived from scm_inline_call represent primitive functions
+	/* Classes derived from ScmInlineCall represent primitive functions
 	 * such as arithmetic operations for which we want to emit instructions
 	 * inline instead of an explicit function call.
 	 */
-	class scm_inline_call: public scm_call {
+	class ScmInlineCall: public ScmCall {
 
 	};
 
-	class scm_native_syntax: public scm_expr {
+	class ScmNativeSyntax: public ScmExpr {
 
 	};
 
-	class scm_define_syntax: public scm_expr {
+	class ScmDefineSyntax: public ScmExpr {
 
 	};
 
-	class scm_lambda_syntax: public scm_expr {
+	class ScmLambdaSyntax: public ScmExpr {
 
 	};
 
-	class scm_quote_syntax: public scm_expr {
+	class ScmQuoteSyntax: public ScmExpr {
 
 	};
 
-	class scm_if_syntax: public scm_expr {
+	class ScmIfSyntax: public ScmExpr {
 
 	};
 
-	class scm_let_syntax: public scm_expr {
+	class ScmLetSyntax: public ScmExpr {
 
 	};
 }
