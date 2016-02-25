@@ -5,14 +5,40 @@
 namespace llscm {
 	using namespace std;
 
+	enum TokenType {
+		INT, FLOAT, STR, SYM, KWRD, ERR
+	};
+
+	enum Keyword {
+		KW_LPAR, KW_RPAR, KW_TRUE, KW_FALSE, KW_NULL,
+		KW_DEFINE, KW_LAMBDA, KW_QUOTE, KW_IF, KW_LET
+	};
+
+	extern const char * KwrdNames[];
+
+	struct Token {
+		TokenType t;
+		string name;
+
+		union {
+			int64_t int_val;
+			double float_val;
+			Keyword kw;
+		};
+
+		void deduceType();
+	};
+
 	class Reader {
 	protected:
-		string tok;
+		Token tok;
 		istream * is;
+		int par_left;
 	public:
-		const char * nextToken();
-		const char * currToken();
+		Token * nextToken();
+		Token * currToken();
 
+		Reader();
 		virtual ~Reader() {};
 	};
 

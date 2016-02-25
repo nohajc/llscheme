@@ -9,13 +9,13 @@ namespace llscm {
 
 	enum ScmType {
 		T_INT,
+		T_FLOAT,
 		T_STR,
 		T_SYM,
 		T_CONS,
 		T_TRUE,
 		T_FALSE,
-		T_NIL,
-		T_EOF,
+		T_NULL,
 		T_EXPR,
 		T_FUNC,
 		T_CALL,
@@ -50,6 +50,30 @@ namespace llscm {
 		}
 
 		int64_t val;
+	};
+
+	class ScmFloat: public ScmObj {
+	public:
+		ScmFloat(double value): ScmObj(T_FLOAT) {
+			val = value;
+		}
+
+		double val;
+	};
+
+	class ScmTrue: public ScmObj {
+	public:
+		ScmTrue(): ScmObj(T_TRUE) {}
+	};
+
+	class ScmFalse: public ScmObj {
+	public:
+		ScmFalse(): ScmObj(T_FALSE) {}
+	};
+
+	class ScmNull: public ScmObj {
+	public:
+		ScmNull(): ScmObj(T_NULL) {}
 	};
 
 	class ScmLit: public ScmObj {
@@ -117,10 +141,6 @@ namespace llscm {
 	 * inline instead of an explicit function call.
 	 */
 	class ScmInlineCall: public ScmCall {
-
-	};
-
-	class ScmNativeSyntax: public ScmExpr {
 
 	};
 
