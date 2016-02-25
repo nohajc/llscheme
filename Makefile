@@ -1,5 +1,5 @@
-CXX=clang++
-LD=clang++
+CXX=clang++ -fsanitize=address
+LD=clang++ -fsanitize=address
 LLVMCXXFLAGS=`llvm-config --cxxflags`
 LLVMLDFLAGS=`llvm-config --ldflags --system-libs --libs`
 CPPFLAGS=-DDEBUG
