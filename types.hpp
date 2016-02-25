@@ -37,6 +37,8 @@ namespace llscm {
 			t = type;
 		}
 
+		virtual ~ScmObj() {}
+
 		ScmType t;
 	};
 
@@ -100,6 +102,8 @@ namespace llscm {
 		ScmCons(P_ScmObj pcar, P_ScmObj pcdr):
 			ScmObj(T_CONS), car(pcar), cdr(pcdr) {}
 
+		virtual ~ScmCons();
+
 		P_ScmObj car;
 		P_ScmObj cdr;
 	};
@@ -107,6 +111,7 @@ namespace llscm {
 	class ScmExpr: public ScmObj {
 	public:
 		ScmExpr(): ScmObj(T_EXPR) {}
+		//virtual ~ScmExpr();
 	};
 
 	// When args and bodies are set to nullptr, ScmFunc
@@ -119,6 +124,7 @@ namespace llscm {
 			ScmObj(T_FUNC), name(fname), arg_list(args), body_list(bodies) {
 			argc_expected = argc;
 		}
+		virtual ~ScmFunc();
 
 		string name;
 		int32_t argc_expected;
@@ -131,6 +137,7 @@ namespace llscm {
 	public:
 		ScmCall(P_ScmObj pfunc, P_ScmObj args):
 			ScmObj(T_CALL), func(pfunc), arg_list(args) {}
+		virtual ~ScmCall();
 
 		P_ScmObj func;
 		P_ScmObj arg_list;

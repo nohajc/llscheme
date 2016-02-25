@@ -1,0 +1,1980 @@
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:_ZN4llvm14object_creatorISsEEPvv
+   fun:_ZNK4llvm17ManagedStaticBase21RegisterManagedStaticEPFPvvEPFvS1_E
+   fun:_GLOBAL__sub_I_Timer.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:_ZNSt6vectorIPN4llvm24PassRegistrationListenerESaIS2_EE19_M_emplace_back_auxIIRKS2_EEEvDpOT_
+   fun:_ZN4llvm12PassRegistry23addRegistrationListenerEPNS_24PassRegistrationListenerE
+   fun:_ZN4llvm14PassNameParserC1ERNS_2cl6OptionE
+   fun:_GLOBAL__sub_I_LegacyPassManager.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_Main.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_CommandLine.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.52
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_Debug.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_Statistic.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_SyntaxHighlighting.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_CPPBackend.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_MachineScheduler.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_RandomNumberGenerator.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.667
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.127
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_SelectionDAGISel.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA10_cNS0_12OptionHiddenEEEEDpRKT_
+   fun:_GLOBAL__sub_I_AliasAnalysisEvaluator.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_PlaceSafepoints.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LLVMTargetMachine.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LegacyPassManager.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_GVN.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_IndVarSimplify.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA11_cNS0_12OptionHiddenENS0_11initializerIbEENS0_4descEEEEDpRKT_
+   fun:_GLOBAL__sub_I_TargetSchedule.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_ScalarEvolution.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_TypeBasedAliasAnalysis.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA12_cNS0_12OptionHiddenENS0_11initializerIbEEEEEDpRKT_
+   fun:_GLOBAL__sub_I_PlaceSafepoints.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_IfConversion.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA12_cNS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.127
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.1137
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_Timer.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_DiagnosticInfo.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_AliasAnalysisEvaluator.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LoopUnrollPass.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_ScheduleDAG.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_DataFlowSanitizer.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_RegAllocGreedy.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_RegisterCoalescer.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_StackSlotColoring.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_TailDuplication.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_SLPVectorizer.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_ScheduleDAGRRList.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_DependenceAnalysis.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_TargetLibraryInfo.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIiLb0ENS0_6parserIiEEEC1IIA15_cNS0_4descENS0_12OptionHiddenENS0_11initializerIiEEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.667
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LoopStrengthReduce.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_X86MCAsmInfo.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_SelectionDAGBuilder.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_GraphWriter.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_Dominators.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.473
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_BranchFolding.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_PrologEpilogInserter.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_RegAllocBase.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_RegAllocPBQP.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_RegisterClassInfo.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.1073
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA16_cNS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_GLOBAL__sub_I_SelectionDAGISel.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_X86Subtarget.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LoopInfo.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_SymbolRewriter.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_MachineBlockPlacement.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_MachineSink.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA17_cNS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.127
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_PeepholeOptimizer.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_StackMaps.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_Inliner.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_MergeFunctions.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_Verifier.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_AddDiscriminators.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA18_cNS0_4descENS0_12OptionHiddenENS0_11initializerIbEEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.473
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_RewriteStatepointsForGC.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_SROA.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_EarlyIfConversion.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_EdgeBundles.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA18_cNS0_4descENS0_11initializerIbEENS0_12OptionHiddenEEEEDpRKT_
+   fun:_GLOBAL__sub_I_MachineLICM.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_PostRASchedulerList.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_StackColoring.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_TargetLoweringBase.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_DAGCombiner.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_ResourcePriorityQueue.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_X86RegisterInfo.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LoopAccessAnalysis.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_RegionInfo.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_ScheduleDAGInstrs.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_TwoAddressInstructionPass.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA19_cNS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_GLOBAL__sub_I_SelectionDAGISel.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_X86TargetMachine.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_CostModel.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_RegionPrinter.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_SimplifyCFG.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_SampleProfile.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA20_cNS0_12OptionHiddenENS0_11initializerIbEENS0_4descEEEEDpRKT_
+   fun:_GLOBAL__sub_I_CodeGenPrepare.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_GlobalMerge.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_InlineSpiller.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA20_cNS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.127
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA20_cNS0_11initializerIbEENS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.630
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LoopExtractor.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_DwarfUnit.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_X86InstrInfo.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_GCOVProfiling.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LoopRerollPass.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LowerExpectIntrinsic.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_SimplifyCFGPass.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIiLb0ENS0_6parserIiEEEC1IIA21_cNS0_4descENS0_11initializerIiEENS0_12OptionHiddenEEEEDpRKT_
+   fun:_GLOBAL__sub_I_AggressiveAntiDepBreaker.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LiveDebugVariables.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA21_cNS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.127
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_TargetInstrInfo.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA21_cNS0_11initializerIbEENS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.630
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIiLb0ENS0_6parserIiEEEC1IIA21_cNS0_12OptionHiddenENS0_11initializerIiEENS0_4descEEEEDpRKT_
+   fun:_GLOBAL__sub_I_Inliner.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA21_cNS0_12OptionHiddenENS0_11initializerIbEENS0_4descEEEEDpRKT_
+   fun:_GLOBAL__sub_I_ScheduleDAGRRList.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_ObjCARC.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_ScopedNoAliasAA.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_CallGraphSCCPass.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA22_cNS0_4descENS0_12OptionHiddenENS0_11initializerIbEEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.667
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_InductiveRangeCheckElimination.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_CodeGenPrepare.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIiLb0ENS0_6parserIiEEEC1IIA22_cNS0_4descENS0_11initializerIiEENS0_12OptionHiddenEEEEDpRKT_
+   fun:_GLOBAL__sub_I_PostRASchedulerList.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.630
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA22_cNS0_11initializerIbEENS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.630
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_X86CallFrameOptimization.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LICM.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LoopDistribute.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LiveIntervalAnalysis.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_StackProtector.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA23_cNS0_11initializerIbEENS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.630
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA23_cNS0_11initializerIbEENS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.52
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA23_cNS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_GLOBAL__sub_I_SelectionDAGISel.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_ValueTracking.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_SimplifyLibCalls.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA24_cNS0_4descENS0_12OptionHiddenENS0_11initializerIbEEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.667
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_ThreadSanitizer.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LoopUnswitch.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_CodeExtractor.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_SanitizerCoverage.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_Float2Int.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_JumpThreading.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LoopRotation.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_ImplicitNullChecks.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA25_cNS0_11initializerIbEENS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.630
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LowerBitSets.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA25_cNS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_GLOBAL__sub_I_SelectionDAGISel.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_X86AsmInstrumentation.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA26_cNS0_4descENS0_12OptionHiddenENS0_11initializerIbEEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.667
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_SpeculativeExecution.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA26_cNS0_12OptionHiddenENS0_11initializerIbEENS0_4descEEEEDpRKT_
+   fun:_GLOBAL__sub_I_CodeGenPrepare.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIjLb0ENS0_6parserIjEEEC1IIA26_cNS0_11initializerIiEENS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.1073
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_ScheduleDAGSDNodes.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_AliasAnalysisCounter.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA27_cNS0_11initializerIbEENS0_12OptionHiddenEEEEDpRKT_
+   fun:_GLOBAL__sub_I_IfConversion.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_InterleavedAccessPass.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_MachineLICM.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_StackMapLivenessAnalysis.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_Execution.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA27_cNS0_12OptionHiddenENS0_11initializerIbEENS0_4descEEEEDpRKT_
+   fun:_GLOBAL__sub_I_ScheduleDAGRRList.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_BoundsChecking.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_BasicTargetTransformInfo.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_Internalize.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA29_cNS0_11initializerIbEENS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.630
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIjLb0ENS0_6parserIjEEEC1IIA29_cNS0_11initializerIiEENS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.1073
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA30_cNS0_12OptionHiddenENS0_11initializerIbEEEEEDpRKT_
+   fun:_GLOBAL__sub_I_ValueTracking.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LegalizeTypes.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_InlineFunction.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA32_cNS0_11initializerIbEENS0_4descENS0_12OptionHiddenEEEEDpRKT_
+   fun:_GLOBAL__sub_I_ThreadSanitizer.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA32_cNS0_11initializerIbEENS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_GLOBAL__sub_I_PHIElimination.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA32_cNS0_11initializerIbEENS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.630
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_BlockFrequencyInfo.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIjLb0ENS0_6parserIjEEEC1IIA33_cNS0_11initializerIiEENS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.630
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_PHIElimination.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIjLb0ENS0_6parserIjEEEC1IIA35_cNS0_11initializerIiEENS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.1073
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_ZN4llvm2cl3optIbLb0ENS0_6parserIbEEEC1IIA36_cNS0_11initializerIbEENS0_12OptionHiddenENS0_4descEEEEDpRKT_
+   fun:_Z41__static_initialization_and_destruction_0ii.constprop.1073
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_SeparateConstOffsetFromGEP.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm3sys11RWMutexImplC1Ev
+   fun:_ZN4llvm14object_creatorINS_12PassRegistryEEEPvv
+   fun:_ZNK4llvm17ManagedStaticBase21RegisterManagedStaticEPFPvvEPFvS1_E
+   fun:_ZN4llvm12PassRegistry15getPassRegistryEv
+   fun:_ZN4llvm14PassNameParserC1ERNS_2cl6OptionE
+   fun:_GLOBAL__sub_I_LegacyPassManager.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_MachineBlockFrequencyInfo.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_X86ISelLowering.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:_ZN4llvm14object_creatorINS_12PassRegistryEEEPvv
+   fun:_ZNK4llvm17ManagedStaticBase21RegisterManagedStaticEPFPvvEPFvS1_E
+   fun:_ZN4llvm12PassRegistry15getPassRegistryEv
+   fun:_ZN4llvm14PassNameParserC1ERNS_2cl6OptionE
+   fun:_GLOBAL__sub_I_LegacyPassManager.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:_ZN4llvm14object_creatorIN12_GLOBAL__N_117CommandLineParserEEEPvv
+   fun:_ZNK4llvm17ManagedStaticBase21RegisterManagedStaticEPFPvvEPFvS1_E
+   fun:_ZN4llvm13ManagedStaticIN12_GLOBAL__N_117CommandLineParserEEptEv.constprop.348
+   fun:_ZN4llvm2cl14OptionCategory16registerCategoryEv
+   fun:_GLOBAL__sub_I_CommandLine.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_ZN4llvm13StringMapImpl11RehashTableEj
+   fun:_ZN4llvm2cl6Option11addArgumentEv
+   fun:_GLOBAL__sub_I_LoopExtractor.cpp
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/lib64/ld-2.20.so
+}

@@ -1,8 +1,11 @@
 #include <iostream>
+#include <memory>
+#include <llvm/ADT/STLExtras.h>
 #include "../reader.hpp"
 
-using namespace llscm;
 using namespace std;
+using namespace llvm;
+using namespace llscm;
 
 #define TOKENIZE() 	while (true) { \
 	tok = r->nextToken(); \
@@ -12,17 +15,15 @@ using namespace std;
 
 int main(int argc, char * argv[]) {
 	Token * tok;
-	Reader * r;
+	unique_ptr<Reader> r;
 
-	r = new StringReader("(1 -2 3.4 \"str\" sym #t #f null - -. -7.)");
+	r = make_unique<StringReader>("(1 -2 3.4 \"str\" sym #t #f null - -. -7.)");
 	TOKENIZE();
-	delete r;
 
 	cout << "-------------------------------" << endl;
 
-	r = new FileReader(cin);
+	r = make_unique<FileReader>(cin);
 	TOKENIZE();
-	delete r;
 
 	return 0;
 }
