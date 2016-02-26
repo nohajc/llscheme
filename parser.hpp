@@ -1,20 +1,24 @@
+#include <memory>
+#include <llvm/ADT/STLExtras.h>
 #include "types.hpp"
-
-/*
-
-prog = form { form }
-form = def | expr
-def = "(" "define" sym expr ")" | "(" "define" "(" symlist ")" body ")" | "(" "let" "(" bindlist ")" body ")"
-expr = atom | ( "(" list ")" )
-atom = str | sym | int | float | true | false | null
-symlist = { sym }
-bindlist = { "(" sym expr ")" }
-list = { expr }
-body = { def } expr { expr }
-
-
-*/
+#include "reader.hpp"
 
 namespace llscm {
-	ScmObj * NT_Prog();
+	using namespace std;
+
+	class Parser {
+		const unique_ptr<Reader>& reader;
+	public:
+		Parser(const unique_ptr<Reader>& r): reader(r) {}
+
+		vector<P_ScmObj> NT_Prog();
+		P_ScmObj NT_Form();
+		P_ScmObj NT_Def();
+		P_ScmObj NT_Expr();
+		P_ScmObj NT_Atom();
+		P_ScmObj NT_List();
+		P_ScmObj NT_SymList();
+		P_ScmObj NT_BindList();
+		P_ScmObj NT_Body();
+	};
 }

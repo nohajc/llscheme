@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <llvm/ADT/STLExtras.h>
 
 namespace llscm {
 	using namespace std;
@@ -42,7 +43,8 @@ namespace llscm {
 		ScmType t;
 	};
 
-	typedef shared_ptr<ScmObj> P_ScmObj;
+	typedef unique_ptr<ScmObj> P_ScmObj;
+	typedef shared_ptr<ScmObj> ShP_ScmObj;
 	typedef char scm_op;
 
 	class ScmInt: public ScmObj {
@@ -100,9 +102,9 @@ namespace llscm {
 	class ScmCons: public ScmObj {
 	public:
 		ScmCons(P_ScmObj pcar, P_ScmObj pcdr):
-			ScmObj(T_CONS), car(pcar), cdr(pcdr) {}
+			ScmObj(T_CONS), car(move(pcar)), cdr(move(pcdr)) {}
 
-		virtual ~ScmCons();
+		//virtual ~ScmCons();
 
 		P_ScmObj car;
 		P_ScmObj cdr;
@@ -121,10 +123,10 @@ namespace llscm {
 	class ScmFunc: public ScmObj {
 	public:
 		ScmFunc(const string & fname, int32_t argc, P_ScmObj args, P_ScmObj bodies):
-			ScmObj(T_FUNC), name(fname), arg_list(args), body_list(bodies) {
+			ScmObj(T_FUNC), name(fname), arg_list(move(args)), body_list(move(bodies)) {
 			argc_expected = argc;
 		}
-		virtual ~ScmFunc();
+		//virtual ~ScmFunc();
 
 		string name;
 		int32_t argc_expected;
@@ -135,11 +137,10 @@ namespace llscm {
 
 	class ScmCall: public ScmObj {
 	public:
-		ScmCall(P_ScmObj pfunc, P_ScmObj args):
-			ScmObj(T_CALL), func(pfunc), arg_list(args) {}
-		virtual ~ScmCall();
+		ScmCall(ShP_ScmObj pfunc, P_ScmObj args):
+			ScmObj(T_CALL), func(pfunc), arg_list(move(args)) {}
 
-		P_ScmObj func;
+		ShP_ScmObj func;
 		P_ScmObj arg_list;
 	};
 
