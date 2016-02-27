@@ -20,13 +20,17 @@ namespace llscm {
 	vector<P_ScmObj> Parser::NT_Prog() {
 		const Token * tok;
 		vector<P_ScmObj> prog;
+		bool first = true;
 
 		while (true) {
 			tok = reader->nextToken();
-			// TODO: if (!tok) REPORT ERROR
+			if (!tok) {
+				if (first) throw ParserException("Program is empty.");
+				else break;
+			}
 			P_ScmObj form = NT_Form();
-			if (!form) break;
 			prog.push_back(move(form));
+			first = false;
 		}
 
 		return prog;
@@ -43,7 +47,9 @@ namespace llscm {
 
 		if (tok->t == KWRD && tok->kw == KW_LPAR) {
 			tok = reader->nextToken();
-			// TODO: if (!tok) REPORT ERROR
+			if (!tok) {
+				throw ParserException("Reached EOF while parsing a list.");
+			}
 			if (tok->t == KWRD && tok->kw == KW_DEFINE) {
 				// Current token is "define"
 				obj = NT_Def();
@@ -102,7 +108,7 @@ namespace llscm {
 		default:;
 		}
 
-		// TODO: if (tok->t != KWRD) REPORT ERROR
+		if (tok->t != KWRD) throw ParserException("Invalid token for an atom.");
 		switch (tok->kw) {
 		case KW_TRUE:
 			return make_unique<ScmTrue>();
@@ -111,7 +117,7 @@ namespace llscm {
 		case KW_NULL:
 			return make_unique<ScmNull>();
 		default:
-			return nullptr; // TODO: REPORT ERROR (this would look like EOF)
+			throw ParserException("Invalid token for an atom.");
 		}
 	}
 
