@@ -153,7 +153,24 @@ namespace llscm {
 	};
 
 	class ScmDefineSyntax: public ScmExpr {
+	};
 
+	class ScmDefineVarSyntax: public ScmDefineSyntax {
+	public:
+		ScmDefineVarSyntax(P_ScmObj k, P_ScmObj v):
+			key(move(k)), val(move(v)) {}
+
+		P_ScmObj key;
+		P_ScmObj val;
+	};
+
+	class ScmDefineFuncSyntax: public ScmDefineSyntax {
+	public:
+		ScmDefineFuncSyntax(P_ScmObj al, P_ScmObj b):
+			arg_list(move(al)), body_list(move(b)) {}
+
+		P_ScmObj arg_list;
+		P_ScmObj body_list;
 	};
 
 	class ScmLambdaSyntax: public ScmExpr {

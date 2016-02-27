@@ -50,8 +50,8 @@ namespace llscm {
 			if (!tok) {
 				throw ParserException("Reached EOF while parsing a list.");
 			}
-			if (tok->t == KWRD && tok->kw == KW_DEFINE) {
-				// Current token is "define"
+			if (tok->t == KWRD && (tok->kw == KW_DEFINE || tok->kw == KW_LET)) {
+				// Current token is "define" or "let"
 				obj = NT_Def();
 			}
 			else {
@@ -71,6 +71,28 @@ namespace llscm {
 	 *		 | "let" "(" bindlist ")" body
 	 */
 	P_ScmObj Parser::NT_Def() {
+		const Token * tok = reader->currToken();
+		P_ScmObj obj;
+
+		if (tok->kw == KW_DEFINE) {
+			tok = reader->nextToken();
+			if (tok->t == KWRD && tok->kw == KW_LPAR) {
+				// Function definition
+				tok = reader->nextToken();
+				obj = NT_SymList();
+				match(*reader->currToken(), Token(KW_RPAR));
+				tok = reader->nextToken();
+				return make_unique<ScmDefineFuncSyntax>(move(obj), NT_Body());
+			}
+			if (tok->t != SYM)
+				throw ParserException("Expected symbol as first argument of define.");
+			obj = make_unique<ScmSym>(tok->name);
+			tok = reader->nextToken();
+			return make_unique<ScmDefineVarSyntax>(move(obj), NT_Expr());
+		}
+		else { // tok->kw == KW_LET
+			// TODO
+		}
 		return nullptr;
 	}
 
