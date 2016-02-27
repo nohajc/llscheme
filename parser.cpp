@@ -67,33 +67,42 @@ namespace llscm {
 
 	/*
 	 * def = "define" sym expr
-	 *		 | "define" "(" symlist ")" body
+	 *		 | "define" "(" sym symlist ")" body
 	 *		 | "let" "(" bindlist ")" body
 	 */
 	P_ScmObj Parser::NT_Def() {
 		const Token * tok = reader->currToken();
-		P_ScmObj obj;
+		P_ScmObj name, lst;
 
 		if (tok->kw == KW_DEFINE) {
 			tok = reader->nextToken();
 			if (tok->t == KWRD && tok->kw == KW_LPAR) {
 				// Function definition
 				tok = reader->nextToken();
-				obj = NT_SymList();
+				if (tok->t != SYM)
+					throw ParserException("Missing function name in definition.");
+				name = make_unique<ScmSym>(tok->name);
+				reader->nextToken();
+				lst = NT_SymList();
 				match(*reader->currToken(), Token(KW_RPAR));
-				tok = reader->nextToken();
-				return make_unique<ScmDefineFuncSyntax>(move(obj), NT_Body());
+				reader->nextToken();
+				return make_unique<ScmDefineFuncSyntax>(move(name), move(lst), NT_Body());
 			}
 			if (tok->t != SYM)
 				throw ParserException("Expected symbol as first argument of define.");
-			obj = make_unique<ScmSym>(tok->name);
-			tok = reader->nextToken();
-			return make_unique<ScmDefineVarSyntax>(move(obj), NT_Expr());
+			name = make_unique<ScmSym>(tok->name);
+			reader->nextToken();
+			return make_unique<ScmDefineVarSyntax>(move(name), NT_Expr());
 		}
 		else { // tok->kw == KW_LET
-			// TODO
+			match(*reader->nextToken(), Token(KW_LPAR));
+			tok = reader->nextToken();
+			lst = NT_BindList();
+			match(*reader->currToken(), Token(KW_RPAR));
+			reader->nextToken();
+			return make_unique<ScmLetSyntax>(move(lst), NT_Body());
 		}
-		return nullptr;
+		//return nullptr;
 	}
 
 	/*
@@ -147,28 +156,87 @@ namespace llscm {
 	 * list = { expr }
 	 */
 	P_ScmObj Parser::NT_List() {
-		// TODO: special cases: lambda, quote, if
-		return nullptr;
+		const Token * tok = reader->currToken();
+		P_ScmObj obj;
+
+		if (tok->t == KWRD && tok->kw == KW_RPAR) {
+			// Empty list
+			return make_unique<ScmNull>();
+		}
+		obj = NT_Expr();
+		reader->nextToken();
+		return make_unique<ScmCons>(move(obj), NT_List());
 	}
 
 	/*
 	 * symlist = { sym }
 	 */
 	P_ScmObj Parser::NT_SymList() {
-		return nullptr;
+		const Token * tok = reader->currToken();
+		P_ScmObj obj;
+
+		if (tok->t == KWRD && tok->kw == KW_RPAR) {
+			// Empty list
+			return make_unique<ScmNull>();
+		}
+		if (tok->t != SYM)
+				throw ParserException("Invalid expression in argument list. Only symbols are allowed.");
+		obj = make_unique<ScmSym>(tok->name);
+		reader->nextToken();
+		return make_unique<ScmCons>(move(obj), NT_SymList());
 	}
 
 	/*
 	 * bindlist = { "(" sym expr ")" }
 	 */
 	P_ScmObj Parser::NT_BindList() {
-		return nullptr;
+		const Token * tok = reader->currToken();
+		vector<P_ScmObj> vec;
+
+		if (tok->t == KWRD && tok->kw == KW_RPAR) {
+			// Empty list
+			return make_unique<ScmNull>();
+		}
+		match(*reader->currToken(), Token(KW_LPAR));
+		tok = reader->nextToken();
+		if (tok->t != SYM)
+			throw ParserException("First element of binding list must be symbol.");
+
+		vec.push_back(make_unique<ScmSym>(tok->name));
+		reader->nextToken();
+		vec.push_back(NT_Expr());
+		match(*reader->nextToken(), Token(KW_RPAR));
+		reader->nextToken();
+
+		return make_unique<ScmCons>(makeScmList(move(vec)), NT_BindList());
 	}
 
 	/*
-	 * body = { def } expr { expr }
+	 * body = { "(" def ")" } expr { expr }
 	 */
 	P_ScmObj Parser::NT_Body() {
-		return nullptr;
+		vector<P_ScmObj> lst;
+		const Token * tok = reader->currToken();
+		P_ScmObj obj;
+		bool parsing_defs = true;
+
+		while (parsing_defs) {
+			if (tok->t == KWRD && tok->kw == KW_RPAR) {
+				throw ParserException("Missing expression in function body.");
+			}
+			obj = NT_Form();
+			if (dynamic_cast<ScmDefineSyntax*>(obj.get()) == nullptr) {
+				parsing_defs = false;
+			}
+			lst.push_back(move(obj));
+			tok = reader->nextToken();
+		}
+
+		while (tok->t != KWRD || tok->kw != KW_RPAR) {
+			lst.push_back(NT_Expr());
+			tok = reader->nextToken();
+		}
+
+		return makeScmList(move(lst));
 	}
 };

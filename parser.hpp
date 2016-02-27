@@ -7,10 +7,12 @@ namespace llscm {
 	using namespace std;
 
 	class ParserException {
+		string msg;
 	public:
 		ParserException(const string & str): msg(str) {}
-
-		string msg;
+		const char * what() {
+			return msg.c_str();
+		}
 	};
 
 	class Parser {

@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 #include <llvm/ADT/STLExtras.h>
 
 namespace llscm {
@@ -149,7 +150,6 @@ namespace llscm {
 	 * inline instead of an explicit function call.
 	 */
 	class ScmInlineCall: public ScmCall {
-
 	};
 
 	class ScmDefineSyntax: public ScmExpr {
@@ -157,18 +157,19 @@ namespace llscm {
 
 	class ScmDefineVarSyntax: public ScmDefineSyntax {
 	public:
-		ScmDefineVarSyntax(P_ScmObj k, P_ScmObj v):
-			key(move(k)), val(move(v)) {}
+		ScmDefineVarSyntax(P_ScmObj n, P_ScmObj v):
+			name(move(n)), val(move(v)) {}
 
-		P_ScmObj key;
+		P_ScmObj name;
 		P_ScmObj val;
 	};
 
 	class ScmDefineFuncSyntax: public ScmDefineSyntax {
 	public:
-		ScmDefineFuncSyntax(P_ScmObj al, P_ScmObj b):
-			arg_list(move(al)), body_list(move(b)) {}
+		ScmDefineFuncSyntax(P_ScmObj n, P_ScmObj al, P_ScmObj b):
+			name(move(n)), arg_list(move(al)), body_list(move(b)) {}
 
+		P_ScmObj name;
 		P_ScmObj arg_list;
 		P_ScmObj body_list;
 	};
@@ -185,7 +186,14 @@ namespace llscm {
 
 	};
 
-	class ScmLetSyntax: public ScmExpr {
+	class ScmLetSyntax: public ScmDefineSyntax {
+	public:
+		ScmLetSyntax(P_ScmObj bl, P_ScmObj b):
+			bind_list(move(bl)), body_list(move(b)) {}
 
+		P_ScmObj bind_list;
+		P_ScmObj body_list;
 	};
+
+	P_ScmObj makeScmList(vector<P_ScmObj> && elems);
 }
