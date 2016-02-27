@@ -33,8 +33,8 @@ namespace llscm {
 	}
 
 	/*
-	 * form = def | expr
-	 * def = "(" "define" sym expr ")" ...
+	 * form = "(" def ")" | expr
+	 * def = "define" sym expr ...
 	 * expr = atom | ( "(" list ")" )
 	 */
 	P_ScmObj Parser::NT_Form() {
@@ -46,11 +46,13 @@ namespace llscm {
 			// TODO: if (!tok) REPORT ERROR
 			if (tok->t == KWRD && tok->kw == KW_DEFINE) {
 				// Current token is "define"
-				return NT_Def();
+				obj = NT_Def();
 			}
-			// Current token is the first token of list
-			obj = NT_List();
-			match(*reader->nextToken(), Token(KW_RPAR));
+			else {
+				// Current token is the first token of list
+				obj = NT_List();
+			}
+			match(*reader->currToken(), Token(KW_RPAR));
 			return obj;
 		}
 		// Anything other than "(" must be an atom
@@ -58,9 +60,9 @@ namespace llscm {
 	}
 
 	/*
-	 * def = "(" "define" sym expr ")"
-	 *		 | "(" "define" "(" symlist ")" body ")"
-	 *		 | "(" "let" "(" bindlist ")" body ")"
+	 * def = "define" sym expr
+	 *		 | "define" "(" symlist ")" body
+	 *		 | "let" "(" bindlist ")" body
 	 */
 	P_ScmObj Parser::NT_Def() {
 		return nullptr;
@@ -76,7 +78,7 @@ namespace llscm {
 		if (tok->t == KWRD && tok->kw == KW_LPAR) {
 			tok = reader->nextToken();
 			obj = NT_List();
-			match(*reader->nextToken(), Token(KW_RPAR));
+			match(*reader->currToken(), Token(KW_RPAR));
 			return obj;
 		}
 		return NT_Atom();
