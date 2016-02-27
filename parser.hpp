@@ -6,8 +6,16 @@
 namespace llscm {
 	using namespace std;
 
+	class ParserException {
+	public:
+		ParserException(const string & str): msg(str) {}
+
+		string msg;
+	};
+
 	class Parser {
 		const unique_ptr<Reader>& reader;
+		void match(const Token & tok, const Token && expected);
 	public:
 		Parser(const unique_ptr<Reader>& r): reader(r) {}
 

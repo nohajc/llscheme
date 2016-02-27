@@ -26,6 +26,11 @@ namespace llscm {
 			Keyword kw;
 		};
 
+		Token() {}
+		Token(Keyword k);
+		friend bool operator==(const Token & lhs, const Token & rhs);
+		friend bool operator!=(const Token & lhs, const Token & rhs);
+
 		void deduceType();
 	};
 
@@ -35,8 +40,8 @@ namespace llscm {
 		istream * is;
 		int par_left;
 	public:
-		Token * nextToken();
-		Token * currToken();
+		const Token * nextToken();
+		const Token * currToken();
 
 		Reader();
 		virtual ~Reader() {};

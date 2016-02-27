@@ -14,7 +14,7 @@ using namespace llscm;
 }
 
 int main(int argc, char * argv[]) {
-	Token * tok;
+	const Token * tok;
 	unique_ptr<Reader> r;
 	//Reader * pr;
 

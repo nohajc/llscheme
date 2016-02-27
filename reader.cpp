@@ -12,6 +12,28 @@ namespace llscm {
 		nullptr
 	};
 
+	Token::Token(Keyword k): kw(k) {
+		t = KWRD;
+		name = KwrdNames[(int) k];
+	}
+
+	bool operator==(const Token & lhs, const Token & rhs) {
+		switch (lhs.t) {
+		case INT:
+			return lhs.t == rhs.t && lhs.int_val == rhs.int_val;
+		case FLOAT:
+			return lhs.t == rhs.t && lhs.float_val == rhs.float_val;
+		case KWRD:
+			return lhs.t == rhs.t && lhs.kw == rhs.kw;
+		default:
+			return lhs.t == rhs.t;
+		}
+	}
+
+	bool operator!=(const Token & lhs, const Token & rhs) {
+		return !(lhs == rhs);
+	}
+
 	void Token::deduceType() {
 		bool numeric = true;
 		bool is_float = false;
@@ -95,7 +117,7 @@ namespace llscm {
 		delete is;
 	}
 
-	Token * Reader::nextToken() {
+	const Token * Reader::nextToken() {
 		char c;
 
 		if (par_left > 0) {
@@ -141,7 +163,7 @@ namespace llscm {
 		return &tok;
 	}
 
-	Token * Reader::currToken() {
+	const Token * Reader::currToken() {
 		return &tok;
 	}
 }

@@ -6,11 +6,19 @@ namespace llscm {
 	using namespace std;
 	using namespace llvm;
 
+	void Parser::match(const Token & tok, const Token && expected) {
+		if (tok != expected) {
+			stringstream ss;
+			ss << "Expected token \"" << expected.name << "\".";
+			throw ParserException(ss.str());
+		}
+	}
+
 	/*
 	 * prog = form { form }
 	 */
 	vector<P_ScmObj> Parser::NT_Prog() {
-		Token * tok;
+		const Token * tok;
 		vector<P_ScmObj> prog;
 
 		while (true) {
@@ -30,7 +38,8 @@ namespace llscm {
 	 * expr = atom | ( "(" list ")" )
 	 */
 	P_ScmObj Parser::NT_Form() {
-		Token * tok = reader->currToken();
+		const Token * tok = reader->currToken();
+		P_ScmObj obj;
 
 		if (tok->t == KWRD && tok->kw == KW_LPAR) {
 			tok = reader->nextToken();
@@ -40,7 +49,9 @@ namespace llscm {
 				return NT_Def();
 			}
 			// Current token is the first token of list
-			return NT_List();
+			obj = NT_List();
+			match(*reader->nextToken(), Token(KW_RPAR));
+			return obj;
 		}
 		// Anything other than "(" must be an atom
 		return NT_Atom();
@@ -59,11 +70,14 @@ namespace llscm {
 	 * expr = atom | ( "(" list ")" )
 	 */
 	P_ScmObj Parser::NT_Expr() {
-		Token * tok = reader->currToken();
+		const Token * tok = reader->currToken();
+		P_ScmObj obj;
 
 		if (tok->t == KWRD && tok->kw == KW_LPAR) {
 			tok = reader->nextToken();
-			return NT_List();
+			obj = NT_List();
+			match(*reader->nextToken(), Token(KW_RPAR));
+			return obj;
 		}
 		return NT_Atom();
 	}
@@ -72,7 +86,7 @@ namespace llscm {
 	 * atom = str | sym | int | float | true | false | null
 	 */
 	P_ScmObj Parser::NT_Atom() {
-		Token * tok = reader->currToken();
+		const Token * tok = reader->currToken();
 
 		switch (tok->t) {
 		case STR:
