@@ -3,7 +3,7 @@ LD=clang++ -fsanitize=address
 LLVMCXXFLAGS=`llvm-config --cxxflags`
 LLVMLDFLAGS=`llvm-config --ldflags --system-libs --libs`
 CPPFLAGS=-DDEBUG
-CXXFLAGS=-std=c++11 -Wall -Werror -g $(LLVMCXXFLAGS)
+CXXFLAGS=-std=c++11 -Wall -g $(LLVMCXXFLAGS)
 LDFLAGS=$(LLVMLDFLAGS)
 
 test: reader.o

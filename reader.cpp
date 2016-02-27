@@ -38,7 +38,7 @@ namespace llscm {
 		bool numeric = true;
 		bool is_float = false;
 		bool is_keyword = false;
-		int first_digit_idx = 0;
+		size_t first_digit_idx = 0;
 
 		if (((name[0] == '\"') && (name[name.length() - 1] == '\"'))
 			  || ((name[0] == '\'') && (name[name.length() - 1] == '\''))) {
@@ -58,7 +58,7 @@ namespace llscm {
 			goto not_a_number;
 		}
 
-		for (int i = 1; i < name.length(); ++i) {
+		for (size_t i = 1; i < name.length(); ++i) {
 			if (!is_float && name[i] == '.' && i > first_digit_idx) {
 				is_float = true;
 				continue;
