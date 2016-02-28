@@ -1,7 +1,7 @@
-CXX=clang++ -fsanitize=address
-LD=clang++ -fsanitize=address
-#CXX=clang++
-#LD=clang++
+#ASAN=
+ASAN=-fsanitize=address
+CXX=clang++ $(ASAN)
+LD=clang++ $(ASAN)
 LLVMCXXFLAGS=`llvm-config --cxxflags`
 LLVMLDFLAGS=`llvm-config --ldflags --system-libs --libs`
 CPPFLAGS=-DDEBUG
