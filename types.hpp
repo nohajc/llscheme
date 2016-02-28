@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -34,12 +35,20 @@ namespace llscm {
 	 * for lambdas, function calls, expressions and processing macros.
 	 */
 	class ScmObj {
+	protected:
+		void printTabs(ostream & os, int tabs) const {
+			for (int i = 0; i < tabs; ++i) os << "\t";
+		}
 	public:
 		ScmObj(ScmType type) {
 			t = type;
 		}
 
 		virtual ~ScmObj() {}
+		virtual ostream & print(ostream & os, int tabs = 0) const = 0;
+		friend ostream & operator<<(ostream & os, const ScmObj & obj) {
+			return obj.print(os);
+		}
 
 		ScmType t;
 	};
@@ -49,6 +58,12 @@ namespace llscm {
 	typedef char scm_op;
 
 	class ScmInt: public ScmObj {
+		virtual ostream & print(ostream & os, int tabs = 0) const {
+			printTabs(os, tabs);
+			os << val;
+			return os;
+		}
+
 	public:
 		ScmInt(int64_t value): ScmObj(T_INT) {
 			val = value;
@@ -58,6 +73,11 @@ namespace llscm {
 	};
 
 	class ScmFloat: public ScmObj {
+		virtual ostream & print(ostream & os, int tabs = 0) const {
+			printTabs(os, tabs);
+			os << val;
+			return os;
+		}
 	public:
 		ScmFloat(double value): ScmObj(T_FLOAT) {
 			val = value;
@@ -67,21 +87,41 @@ namespace llscm {
 	};
 
 	class ScmTrue: public ScmObj {
+		virtual ostream & print(ostream & os, int tabs = 0) const {
+			printTabs(os, tabs);
+			os << "#t";
+			return os;
+		}
 	public:
 		ScmTrue(): ScmObj(T_TRUE) {}
 	};
 
 	class ScmFalse: public ScmObj {
+		virtual ostream & print(ostream & os, int tabs = 0) const {
+			printTabs(os, tabs);
+			os << "#f";
+			return os;
+		}
 	public:
 		ScmFalse(): ScmObj(T_FALSE) {}
 	};
 
 	class ScmNull: public ScmObj {
+		virtual ostream & print(ostream & os, int tabs = 0) const {
+			printTabs(os, tabs);
+			os << "null";
+			return os;
+		}
 	public:
 		ScmNull(): ScmObj(T_NULL) {}
 	};
 
 	class ScmLit: public ScmObj {
+		virtual ostream & print(ostream & os, int tabs = 0) const {
+			printTabs(os, tabs);
+			os << val;
+			return os;
+		}
 	public:
 		ScmLit(ScmType type, const string & value):
 			ScmObj(type), val(value) {}
@@ -101,6 +141,20 @@ namespace llscm {
 	};
 
 	class ScmCons: public ScmObj {
+		virtual ostream & print(ostream & os, int tabs = 0) const {
+			printTabs(os, tabs);
+			os << "list:" << endl;
+			const ScmCons * lst_end = this;
+
+			while (lst_end) {
+				lst_end->print(os, tabs + 1);
+				os << endl;
+				lst_end = dynamic_cast<ScmCons*>(lst_end->cdr.get());
+				// TODO: handle degenerate lists
+			}
+
+			return os;
+		}
 	public:
 		ScmCons(P_ScmObj pcar, P_ScmObj pcdr):
 			ScmObj(T_CONS), car(move(pcar)), cdr(move(pcdr)) {}
@@ -156,6 +210,15 @@ namespace llscm {
 	};
 
 	class ScmDefineVarSyntax: public ScmDefineSyntax {
+		virtual ostream & print(ostream & os, int tabs = 0) const {
+			printTabs(os, tabs);
+			os << "define [var]:" << endl;
+			name->print(os, tabs + 1);
+			os << endl;
+			val->print(os, tabs + 1);
+			os << endl;
+			return os;
+		}
 	public:
 		ScmDefineVarSyntax(P_ScmObj n, P_ScmObj v):
 			name(move(n)), val(move(v)) {}
@@ -165,6 +228,17 @@ namespace llscm {
 	};
 
 	class ScmDefineFuncSyntax: public ScmDefineSyntax {
+		virtual ostream & print(ostream & os, int tabs = 0) const {
+			printTabs(os, tabs);
+			os << "define [func]:" << endl;
+			name->print(os, tabs + 1);
+			os << endl;
+			arg_list->print(os, tabs + 1);
+			os << endl;
+			body_list->print(os, tabs + 1);
+			os << endl;
+			return os;
+		}
 	public:
 		ScmDefineFuncSyntax(P_ScmObj n, P_ScmObj al, P_ScmObj b):
 			name(move(n)), arg_list(move(al)), body_list(move(b)) {}
@@ -187,6 +261,15 @@ namespace llscm {
 	};
 
 	class ScmLetSyntax: public ScmDefineSyntax {
+		virtual ostream & print(ostream & os, int tabs = 0) const {
+			printTabs(os, tabs);
+			os << "let:" << endl;
+			bind_list->print(os, tabs + 1);
+			os << endl;
+			body_list->print(os, tabs + 1);
+			os << endl;
+			return os;
+		}
 	public:
 		ScmLetSyntax(P_ScmObj bl, P_ScmObj b):
 			bind_list(move(bl)), body_list(move(b)) {}
