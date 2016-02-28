@@ -81,7 +81,7 @@ namespace llscm {
 	 */
 	P_ScmObj Parser::NT_Def() {
 		const Token * tok = reader->currToken();
-		P_ScmObj name, lst;
+		P_ScmObj name, lst, expr;
 
 		D(cout << "NT_Def: " << endl);
 
@@ -102,14 +102,22 @@ namespace llscm {
 				lst = NT_SymList();
 				match(*reader->currToken(), Token(KW_RPAR));
 				reader->nextToken();
-				return make_unique<ScmDefineFuncSyntax>(move(name), move(lst), NT_Body());
+
+				expr = NT_Body();
+				reader->nextToken();
+				return make_unique<ScmDefineFuncSyntax>(move(name), move(lst), move(expr));
 			}
 			if (tok->t != SYM)
 				throw ParserException("Expected symbol as first argument of define.");
 			name = make_unique<ScmSym>(tok->name);
 			tok = reader->nextToken();
 			D(cout << tok->name << endl);
-			return make_unique<ScmDefineVarSyntax>(move(name), NT_Expr());
+
+			expr = NT_Expr();
+			tok = reader->nextToken();
+			D(cout << tok->name << endl);
+
+			return make_unique<ScmDefineVarSyntax>(move(name), move(expr));
 		}
 		else { // tok->kw == KW_LET
 			match(*reader->nextToken(), Token(KW_LPAR));
@@ -117,7 +125,10 @@ namespace llscm {
 			lst = NT_BindList();
 			match(*reader->currToken(), Token(KW_RPAR));
 			reader->nextToken();
-			return make_unique<ScmLetSyntax>(move(lst), NT_Body());
+
+			expr = NT_Body();
+			reader->nextToken();
+			return make_unique<ScmLetSyntax>(move(lst), move(expr));
 		}
 		//return nullptr;
 	}
@@ -138,8 +149,8 @@ namespace llscm {
 			return obj;
 		}
 		obj = NT_Atom();
-		tok = reader->nextToken();
-		D(cout << tok->name << endl);
+		/*tok = reader->nextToken();
+		D(cout << tok->name << endl);*/
 		return obj;
 	}
 
