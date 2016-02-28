@@ -1,6 +1,8 @@
+#include <iostream>
 #include <memory>
 #include <llvm/ADT/STLExtras.h>
 #include "parser.hpp"
+#include "debug.hpp"
 
 namespace llscm {
 	using namespace std;
@@ -22,12 +24,16 @@ namespace llscm {
 		vector<P_ScmObj> prog;
 		bool first = true;
 
+		D(cout << "NT_Prog: " << endl);
+
 		while (true) {
 			tok = reader->nextToken();
+
 			if (!tok) {
 				if (first) throw ParserException("Program is empty.");
 				else break;
 			}
+			D(cout << tok->name << endl);
 			P_ScmObj form = NT_Form();
 			prog.push_back(move(form));
 			first = false;
@@ -45,11 +51,14 @@ namespace llscm {
 		const Token * tok = reader->currToken();
 		P_ScmObj obj;
 
+		D(cout << "NT_Form: " << endl);
+
 		if (tok->t == KWRD && tok->kw == KW_LPAR) {
 			tok = reader->nextToken();
 			if (!tok) {
 				throw ParserException("Reached EOF while parsing a list.");
 			}
+			D(cout << tok->name << endl);
 			if (tok->t == KWRD && (tok->kw == KW_DEFINE || tok->kw == KW_LET)) {
 				// Current token is "define" or "let"
 				obj = NT_Def();
@@ -74,8 +83,15 @@ namespace llscm {
 		const Token * tok = reader->currToken();
 		P_ScmObj name, lst;
 
+		D(cout << "NT_Def: " << endl);
+
 		if (tok->kw == KW_DEFINE) {
 			tok = reader->nextToken();
+			if (!tok) {
+				throw ParserException("Reached EOF while parsing a definition.");
+			}
+			D(cout << tok->name << endl);
+
 			if (tok->t == KWRD && tok->kw == KW_LPAR) {
 				// Function definition
 				tok = reader->nextToken();
@@ -91,7 +107,8 @@ namespace llscm {
 			if (tok->t != SYM)
 				throw ParserException("Expected symbol as first argument of define.");
 			name = make_unique<ScmSym>(tok->name);
-			reader->nextToken();
+			tok = reader->nextToken();
+			D(cout << tok->name << endl);
 			return make_unique<ScmDefineVarSyntax>(move(name), NT_Expr());
 		}
 		else { // tok->kw == KW_LET
@@ -112,13 +129,18 @@ namespace llscm {
 		const Token * tok = reader->currToken();
 		P_ScmObj obj;
 
+		D(cout << "NT_Expr: " << endl);
+
 		if (tok->t == KWRD && tok->kw == KW_LPAR) {
 			tok = reader->nextToken();
 			obj = NT_List();
 			match(*reader->currToken(), Token(KW_RPAR));
 			return obj;
 		}
-		return NT_Atom();
+		obj = NT_Atom();
+		tok = reader->nextToken();
+		D(cout << tok->name << endl);
+		return obj;
 	}
 
 	/*

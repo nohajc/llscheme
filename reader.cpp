@@ -43,7 +43,7 @@ namespace llscm {
 		if (((name[0] == '\"') && (name[name.length() - 1] == '\"'))
 			  || ((name[0] == '\'') && (name[name.length() - 1] == '\''))) {
 			t = STR;
-			D(cerr << "string token ");
+			//D(cerr << "string token ");
 			return;
 		}
 
@@ -73,12 +73,12 @@ namespace llscm {
 			if (is_float) {
 				t = FLOAT;
 				float_val = atof(name.c_str());
-				D(cerr << "float token [" << float_val << "] ");
+				//D(cerr << "float token [" << float_val << "] ");
 				return;
 			}
 			t = INT;
 			int_val = strtoll(name.c_str(), nullptr, 10);
-			D(cerr << "int token [" << int_val << "] ");
+			//D(cerr << "int token [" << int_val << "] ");
 			return;
 		}
 
@@ -89,7 +89,7 @@ namespace llscm {
 				t = KWRD;
 				kw = (Keyword) i;
 				is_keyword = true;
-				D(cerr << "keyword token [" << KwrdNames[(int)kw] << "] ");
+				//D(cerr << "keyword token [" << KwrdNames[(int)kw] << "] ");
 			}
 
 			i++;
@@ -98,7 +98,7 @@ namespace llscm {
 		if (is_keyword) return;
 
 		t = SYM;
-		D(cerr << "symbol token ");
+		//D(cerr << "symbol token ");
 	}
 
 	Reader::Reader() {
@@ -127,7 +127,7 @@ namespace llscm {
 				tok.t = KWRD;
 				tok.kw = KW_RPAR;
 			}
-			D(cerr << "keyword token [" << KwrdNames[(int)tok.kw] << "] ");
+			//D(cerr << "keyword token [" << KwrdNames[(int)tok.kw] << "] ");
 			return &tok;
 		}
 
@@ -140,7 +140,7 @@ namespace llscm {
 			tok.name = "(";
 			tok.t = KWRD;
 			tok.kw = KW_LPAR;
-			D(cerr << "keyword token [" << KwrdNames[(int)tok.kw] << "] ");
+			//D(cerr << "keyword token [" << KwrdNames[(int)tok.kw] << "] ");
 			return &tok;
 		}
 
@@ -148,7 +148,7 @@ namespace llscm {
 			tok.name = ")";
 			tok.t = KWRD;
 			tok.kw = KW_RPAR;
-			D(cerr << "keyword token [" << KwrdNames[(int)tok.kw] << "] ");
+			//D(cerr << "keyword token [" << KwrdNames[(int)tok.kw] << "] ");
 			return &tok;
 		}
 
