@@ -160,6 +160,7 @@ namespace llscm {
 			tok.name.pop_back();
 		}
 		tok.deduceType();
+		D(cerr << tok.name << " ");
 		return &tok;
 	}
 

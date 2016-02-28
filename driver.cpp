@@ -6,6 +6,7 @@
 #include <llvm/ADT/STLExtras.h>
 #include "parser.hpp"
 #include "driver.hpp"
+#include "debug.hpp"
 
 namespace llscm {
 	using namespace std;

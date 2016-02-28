@@ -19,7 +19,7 @@ namespace llscm {
 	}
 
 	void Parser::error(const string & msg) {
-		cerr << msg << endl;
+		cerr << "Error: " << msg << endl;
 		err_flag = true;
 	}
 
@@ -45,6 +45,7 @@ namespace llscm {
 			}
 			//D(cout << tok->name << endl);
 			P_ScmObj form = NT_Form();
+			if (fail()) break;
 			prog.push_back(move(form));
 			first = false;
 		}
@@ -128,7 +129,7 @@ namespace llscm {
 
 				return make_unique<ScmDefineFuncSyntax>(move(name), move(lst), NT_Body());
 			}
-			if (!tok || tok->t != SYM) {
+			if (tok->t != SYM) {
 				error("Expected symbol as first argument of define.");
 				return nullptr;
 			}
@@ -180,6 +181,7 @@ namespace llscm {
 
 		if (!tok) {
 			error("Expected expression.");
+			return nullptr;
 		}
 
 		if (tok->t == KWRD && tok->kw == KW_LPAR) {
@@ -312,6 +314,16 @@ namespace llscm {
 
 		vec.push_back(make_unique<ScmSym>(tok->name));
 		tok = reader->nextToken();
+
+		if (!tok) {
+			error("Reached EOF while parsing a list.");
+			return nullptr;
+		}
+
+		if (tok->t == KWRD && tok->kw == KW_RPAR) {
+			error("Binding list must have exactly two elements: id, expression.");
+			return nullptr;
+		}
 		//D(cout << tok->name << endl);
 
 		vec.push_back(NT_Expr());
@@ -345,7 +357,7 @@ namespace llscm {
 
 			if (tok->t == KWRD && tok->kw == KW_RPAR) {
 				if (no_expr) {
-					error("Missing expression in function body.");
+					error("Missing expression in a body.");
 					return nullptr;
 				}
 				break;
