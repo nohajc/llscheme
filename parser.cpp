@@ -52,6 +52,7 @@ namespace llscm {
 		P_ScmObj obj;
 
 		D(cout << "NT_Form: " << endl);
+		D(cout << tok->name << endl);
 
 		if (tok->t == KWRD && tok->kw == KW_LPAR) {
 			tok = reader->nextToken();
@@ -83,9 +84,9 @@ namespace llscm {
 		const Token * tok = reader->currToken();
 		P_ScmObj name, lst, expr;
 
-		D(cout << "NT_Def: " << endl);
-
 		if (tok->kw == KW_DEFINE) {
+			D(cout << "NT_Def: " << endl);
+
 			tok = reader->nextToken();
 			if (!tok) {
 				throw ParserException("Reached EOF while parsing a definition.");
@@ -103,9 +104,7 @@ namespace llscm {
 				match(*reader->currToken(), Token(KW_RPAR));
 				reader->nextToken();
 
-				expr = NT_Body();
-				reader->nextToken();
-				return make_unique<ScmDefineFuncSyntax>(move(name), move(lst), move(expr));
+				return make_unique<ScmDefineFuncSyntax>(move(name), move(lst), NT_Body());
 			}
 			if (tok->t != SYM)
 				throw ParserException("Expected symbol as first argument of define.");
@@ -120,15 +119,18 @@ namespace llscm {
 			return make_unique<ScmDefineVarSyntax>(move(name), move(expr));
 		}
 		else { // tok->kw == KW_LET
+			D(cout << "NT_Let: " << endl);
+
 			match(*reader->nextToken(), Token(KW_LPAR));
 			tok = reader->nextToken();
+			D(cout << tok->name << endl);
+
 			lst = NT_BindList();
 			match(*reader->currToken(), Token(KW_RPAR));
-			reader->nextToken();
+			tok = reader->nextToken();
+			D(cout << tok->name << endl);
 
-			expr = NT_Body();
-			reader->nextToken();
-			return make_unique<ScmLetSyntax>(move(lst), move(expr));
+			return make_unique<ScmLetSyntax>(move(lst), NT_Body());
 		}
 		//return nullptr;
 	}
@@ -148,10 +150,8 @@ namespace llscm {
 			match(*reader->currToken(), Token(KW_RPAR));
 			return obj;
 		}
-		obj = NT_Atom();
-		/*tok = reader->nextToken();
-		D(cout << tok->name << endl);*/
-		return obj;
+		D(cout << tok->name << endl);
+		return NT_Atom();
 	}
 
 	/*
@@ -192,8 +192,12 @@ namespace llscm {
 		const Token * tok = reader->currToken();
 		P_ScmObj obj;
 
+		D(cout << "NT_List: " << endl);
+		D(cout << tok->name << endl);
+
 		if (tok->t == KWRD && tok->kw == KW_RPAR) {
 			// Empty list
+			D(cout << "END OF LIST" << endl);
 			return make_unique<ScmNull>();
 		}
 		obj = NT_Expr();
@@ -226,20 +230,28 @@ namespace llscm {
 		const Token * tok = reader->currToken();
 		vector<P_ScmObj> vec;
 
+		D(cout << "NT_BindList" << endl);
+		D(cout << tok->name << endl);
+
 		if (tok->t == KWRD && tok->kw == KW_RPAR) {
 			// Empty list
 			return make_unique<ScmNull>();
 		}
 		match(*reader->currToken(), Token(KW_LPAR));
 		tok = reader->nextToken();
+		D(cout << tok->name << endl);
+
 		if (tok->t != SYM)
 			throw ParserException("First element of binding list must be symbol.");
 
 		vec.push_back(make_unique<ScmSym>(tok->name));
-		reader->nextToken();
+		tok = reader->nextToken();
+		//D(cout << tok->name << endl);
+
 		vec.push_back(NT_Expr());
 		match(*reader->nextToken(), Token(KW_RPAR));
-		reader->nextToken();
+		tok = reader->nextToken();
+		D(cout << tok->name << endl);
 
 		return make_unique<ScmCons>(makeScmList(move(vec)), NT_BindList());
 	}
@@ -252,14 +264,23 @@ namespace llscm {
 		const Token * tok = reader->currToken();
 		P_ScmObj obj;
 		bool parsing_defs = true;
+		bool no_expr = true;
+
+		D(cout << "NT_Body" << endl);
+		D(cout << tok->name << endl);
 
 		while (parsing_defs) {
 			if (tok->t == KWRD && tok->kw == KW_RPAR) {
-				throw ParserException("Missing expression in function body.");
+				if (no_expr)
+					throw ParserException("Missing expression in function body.");
+				break;
 			}
 			obj = NT_Form();
 			if (dynamic_cast<ScmDefineSyntax*>(obj.get()) == nullptr) {
 				parsing_defs = false;
+			}
+			if (dynamic_cast<ScmLetSyntax*>(obj.get()) != nullptr) {
+				no_expr = false;
 			}
 			lst.push_back(move(obj));
 			tok = reader->nextToken();
