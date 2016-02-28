@@ -147,7 +147,7 @@ namespace llscm {
 			const ScmCons * lst_end = this;
 
 			while (lst_end) {
-				lst_end->print(os, tabs + 1);
+				lst_end->car->print(os, tabs + 1);
 				os << endl;
 				lst_end = dynamic_cast<ScmCons*>(lst_end->cdr.get());
 				// TODO: handle degenerate lists
