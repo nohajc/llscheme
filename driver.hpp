@@ -1,4 +1,4 @@
 namespace llscm {
-	void compileSourceFile(const char * fname);
-	void compileString(const char * str);
+	bool compileSourceFile(const char * fname);
+	bool compileString(const char * str);
 }

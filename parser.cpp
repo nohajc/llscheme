@@ -8,12 +8,19 @@ namespace llscm {
 	using namespace std;
 	using namespace llvm;
 
-	void Parser::match(const Token & tok, const Token && expected) {
+	bool Parser::match(const Token & tok, const Token && expected) {
 		if (tok != expected) {
 			stringstream ss;
 			ss << "Expected token \"" << expected.name << "\".";
-			throw ParserException(ss.str());
+			error(ss.str());
+			return false;
 		}
+		return true;
+	}
+
+	void Parser::error(const string & msg) {
+		cerr << msg << endl;
+		err_flag = true;
 	}
 
 	/*
@@ -30,10 +37,13 @@ namespace llscm {
 			tok = reader->nextToken();
 
 			if (!tok) {
-				if (first) throw ParserException("Program is empty.");
+				if (first) {
+					error("Program is empty.");
+					return prog;
+				}
 				else break;
 			}
-			D(cout << tok->name << endl);
+			//D(cout << tok->name << endl);
 			P_ScmObj form = NT_Form();
 			prog.push_back(move(form));
 			first = false;
@@ -57,18 +67,23 @@ namespace llscm {
 		if (tok->t == KWRD && tok->kw == KW_LPAR) {
 			tok = reader->nextToken();
 			if (!tok) {
-				throw ParserException("Reached EOF while parsing a list.");
+				error("Reached EOF while parsing a list.");
+				return nullptr;
 			}
-			D(cout << tok->name << endl);
+			//D(cout << tok->name << endl);
 			if (tok->t == KWRD && (tok->kw == KW_DEFINE || tok->kw == KW_LET)) {
 				// Current token is "define" or "let"
 				obj = NT_Def();
+				if (fail()) return nullptr;
 			}
 			else {
 				// Current token is the first token of list
 				obj = NT_List();
+				if (fail()) return nullptr;
 			}
-			match(*reader->currToken(), Token(KW_RPAR));
+			if (!match(*reader->currToken(), Token(KW_RPAR))) {
+				return nullptr;
+			}
 			return obj;
 		}
 		// Anything other than "(" must be an atom
@@ -89,46 +104,65 @@ namespace llscm {
 
 			tok = reader->nextToken();
 			if (!tok) {
-				throw ParserException("Reached EOF while parsing a definition.");
+				error("Reached EOF while parsing a definition.");
+				return nullptr;
 			}
 			D(cout << tok->name << endl);
 
 			if (tok->t == KWRD && tok->kw == KW_LPAR) {
 				// Function definition
 				tok = reader->nextToken();
-				if (tok->t != SYM)
-					throw ParserException("Missing function name in definition.");
+				if (!tok || tok->t != SYM) {
+					error("Missing function name in definition.");
+					return nullptr;
+				}
 				name = make_unique<ScmSym>(tok->name);
 				reader->nextToken();
 				lst = NT_SymList();
-				match(*reader->currToken(), Token(KW_RPAR));
+				if (fail()) return nullptr;
+
+				if (!match(*reader->currToken(), Token(KW_RPAR))) {
+					return nullptr;
+				}
 				reader->nextToken();
 
 				return make_unique<ScmDefineFuncSyntax>(move(name), move(lst), NT_Body());
 			}
-			if (tok->t != SYM)
-				throw ParserException("Expected symbol as first argument of define.");
+			if (!tok || tok->t != SYM) {
+				error("Expected symbol as first argument of define.");
+				return nullptr;
+			}
 			name = make_unique<ScmSym>(tok->name);
 			tok = reader->nextToken();
-			D(cout << tok->name << endl);
+			//D(cout << tok->name << endl);
+			if (tok && tok->t == KWRD && tok->kw == KW_RPAR) {
+				error("Missing expression in variable definition.");
+				return nullptr;
+			}
 
 			expr = NT_Expr();
+			if (fail()) return nullptr;
 			tok = reader->nextToken();
-			D(cout << tok->name << endl);
+			//D(cout << tok->name << endl);
 
 			return make_unique<ScmDefineVarSyntax>(move(name), move(expr));
 		}
 		else { // tok->kw == KW_LET
 			D(cout << "NT_Let: " << endl);
 
-			match(*reader->nextToken(), Token(KW_LPAR));
+			if (!match(*reader->nextToken(), Token(KW_LPAR))) {
+				return nullptr;
+			}
 			tok = reader->nextToken();
-			D(cout << tok->name << endl);
+			//D(cout << tok->name << endl);
 
 			lst = NT_BindList();
-			match(*reader->currToken(), Token(KW_RPAR));
+			if (fail()) return nullptr;
+			if (!match(*reader->currToken(), Token(KW_RPAR))) {
+				return nullptr;
+			}
 			tok = reader->nextToken();
-			D(cout << tok->name << endl);
+			//D(cout << tok->name << endl);
 
 			return make_unique<ScmLetSyntax>(move(lst), NT_Body());
 		}
@@ -144,10 +178,18 @@ namespace llscm {
 
 		D(cout << "NT_Expr: " << endl);
 
+		if (!tok) {
+			error("Expected expression.");
+		}
+
 		if (tok->t == KWRD && tok->kw == KW_LPAR) {
 			tok = reader->nextToken();
 			obj = NT_List();
-			match(*reader->currToken(), Token(KW_RPAR));
+			if (fail()) return nullptr;
+
+			if (!match(*reader->currToken(), Token(KW_RPAR))) {
+				return nullptr;
+			}
 			return obj;
 		}
 		D(cout << tok->name << endl);
@@ -172,7 +214,10 @@ namespace llscm {
 		default:;
 		}
 
-		if (tok->t != KWRD) throw ParserException("Invalid token for an atom.");
+		if (tok->t != KWRD) {
+			error("Invalid token for an atom.");
+			return nullptr;
+		}
 		switch (tok->kw) {
 		case KW_TRUE:
 			return make_unique<ScmTrue>();
@@ -181,8 +226,9 @@ namespace llscm {
 		case KW_NULL:
 			return make_unique<ScmNull>();
 		default:
-			throw ParserException("Invalid token for an atom.");
+			error("Invalid token for an atom.");
 		}
+		return nullptr;
 	}
 
 	/*
@@ -193,6 +239,11 @@ namespace llscm {
 		P_ScmObj obj;
 
 		D(cout << "NT_List: " << endl);
+		if (!tok) {
+			error("Reached EOF while parsing a list.");
+			return nullptr;
+		}
+
 		D(cout << tok->name << endl);
 
 		if (tok->t == KWRD && tok->kw == KW_RPAR) {
@@ -211,12 +262,19 @@ namespace llscm {
 		const Token * tok = reader->currToken();
 		P_ScmObj obj;
 
+		if (!tok) {
+			error("Reached EOF while parsing a list.");
+			return nullptr;
+		}
+
 		if (tok->t == KWRD && tok->kw == KW_RPAR) {
 			// Empty list
 			return make_unique<ScmNull>();
 		}
-		if (tok->t != SYM)
-				throw ParserException("Invalid expression in argument list. Only symbols are allowed.");
+		if (tok->t != SYM) {
+			error("Invalid expression in argument list. Only symbols are allowed.");
+			return nullptr;
+		}
 		obj = make_unique<ScmSym>(tok->name);
 		reader->nextToken();
 		return make_unique<ScmCons>(move(obj), NT_SymList());
@@ -230,27 +288,38 @@ namespace llscm {
 		vector<P_ScmObj> vec;
 
 		D(cout << "NT_BindList" << endl);
+		if (!tok) {
+			error("Reached EOF while parsing a list.");
+			return nullptr;
+		}
+
 		D(cout << tok->name << endl);
 
 		if (tok->t == KWRD && tok->kw == KW_RPAR) {
 			// Empty list
 			return make_unique<ScmNull>();
 		}
-		match(*reader->currToken(), Token(KW_LPAR));
+		if (!match(*reader->currToken(), Token(KW_LPAR))) {
+			return nullptr;
+		}
 		tok = reader->nextToken();
-		D(cout << tok->name << endl);
+		//D(cout << tok->name << endl);
 
-		if (tok->t != SYM)
-			throw ParserException("First element of binding list must be symbol.");
+		if (!tok || tok->t != SYM) {
+			error("First element of binding list must be a symbol.");
+			return nullptr;
+		}
 
 		vec.push_back(make_unique<ScmSym>(tok->name));
 		tok = reader->nextToken();
 		//D(cout << tok->name << endl);
 
 		vec.push_back(NT_Expr());
-		match(*reader->nextToken(), Token(KW_RPAR));
+		if (!match(*reader->nextToken(), Token(KW_RPAR))) {
+			return nullptr;
+		}
 		tok = reader->nextToken();
-		D(cout << tok->name << endl);
+		//D(cout << tok->name << endl);
 
 		return make_unique<ScmCons>(makeScmList(move(vec)), NT_BindList());
 	}
@@ -266,12 +335,19 @@ namespace llscm {
 		bool no_expr = true;
 
 		D(cout << "NT_Body" << endl);
-		D(cout << tok->name << endl);
 
 		while (parsing_defs) {
+			if (!tok) {
+				error("Reached EOF while parsing a body.");
+				return nullptr;
+			}
+			D(cout << tok->name << endl);
+
 			if (tok->t == KWRD && tok->kw == KW_RPAR) {
-				if (no_expr)
-					throw ParserException("Missing expression in function body.");
+				if (no_expr) {
+					error("Missing expression in function body.");
+					return nullptr;
+				}
 				break;
 			}
 			obj = NT_Form();
@@ -285,11 +361,16 @@ namespace llscm {
 			tok = reader->nextToken();
 		}
 
-		while (tok->t != KWRD || tok->kw != KW_RPAR) {
+		do {
+			if (!tok) {
+				error("Reached EOF while parsing a body.");
+				return nullptr;
+			}
+			if (tok->t == KWRD && tok->kw == KW_RPAR) {
+				return makeScmList(move(lst));
+			}
 			lst.push_back(NT_Expr());
 			tok = reader->nextToken();
-		}
-
-		return makeScmList(move(lst));
+		} while (true);
 	}
-};
+}

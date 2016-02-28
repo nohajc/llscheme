@@ -164,6 +164,9 @@ namespace llscm {
 	}
 
 	const Token * Reader::currToken() {
+		if (is->eof()) {
+			return nullptr;
+		}
 		return &tok;
 	}
 }

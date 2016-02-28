@@ -6,20 +6,28 @@
 namespace llscm {
 	using namespace std;
 
-	class ParserException {
+	/*class ParserException {
 		string msg;
 	public:
 		ParserException(const string & str): msg(str) {}
 		const char * what() {
 			return msg.c_str();
 		}
-	};
+	};*/
 
 	class Parser {
 		const unique_ptr<Reader>& reader;
-		void match(const Token & tok, const Token && expected);
+		bool err_flag;
+
+		bool match(const Token & tok, const Token && expected);
+		void error(const string & msg);
 	public:
-		Parser(const unique_ptr<Reader>& r): reader(r) {}
+		Parser(const unique_ptr<Reader>& r): reader(r) {
+			err_flag = false;
+		}
+		bool fail() {
+			return err_flag;
+		}
 
 		vector<P_ScmObj> NT_Prog();
 		P_ScmObj NT_Form();
