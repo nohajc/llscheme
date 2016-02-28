@@ -197,7 +197,6 @@ namespace llscm {
 
 		if (tok->t == KWRD && tok->kw == KW_RPAR) {
 			// Empty list
-			D(cout << "END OF LIST" << endl);
 			return make_unique<ScmNull>();
 		}
 		obj = NT_Expr();
