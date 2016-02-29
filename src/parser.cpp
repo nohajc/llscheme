@@ -3,7 +3,6 @@
 #include <llvm/ADT/STLExtras.h>
 #include "../include/parser.hpp"
 #include "../include/debug.hpp"
-#include "../include/reader.hpp"
 
 namespace llscm {
 	using namespace std;
@@ -144,7 +143,7 @@ namespace llscm {
 
 			expr = NT_Expr();
 			if (fail()) return nullptr;
-			tok = reader->nextToken();
+			reader->nextToken();
 			//D(cout << tok->name << endl);
 
 			return make_unique<ScmDefineVarSyntax>(move(name), move(expr));
@@ -155,7 +154,7 @@ namespace llscm {
 			if (!match(*reader->nextToken(), Token(KW_LPAR))) {
 				return nullptr;
 			}
-			tok = reader->nextToken();
+			reader->nextToken();
 			//D(cout << tok->name << endl);
 
 			lst = NT_BindList();
@@ -163,7 +162,7 @@ namespace llscm {
 			if (!match(*reader->currToken(), Token(KW_RPAR))) {
 				return nullptr;
 			}
-			tok = reader->nextToken();
+			reader->nextToken();
 			//D(cout << tok->name << endl);
 
 			return make_unique<ScmLetSyntax>(move(lst), NT_Body());
@@ -186,7 +185,7 @@ namespace llscm {
 		}
 
 		if (tok->t == KWRD && tok->kw == KW_LPAR) {
-			tok = reader->nextToken();
+			reader->nextToken();
 			obj = NT_List();
 			if (fail()) return nullptr;
 
@@ -332,7 +331,7 @@ namespace llscm {
 		if (!match(*reader->nextToken(), Token(KW_RPAR))) {
 			return nullptr;
 		}
-		tok = reader->nextToken();
+		reader->nextToken();
 		//D(cout << tok->name << endl);
 
 		return make_unique<ScmCons>(makeScmList(move(vec)), NT_BindList());

@@ -5,7 +5,6 @@
 #include <memory>
 #include <llvm/ADT/STLExtras.h>
 #include "../include/driver.hpp"
-#include "../include/debug.hpp"
 #include "../include/parser.hpp"
 
 namespace llscm {

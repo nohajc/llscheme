@@ -1,10 +1,7 @@
 #include <string>
 #include <iostream>
-#include <cstdlib>
-#include <cctype>
 #include "../include/reader.hpp"
 #include "../include/debug.hpp"
-#include "../include/reader.hpp"
 
 namespace llscm {
 	const char * KwrdNames[] = {
