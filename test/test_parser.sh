@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SCMC=../schemec
+SCMC=../bin/Debug/schemec
 
 # Test empty program
 echo "" | $SCMC -
