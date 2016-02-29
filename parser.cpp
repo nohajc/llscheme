@@ -253,6 +253,7 @@ namespace llscm {
 			return make_unique<ScmNull>();
 		}
 		obj = NT_Expr();
+		if (fail()) return nullptr;
 		reader->nextToken();
 		return make_unique<ScmCons>(move(obj), NT_List());
 	}
