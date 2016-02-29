@@ -1,7 +1,7 @@
 #include <cstdint>
 #include <memory>
 #include <llvm/ADT/STLExtras.h>
-#include "types.hpp"
+#include "../include/types.hpp"
 
 namespace llscm {
 	using namespace llvm;

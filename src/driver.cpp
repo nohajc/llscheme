@@ -4,9 +4,9 @@
 #include <fstream>
 #include <memory>
 #include <llvm/ADT/STLExtras.h>
-#include "parser.hpp"
-#include "driver.hpp"
-#include "debug.hpp"
+#include "../include/driver.hpp"
+#include "../include/debug.hpp"
+#include "../include/parser.hpp"
 
 namespace llscm {
 	using namespace std;

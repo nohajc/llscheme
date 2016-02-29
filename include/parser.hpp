@@ -1,3 +1,6 @@
+#ifndef LLSCHEME_PARSER_HPP
+#define LLSCHEME_PARSER_HPP
+
 #include <memory>
 #include <llvm/ADT/STLExtras.h>
 #include "types.hpp"
@@ -40,3 +43,5 @@ namespace llscm {
 		P_ScmObj NT_Body();
 	};
 }
+
+#endif //LLSCHEME_PARSER_HPP

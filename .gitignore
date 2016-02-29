@@ -1,3 +1,4 @@
 *.o
 schemec
-tests/test
+.idea
+bin

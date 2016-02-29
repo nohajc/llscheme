@@ -1,8 +1,9 @@
 #include <iostream>
 #include <memory>
 #include <llvm/ADT/STLExtras.h>
-#include "parser.hpp"
-#include "debug.hpp"
+#include "../include/parser.hpp"
+#include "../include/debug.hpp"
+#include "../include/reader.hpp"
 
 namespace llscm {
 	using namespace std;

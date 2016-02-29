@@ -1,3 +1,6 @@
+#ifndef LLSCHEME_READER_HPP
+#define LLSCHEME_READER_HPP
+
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -58,3 +61,5 @@ namespace llscm {
 		virtual ~StringReader();
 	};
 }
+
+#endif //LLSCHEME_READER_HPP

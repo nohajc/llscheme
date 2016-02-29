@@ -1,3 +1,6 @@
+#ifndef LLSCHEME_TYPES_HPP
+#define LLSCHEME_TYPES_HPP
+
 #include <cstdint>
 #include <iostream>
 #include <memory>
@@ -280,3 +283,5 @@ namespace llscm {
 
 	P_ScmObj makeScmList(vector<P_ScmObj> && elems);
 }
+
+#endif //LLSCHEME_TYPES_HPP
