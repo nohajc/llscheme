@@ -76,7 +76,7 @@ namespace llscm {
 		name->print(os, tabs + 1);
 		os << endl;
 		val->print(os, tabs + 1);
-		os << endl;
+		//os << endl;
 		return os;
 	}
 
@@ -86,9 +86,9 @@ namespace llscm {
 		name->print(os, tabs + 1);
 		os << endl;
 		arg_list->print(os, tabs + 1);
-		os << endl;
+		//os << endl;
 		body_list->print(os, tabs + 1);
-		os << endl;
+		//os << endl;
 		return os;
 	}
 
@@ -98,7 +98,7 @@ namespace llscm {
 		bind_list->print(os, tabs + 1);
 		os << endl;
 		body_list->print(os, tabs + 1);
-		os << endl;
+		//os << endl;
 		return os;
 	}
 
@@ -108,7 +108,7 @@ namespace llscm {
 		arg_list->print(os, tabs + 1);
 		os << endl;
 		body_list->print(os, tabs + 1);
-		os << endl;
+		//os << endl;
 		return os;
 	}
 
@@ -116,7 +116,7 @@ namespace llscm {
 		printTabs(os, tabs);
 		os << "quote:" << endl;
 		data->print(os, tabs + 1);
-		os << endl;
+		//os << endl;
 		return os;
 	}
 
@@ -126,7 +126,7 @@ namespace llscm {
 		fexpr->print(os, tabs + 1);
 		os << endl;
 		arg_list->print(os, tabs + 1);
-		os << endl;
+		//os << endl;
 		return os;
 	}
 
@@ -138,7 +138,7 @@ namespace llscm {
 		then_expr->print(os, tabs + 1);
 		os << endl;
 		else_expr->print(os, tabs + 1);
-		os << endl;
+		//os << endl;
 		return os;
 	}
 }

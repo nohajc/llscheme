@@ -38,7 +38,7 @@ namespace llscm {
 		P_ScmObj NT_CallOrSyntax();
 		P_ScmObj NT_Expr();
 		P_ScmObj NT_Data();
-		P_ScmObj NT_Atom();
+		P_ScmObj NT_Atom(bool quoted);
 		P_ScmObj NT_List();
 		P_ScmObj NT_SymList();
 		P_ScmObj NT_BindList();

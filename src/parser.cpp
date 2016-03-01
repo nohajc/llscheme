@@ -87,7 +87,7 @@ namespace llscm {
 			return obj;
 		}
 		// Anything other than "(" must be an atom
-		return NT_Atom();
+		return NT_Atom(false);
 	}
 
 	/*
@@ -121,6 +121,7 @@ namespace llscm {
 					reader->nextToken();
 					expr = NT_Data();
 					if (fail()) return nullptr;
+					reader->nextToken();
 					return make_unique<ScmQuoteSyntax>(move(expr));
 					break;
 				case KW_IF:
@@ -262,7 +263,7 @@ namespace llscm {
 			return obj;
 		}
 		D(cout << tok->name << endl);
-		return NT_Atom();
+		return NT_Atom(false);
 	}
 
 	/*
@@ -290,13 +291,13 @@ namespace llscm {
 			return obj;
 		}
 		D(cout << tok->name << endl);
-		return NT_Atom();
+		return NT_Atom(true);
 	}
 
 	/*
 	 * atom = str | sym | int | float | true | false | null
 	 */
-	P_ScmObj Parser::NT_Atom() {
+	P_ScmObj Parser::NT_Atom(bool quoted) {
 		const Token * tok = reader->currToken();
 
 		switch (tok->t) {
@@ -323,9 +324,9 @@ namespace llscm {
 			case KW_NULL:
 				return make_unique<ScmNull>();
 			default:
-				error("Invalid token for an atom.");
+				if (!quoted) error("Invalid token for an atom.");
 		}
-		return nullptr;
+		return make_unique<ScmSym>(tok->name);
 	}
 
 	/*
