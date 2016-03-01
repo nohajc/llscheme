@@ -8,8 +8,8 @@ namespace llscm {
 	using namespace std;
 	using namespace llvm;
 
-	bool Parser::match(const Token & tok, const Token && expected) {
-		if (tok != expected) {
+	bool Parser::match(const Token * tok, const Token && expected) {
+		if (!tok || *tok != expected) {
 			stringstream ss;
 			ss << "Expected token \"" << expected.name << "\".";
 			error(ss.str());
@@ -56,7 +56,7 @@ namespace llscm {
 	/*
 	 * form = "(" def ")" | expr
 	 * def = "define" sym expr ...
-	 * expr = atom | ( "(" list ")" )
+	 * expr = atom | "(" callsyn ")"
 	 */
 	P_ScmObj Parser::NT_Form() {
 		const Token * tok = reader->currToken();
@@ -78,17 +78,84 @@ namespace llscm {
 				if (fail()) return nullptr;
 			}
 			else {
-				// Current token is the first token of list
-				obj = NT_List();
+				obj = NT_CallOrSyntax();
 				if (fail()) return nullptr;
 			}
-			if (!match(*reader->currToken(), Token(KW_RPAR))) {
+			if (!match(reader->currToken(), Token(KW_RPAR))) {
 				return nullptr;
 			}
 			return obj;
 		}
 		// Anything other than "(" must be an atom
 		return NT_Atom();
+	}
+
+	/*
+	 * callsyn = "lambda" "(" symlist ")" body
+	 *		   | "quote" data
+	 *		   | "if" expr expr expr
+	 *		   | expr { expr }
+	 */
+	P_ScmObj Parser::NT_CallOrSyntax() {
+		const Token * tok = reader->currToken();
+		P_ScmObj expr, ce, te, ee;
+		vector<P_ScmObj> lst;
+
+		if (tok->t == KWRD) {
+			switch (tok->kw) {
+				case KW_LAMBDA:
+					if (!match(reader->nextToken(), Token(KW_LPAR))) {
+						return nullptr;
+					}
+					reader->nextToken();
+					expr = NT_SymList();
+					if (fail()) return nullptr;
+
+					if (!match(reader->currToken(), Token(KW_RPAR))) {
+						return nullptr;
+					}
+
+					reader->nextToken();
+					return make_unique<ScmLambdaSyntax>(move(expr), NT_Body());
+				case KW_QUOTE:
+					reader->nextToken();
+					expr = NT_Data();
+					if (fail()) return nullptr;
+					return make_unique<ScmQuoteSyntax>(move(expr));
+					break;
+				case KW_IF:
+					reader->nextToken();
+					ce = NT_Expr();
+					if (fail()) return nullptr;
+					reader->nextToken();
+					te = NT_Expr();
+					if (fail()) return nullptr;
+					reader->nextToken();
+					ee =NT_Expr();
+					if (fail()) return nullptr;
+					reader->nextToken();
+					return make_unique<ScmIfSyntax>(move(ce), move(te), move(ee));
+				default:
+					error("Unexpected keyword at first list position.");
+					return nullptr;
+			}
+		}
+		// else: function call
+		expr = NT_Expr(); // function
+		if (fail()) return nullptr;
+		tok = reader->nextToken();
+		do {
+			if (!tok) {
+				error("Reached EOF while parsing function call.");
+				return nullptr;
+			}
+			if (tok->t == KWRD && tok->kw == KW_RPAR) {
+				return make_unique<ScmCall>(move(expr), makeScmList(move(lst)));
+			}
+			lst.push_back(NT_Expr());
+			if (fail()) return nullptr;
+			tok = reader->nextToken();
+		} while (true);
 	}
 
 	/*
@@ -122,7 +189,7 @@ namespace llscm {
 				lst = NT_SymList();
 				if (fail()) return nullptr;
 
-				if (!match(*reader->currToken(), Token(KW_RPAR))) {
+				if (!match(reader->currToken(), Token(KW_RPAR))) {
 					return nullptr;
 				}
 				reader->nextToken();
@@ -151,7 +218,7 @@ namespace llscm {
 		else { // tok->kw == KW_LET
 			D(cout << "NT_Let: " << endl);
 
-			if (!match(*reader->nextToken(), Token(KW_LPAR))) {
+			if (!match(reader->nextToken(), Token(KW_LPAR))) {
 				return nullptr;
 			}
 			reader->nextToken();
@@ -159,7 +226,7 @@ namespace llscm {
 
 			lst = NT_BindList();
 			if (fail()) return nullptr;
-			if (!match(*reader->currToken(), Token(KW_RPAR))) {
+			if (!match(reader->currToken(), Token(KW_RPAR))) {
 				return nullptr;
 			}
 			reader->nextToken();
@@ -171,7 +238,7 @@ namespace llscm {
 	}
 
 	/*
-	 * expr = atom | ( "(" list ")" )
+	 * expr = atom | ( "(" callsyn ")" )
 	 */
 	P_ScmObj Parser::NT_Expr() {
 		const Token * tok = reader->currToken();
@@ -186,10 +253,38 @@ namespace llscm {
 
 		if (tok->t == KWRD && tok->kw == KW_LPAR) {
 			reader->nextToken();
+			obj = NT_CallOrSyntax();
+			if (fail()) return nullptr;
+
+			if (!match(reader->currToken(), Token(KW_RPAR))) {
+				return nullptr;
+			}
+			return obj;
+		}
+		D(cout << tok->name << endl);
+		return NT_Atom();
+	}
+
+	/*
+	 * data = atom | ( "(" list ")" )
+	 */
+	P_ScmObj Parser::NT_Data() {
+		const Token * tok = reader->currToken();
+		P_ScmObj obj;
+
+		D(cout << "NT_Expr: " << endl);
+
+		if (!tok) {
+			error("Expected atom or list.");
+			return nullptr;
+		}
+
+		if (tok->t == KWRD && tok->kw == KW_LPAR) {
+			reader->nextToken();
 			obj = NT_List();
 			if (fail()) return nullptr;
 
-			if (!match(*reader->currToken(), Token(KW_RPAR))) {
+			if (!match(reader->currToken(), Token(KW_RPAR))) {
 				return nullptr;
 			}
 			return obj;
@@ -205,15 +300,15 @@ namespace llscm {
 		const Token * tok = reader->currToken();
 
 		switch (tok->t) {
-		case STR:
-			return make_unique<ScmStr>(tok->name);
-		case SYM:
-			return make_unique<ScmSym>(tok->name);
-		case INT:
-			return make_unique<ScmInt>(tok->int_val);
-		case FLOAT:
-			return make_unique<ScmFloat>(tok->float_val);
-		default:;
+			case STR:
+				return make_unique<ScmStr>(tok->name);
+			case SYM:
+				return make_unique<ScmSym>(tok->name);
+			case INT:
+				return make_unique<ScmInt>(tok->int_val);
+			case FLOAT:
+				return make_unique<ScmFloat>(tok->float_val);
+			default:;
 		}
 
 		if (tok->t != KWRD) {
@@ -221,20 +316,20 @@ namespace llscm {
 			return nullptr;
 		}
 		switch (tok->kw) {
-		case KW_TRUE:
-			return make_unique<ScmTrue>();
-		case KW_FALSE:
-			return make_unique<ScmFalse>();
-		case KW_NULL:
-			return make_unique<ScmNull>();
-		default:
-			error("Invalid token for an atom.");
+			case KW_TRUE:
+				return make_unique<ScmTrue>();
+			case KW_FALSE:
+				return make_unique<ScmFalse>();
+			case KW_NULL:
+				return make_unique<ScmNull>();
+			default:
+				error("Invalid token for an atom.");
 		}
 		return nullptr;
 	}
 
 	/*
-	 * list = { expr }
+	 * list = { data }
 	 */
 	P_ScmObj Parser::NT_List() {
 		const Token * tok = reader->currToken();
@@ -252,7 +347,7 @@ namespace llscm {
 			// Empty list
 			return make_unique<ScmNull>();
 		}
-		obj = NT_Expr();
+		obj = NT_Data();
 		if (fail()) return nullptr;
 		reader->nextToken();
 		return make_unique<ScmCons>(move(obj), NT_List());
@@ -302,7 +397,7 @@ namespace llscm {
 			// Empty list
 			return make_unique<ScmNull>();
 		}
-		if (!match(*reader->currToken(), Token(KW_LPAR))) {
+		if (!match(reader->currToken(), Token(KW_LPAR))) {
 			return nullptr;
 		}
 		tok = reader->nextToken();
@@ -328,7 +423,7 @@ namespace llscm {
 		//D(cout << tok->name << endl);
 
 		vec.push_back(NT_Expr());
-		if (!match(*reader->nextToken(), Token(KW_RPAR))) {
+		if (!match(reader->nextToken(), Token(KW_RPAR))) {
 			return nullptr;
 		}
 		reader->nextToken();
@@ -383,6 +478,7 @@ namespace llscm {
 				return makeScmList(move(lst));
 			}
 			lst.push_back(NT_Expr());
+			if (fail()) return nullptr;
 			tok = reader->nextToken();
 		} while (true);
 	}

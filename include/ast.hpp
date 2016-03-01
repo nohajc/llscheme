@@ -61,11 +61,7 @@ namespace llscm {
 	typedef char scm_op;
 
 	class ScmInt: public ScmObj {
-		virtual ostream & print(ostream & os, int tabs = 0) const {
-			printTabs(os, tabs);
-			os << val;
-			return os;
-		}
+		virtual ostream & print(ostream & os, int tabs) const;
 
 	public:
 		ScmInt(int64_t value): ScmObj(T_INT) {
@@ -76,11 +72,8 @@ namespace llscm {
 	};
 
 	class ScmFloat: public ScmObj {
-		virtual ostream & print(ostream & os, int tabs = 0) const {
-			printTabs(os, tabs);
-			os << val;
-			return os;
-		}
+		virtual ostream & print(ostream & os, int tabs) const;
+
 	public:
 		ScmFloat(double value): ScmObj(T_FLOAT) {
 			val = value;
@@ -90,44 +83,32 @@ namespace llscm {
 	};
 
 	class ScmTrue: public ScmObj {
-		virtual ostream & print(ostream & os, int tabs = 0) const {
-			printTabs(os, tabs);
-			os << "#t";
-			return os;
-		}
+		virtual ostream & print(ostream & os, int tabs) const;
+
 	public:
 		ScmTrue(): ScmObj(T_TRUE) {}
 	};
 
 	class ScmFalse: public ScmObj {
-		virtual ostream & print(ostream & os, int tabs = 0) const {
-			printTabs(os, tabs);
-			os << "#f";
-			return os;
-		}
+		virtual ostream & print(ostream & os, int tabs) const;
+
 	public:
 		ScmFalse(): ScmObj(T_FALSE) {}
 	};
 
 	class ScmNull: public ScmObj {
-		virtual ostream & print(ostream & os, int tabs = 0) const {
-			printTabs(os, tabs);
-			os << "null";
-			return os;
-		}
+		virtual ostream & print(ostream & os, int tabs) const;
+
 	public:
 		ScmNull(): ScmObj(T_NULL) {}
 	};
 
 	class ScmLit: public ScmObj {
-		virtual ostream & print(ostream & os, int tabs = 0) const {
-			printTabs(os, tabs);
-			os << val;
-			return os;
-		}
+		virtual ostream & print(ostream & os, int tabs) const;
+
 	public:
 		ScmLit(ScmType type, const string & value):
-			ScmObj(type), val(value) {}
+				ScmObj(type), val(value) {}
 
 		int32_t length;
 		string val;
@@ -144,23 +125,11 @@ namespace llscm {
 	};
 
 	class ScmCons: public ScmObj {
-		virtual ostream & print(ostream & os, int tabs = 0) const {
-			printTabs(os, tabs);
-			os << "list:" << endl;
-			const ScmCons * lst_end = this;
+		virtual ostream & print(ostream & os, int tabs) const;
 
-			while (lst_end) {
-				lst_end->car->print(os, tabs + 1);
-				os << endl;
-				lst_end = dynamic_cast<ScmCons*>(lst_end->cdr.get());
-				// TODO: handle degenerate lists
-			}
-
-			return os;
-		}
 	public:
 		ScmCons(P_ScmObj pcar, P_ScmObj pcdr):
-			ScmObj(T_CONS), car(move(pcar)), cdr(move(pcdr)) {}
+				ScmObj(T_CONS), car(move(pcar)), cdr(move(pcdr)) {}
 
 		//virtual ~ScmCons();
 
@@ -181,7 +150,7 @@ namespace llscm {
 	class ScmFunc: public ScmObj {
 	public:
 		ScmFunc(const string & fname, int32_t argc, P_ScmObj args, P_ScmObj bodies):
-			ScmObj(T_FUNC), name(fname), arg_list(move(args)), body_list(move(bodies)) {
+				ScmObj(T_FUNC), name(fname), arg_list(move(args)), body_list(move(bodies)) {
 			argc_expected = argc;
 		}
 		//virtual ~ScmFunc();
@@ -194,11 +163,12 @@ namespace llscm {
 	};
 
 	class ScmCall: public ScmObj {
+		virtual ostream & print(ostream & os, int tabs) const;
 	public:
-		ScmCall(ShP_ScmObj pfunc, P_ScmObj args):
-			ScmObj(T_CALL), func(pfunc), arg_list(move(args)) {}
+		ScmCall(P_ScmObj f, P_ScmObj args): // Unresolved call
+				ScmObj(T_CALL), fexpr(move(f)), arg_list(move(args)) {}
 
-		ShP_ScmObj func;
+		P_ScmObj fexpr; // Expression returning a function object
 		P_ScmObj arg_list;
 	};
 
@@ -215,38 +185,21 @@ namespace llscm {
 	};
 
 	class ScmDefineVarSyntax: public ScmDefineSyntax {
-		virtual ostream & print(ostream & os, int tabs = 0) const {
-			printTabs(os, tabs);
-			os << "define [var]:" << endl;
-			name->print(os, tabs + 1);
-			os << endl;
-			val->print(os, tabs + 1);
-			os << endl;
-			return os;
-		}
+		virtual ostream & print(ostream & os, int tabs) const;
+
 	public:
 		ScmDefineVarSyntax(P_ScmObj n, P_ScmObj v):
-			name(move(n)), val(move(v)) {}
+				name(move(n)), val(move(v)) {}
 
 		P_ScmObj name;
 		P_ScmObj val;
 	};
 
 	class ScmDefineFuncSyntax: public ScmDefineSyntax {
-		virtual ostream & print(ostream & os, int tabs = 0) const {
-			printTabs(os, tabs);
-			os << "define [func]:" << endl;
-			name->print(os, tabs + 1);
-			os << endl;
-			arg_list->print(os, tabs + 1);
-			os << endl;
-			body_list->print(os, tabs + 1);
-			os << endl;
-			return os;
-		}
+		virtual ostream & print(ostream & os, int tabs) const;
 	public:
 		ScmDefineFuncSyntax(P_ScmObj n, P_ScmObj al, P_ScmObj b):
-			name(move(n)), arg_list(move(al)), body_list(move(b)) {}
+				name(move(n)), arg_list(move(al)), body_list(move(b)) {}
 
 		P_ScmObj name;
 		P_ScmObj arg_list;
@@ -254,30 +207,39 @@ namespace llscm {
 	};
 
 	class ScmLambdaSyntax: public ScmExpr {
+		virtual ostream & print(ostream & os, int tabs) const;
+	public:
+		ScmLambdaSyntax(P_ScmObj al, P_ScmObj b):
+				arg_list(move(al)), body_list(move(b)) {}
 
+		P_ScmObj arg_list;
+		P_ScmObj body_list;
 	};
 
 	class ScmQuoteSyntax: public ScmExpr {
+		virtual ostream & print(ostream & os, int tabs) const;
+	public:
+		ScmQuoteSyntax(P_ScmObj d): data(move(d)) {}
 
+		P_ScmObj data;
 	};
 
 	class ScmIfSyntax: public ScmExpr {
+		virtual ostream & print(ostream & os, int tabs) const;
+	public:
+		ScmIfSyntax(P_ScmObj ce, P_ScmObj te, P_ScmObj ee):
+				cond_expr(move(ce)), then_expr(move(te)), else_expr(move(ee)) {}
 
+		P_ScmObj cond_expr;
+		P_ScmObj then_expr;
+		P_ScmObj else_expr;
 	};
 
 	class ScmLetSyntax: public ScmDefineSyntax {
-		virtual ostream & print(ostream & os, int tabs = 0) const {
-			printTabs(os, tabs);
-			os << "let:" << endl;
-			bind_list->print(os, tabs + 1);
-			os << endl;
-			body_list->print(os, tabs + 1);
-			os << endl;
-			return os;
-		}
+		virtual ostream & print(ostream & os, int tabs) const;
 	public:
 		ScmLetSyntax(P_ScmObj bl, P_ScmObj b):
-			bind_list(move(bl)), body_list(move(b)) {}
+				bind_list(move(bl)), body_list(move(b)) {}
 
 		P_ScmObj bind_list;
 		P_ScmObj body_list;

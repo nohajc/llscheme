@@ -3,7 +3,7 @@
 
 #include <memory>
 #include <llvm/ADT/STLExtras.h>
-#include "types.hpp"
+#include "ast.hpp"
 #include "reader.hpp"
 
 namespace llscm {
@@ -22,7 +22,7 @@ namespace llscm {
 		const unique_ptr<Reader>& reader;
 		bool err_flag;
 
-		bool match(const Token & tok, const Token && expected);
+		bool match(const Token * tok, const Token && expected);
 		void error(const string & msg);
 	public:
 		Parser(const unique_ptr<Reader>& r): reader(r) {
@@ -35,7 +35,9 @@ namespace llscm {
 		vector<P_ScmObj> NT_Prog();
 		P_ScmObj NT_Form();
 		P_ScmObj NT_Def();
+		P_ScmObj NT_CallOrSyntax();
 		P_ScmObj NT_Expr();
+		P_ScmObj NT_Data();
 		P_ScmObj NT_Atom();
 		P_ScmObj NT_List();
 		P_ScmObj NT_SymList();
