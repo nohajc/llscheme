@@ -207,6 +207,8 @@ namespace llscm {
 	 * inline instead of an explicit function call.
 	 */
 	class ScmInlineCall: public ScmCall {
+	public:
+		ScmInlineCall(P_ScmObj args): ScmCall(nullptr, move(args)) {}
 	};
 
 	class ScmDefineSyntax: public ScmExpr {
