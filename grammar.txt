@@ -1,9 +1,14 @@
 prog = form { form }
 form = "(" def ")" | expr
 def = "define" sym expr | "define" "(" sym symlist ")" body | "let" "(" bindlist ")" body
-expr = atom | ( "(" list ")" )
+expr = atom
+	 | "(" "lambda" "(" symlist ")" body ")"
+	 | "(" "quote" data ")"
+	 | "(" "if"  expr expr expr ")"
+	 | "(" expr { expr } ")"
 atom = str | sym | int | float | true | false | null
 symlist = { sym }
 bindlist = { "(" sym expr ")" }
-list = { expr }
+data = atom | ( "(" list ")" )
+list = { data }
 body = { def } expr { expr }
