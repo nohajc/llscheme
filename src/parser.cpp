@@ -464,41 +464,15 @@ namespace llscm {
 	}
 
 	/*
-	 * body = { "(" def ")" } expr { expr }
+	 * body = { form } ; with at least one expr
 	 */
 	P_ScmObj Parser::NT_Body() {
 		vector<P_ScmObj> lst;
 		const Token * tok = reader->currToken();
 		P_ScmObj obj;
-		bool parsing_defs = true;
 		bool no_expr = true;
 
 		D(cerr << "NT_Body" << endl);
-
-		while (parsing_defs) {
-			if (!tok) {
-				error("Reached EOF while parsing a body.");
-				return nullptr;
-			}
-			D(cerr << tok->name << endl);
-
-			if (tok->t == KWRD && tok->kw == KW_RPAR) {
-				if (no_expr) {
-					error("Missing expression in a body.");
-					return nullptr;
-				}
-				break;
-			}
-			obj = NT_Form();
-			if (dynamic_cast<ScmDefineSyntax*>(obj.get()) == nullptr) {
-				parsing_defs = false;
-			}
-			if (dynamic_cast<ScmLetSyntax*>(obj.get()) != nullptr) {
-				no_expr = false;
-			}
-			lst.push_back(move(obj));
-			tok = reader->nextToken();
-		}
 
 		do {
 			if (!tok) {
@@ -506,9 +480,18 @@ namespace llscm {
 				return nullptr;
 			}
 			if (tok->t == KWRD && tok->kw == KW_RPAR) {
+				if (no_expr) {
+					error("Missing expression in a body.");
+					return nullptr;
+				}
 				return makeScmList(move(lst));
 			}
-			lst.push_back(NT_Expr());
+			obj = NT_Form();
+			if (dynamic_cast<ScmDefineSyntax *>(obj.get()) == nullptr ||
+				dynamic_cast<ScmLetSyntax *>(obj.get()) != nullptr) {
+				no_expr = false;
+			}
+			lst.push_back(move(obj));
 			if (fail()) return nullptr;
 			tok = reader->nextToken();
 		} while (true);

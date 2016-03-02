@@ -19,16 +19,17 @@ class Test
 
 		stdin.puts(input_str)
 		stdin.close
+		output = stdout.read
 
 		print "#{test_name}: "
 		@test_count += 1
-		if stdout.gets == expected_output
+		if output == expected_output
 			puts "OK".bold.green
 		else
 			puts "FAIL".bold.red
 			@failed += 1
-			#puts "#{output.chars}"
-			#puts "#{expected_output.chars}"
+			puts "Expected: #{expected_output.dump}"
+			puts "Returned: #{output.dump}"
 		end
 
 		stdout.close

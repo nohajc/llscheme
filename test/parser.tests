@@ -32,20 +32,43 @@ test_out "Test incomplete body 2", "(let ((foo 2))", "Error: Reached EOF while p
 test_out "Test incomplete body 3", "(let ((foo 2)) foo", "Error: Reached EOF while parsing a body.\n"
 test_out "Test incomplete body 4", "(lambda ())", "Error: Missing expression in a body.\n"
 
-test_out "Empty quote", "(quote)", "Error: Expected atom or list to quote.\n"
-test_out "Incomplete quote", "(quote define", "Error: Expected token \")\".\n"
+test_out "Test empty quote", "(quote)", "Error: Expected atom or list to quote.\n"
+test_out "Test incomplete quote", "(quote define", "Error: Expected token \")\".\n"
 
-test_out "Empty lambda", "(lambda)", "Error: Expected token \"(\".\n"
+test_out "Test empty lambda", "(lambda)", "Error: Expected token \"(\".\n"
 
-test_out "Incomplete lambda", "(lambda ()", "Error: Reached EOF while parsing a body.\n"
+test_out "Test incomplete lambda", "(lambda ()", "Error: Reached EOF while parsing a body.\n"
 
-test_out "Empty if", "(if)", "Error: Missing condition expression.\n"
-test_out "Missing then expression in if", "(if (< 2 3))", "Error: Missing then expression.\n"
-test_out "Missing else expression in if", "(if (< 2 3) #t)", "Error: Missing else expression.\n"
+test_out "Test empty if", "(if)", "Error: Missing condition expression.\n"
+test_out "Test missing then expression in if", "(if (< 2 3))", "Error: Missing then expression.\n"
+test_out "Test missing else expression in if", "(if (< 2 3) #t)", "Error: Missing else expression.\n"
 
-test_out "Empty list", "()", "Error: Missing function expression or syntax keyword.\n"
+test_out "Test empty list", "()", "Error: Missing function expression or syntax keyword.\n"
 
-test_out "Incomplete function call", "(foo bar", "Error: Reached EOF while parsing function call.\n"
-test_out "Unexpected keyword at first list position", "(null)", "Error: Unexpected keyword at first list position.\n"
+test_out "Test incomplete function call", "(foo bar", "Error: Reached EOF while parsing function call.\n"
+test_out "Test unexpected keyword at first list position", "(null)", "Error: Unexpected keyword at first list position.\n"
 
-# VALID SYNTAX
+test_out "Test definition inside expression", "(+ (define a 4) 5))", "Error: Unexpected keyword at first list position.\n"
+
+# VALID SYNTAX AST PRINTOUT
+test_out "Test string", "\"spam\"", "\"spam\"\n"
+test_out "Test symbol", "eggs", "eggs\n"
+test_out "Test integer", "2048", "2048\n"
+test_out "Test float", "2.71828", "2.71828\n"
+test_out "Test true", "#t", "#t\n"
+test_out "Test false", "#f", "#f\n"
+test_out "Test null", "null", "null\n"
+test_out "Test quoted keyword", "(quote if)", "quote:\n\tif\n"
+test_out "Test quoted list", "(quote (1 2 3))", "quote:\n\tlist:\n\t\t1\n\t\t2\n\t\t3\n"
+test_out "Test quoted, nested list", "(quote (1 (a (b \"c\")) 3))", "quote:\n\tlist:\n\t\t1\n\t\tlist:\n\t\t\ta\n\t\t\tlist:\n\t\t\t\tb\n\t\t\t\t\"c\"\n\t\t3\n"
+test_out "Test function call", "(+ 2 5)", "call:\n\t+\n\tlist:\n\t\t2\n\t\t5\n"
+test_out "Test nested function call", "(cons 1 (cons 2 (cons 3 null)))", "call:\n\tcons\n\tlist:\n\t\t1\n\t\tcall:\n\t\t\tcons\n\t\t\tlist:\n\t\t\t\t2\n\t\t\t\tcall:\n\t\t\t\t\tcons\n\t\t\t\t\tlist:\n\t\t\t\t\t\t3\n\t\t\t\t\t\tnull\n"
+test_out "Test if expression", "(if (null? a) null a)", "if:\n\tcall:\n\t\tnull?\n\t\tlist:\n\t\t\ta\n\tnull\n\ta\n"
+test_out "Test nested if expression", "(if (null? a) null (if (> a 9) (- a 10) a))", "if:\n\tcall:\n\t\tnull?\n\t\tlist:\n\t\t\ta\n\tnull\n\tif:\n\t\tcall:\n\t\t\t>\n\t\t\tlist:\n\t\t\t\ta\n\t\t\t\t9\n\t\tcall:\n\t\t\t-\n\t\t\tlist:\n\t\t\t\ta\n\t\t\t\t10\n\t\ta\n"
+test_out "Test lambda function", "(lambda (x y) (> x y))", "lambda:\n\tlist:\n\t\tx\n\t\ty\n\tlist:\n\t\tcall:\n\t\t\t>\n\t\t\tlist:\n\t\t\t\tx\n\t\t\t\ty\n"
+test_out "Test passing lambda function in a call", "(filter (quote (1 2 3 4 5)) (lambda (x) (>= x 4)))", "call:\n\tfilter\n\tlist:\n\t\tquote:\n\t\t\tlist:\n\t\t\t\t1\n\t\t\t\t2\n\t\t\t\t3\n\t\t\t\t4\n\t\t\t\t5\n\t\tlambda:\n\t\t\tlist:\n\t\t\t\tx\n\t\t\tlist:\n\t\t\t\tcall:\n\t\t\t\t\t>=\n\t\t\t\t\tlist:\n\t\t\t\t\t\tx\n\t\t\t\t\t\t4\n"
+test_out "Test calling lambda function in place", "((lambda (x y) (* x y)) 7 3)", "call:\n\tlambda:\n\t\tlist:\n\t\t\tx\n\t\t\ty\n\t\tlist:\n\t\t\tcall:\n\t\t\t\t*\n\t\t\t\tlist:\n\t\t\t\t\tx\n\t\t\t\t\ty\n\tlist:\n\t\t7\n\t\t3\n"
+test_out "Test function definition (long form)", "(define foo (lambda (a b c) (+ a b c)))", "define [var]:\n\tfoo\n\tlambda:\n\t\tlist:\n\t\t\ta\n\t\t\tb\n\t\t\tc\n\t\tlist:\n\t\t\tcall:\n\t\t\t\t+\n\t\t\t\tlist:\n\t\t\t\t\ta\n\t\t\t\t\tb\n\t\t\t\t\tc\n"
+test_out "Test function definition (short form)", "(define (foo a b c) (+ a b c))", "define [func]:\n\tfoo\n\tlist:\n\t\ta\n\t\tb\n\t\tc\n\tlist:\n\t\tcall:\n\t\t\t+\n\t\t\tlist:\n\t\t\t\ta\n\t\t\t\tb\n\t\t\t\tc\n"
+test_out "Test variable definition", "(define bacon (sausage 3.14 0 -1))", "define [var]:\n\tbacon\n\tcall:\n\t\tsausage\n\t\tlist:\n\t\t\t3.14\n\t\t\t0\n\t\t\t-1\n"
+test_out "Test let expression", "(define (python x y z) (print \"side\") (let ((a (+ x y)) (b (- y z))) (print \"effect\") (* a b)))", "define [func]:\n\tpython\n\tlist:\n\t\tx\n\t\ty\n\t\tz\n\tlist:\n\t\tcall:\n\t\t\tprint\n\t\t\tlist:\n\t\t\t\t\"side\"\n\t\tlet:\n\t\t\tlist:\n\t\t\t\tlist:\n\t\t\t\t\ta\n\t\t\t\t\tcall:\n\t\t\t\t\t\t+\n\t\t\t\t\t\tlist:\n\t\t\t\t\t\t\tx\n\t\t\t\t\t\t\ty\n\t\t\t\tlist:\n\t\t\t\t\tb\n\t\t\t\t\tcall:\n\t\t\t\t\t\t-\n\t\t\t\t\t\tlist:\n\t\t\t\t\t\t\ty\n\t\t\t\t\t\t\tz\n\t\t\tlist:\n\t\t\t\tcall:\n\t\t\t\t\tprint\n\t\t\t\t\tlist:\n\t\t\t\t\t\t\"effect\"\n\t\t\t\tcall:\n\t\t\t\t\t*\n\t\t\t\t\tlist:\n\t\t\t\t\t\ta\n\t\t\t\t\t\tb\n"

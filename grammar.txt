@@ -11,4 +11,4 @@ symlist = { sym }
 bindlist = { "(" sym expr ")" }
 data = atom | ( "(" list ")" )
 list = { data }
-body = { def } expr { expr }
+body = { form }
