@@ -21,37 +21,37 @@ namespace llscm {
 
 	ostream &ScmInt::print(ostream & os, int tabs) const {
 		printTabs(os, tabs);
-		os << val;
+		os << val << endl;
 		return os;
 	}
 
 	ostream &ScmFloat::print(ostream & os, int tabs) const {
 		printTabs(os, tabs);
-		os << val;
+		os << val << endl;
 		return os;
 	}
 
 	ostream &ScmTrue::print(ostream & os, int tabs) const {
 		printTabs(os, tabs);
-		os << "#t";
+		os << "#t" << endl;
 		return os;
 	}
 
 	ostream &ScmFalse::print(ostream & os, int tabs) const {
 		printTabs(os, tabs);
-		os << "#f";
+		os << "#f" << endl;
 		return os;
 	}
 
 	ostream &ScmNull::print(ostream & os, int tabs) const {
 		printTabs(os, tabs);
-		os << "null";
+		os << "null" << endl;
 		return os;
 	}
 
 	ostream &ScmLit::print(ostream & os, int tabs) const {
 		printTabs(os, tabs);
-		os << val;
+		os << val << endl;
 		return os;
 	}
 
@@ -62,7 +62,7 @@ namespace llscm {
 
 		while (lst_end) {
 			lst_end->car->print(os, tabs + 1);
-			os << endl;
+			//os << endl;
 			lst_end = dynamic_cast<ScmCons*>(lst_end->cdr.get());
 			// TODO: handle degenerate lists
 		}
@@ -74,7 +74,7 @@ namespace llscm {
 		printTabs(os, tabs);
 		os << "define [var]:" << endl;
 		name->print(os, tabs + 1);
-		os << endl;
+		//os << endl;
 		val->print(os, tabs + 1);
 		//os << endl;
 		return os;
@@ -84,7 +84,7 @@ namespace llscm {
 		printTabs(os, tabs);
 		os << "define [func]:" << endl;
 		name->print(os, tabs + 1);
-		os << endl;
+		//os << endl;
 		arg_list->print(os, tabs + 1);
 		//os << endl;
 		body_list->print(os, tabs + 1);
@@ -96,7 +96,7 @@ namespace llscm {
 		printTabs(os, tabs);
 		os << "let:" << endl;
 		bind_list->print(os, tabs + 1);
-		os << endl;
+		//os << endl;
 		body_list->print(os, tabs + 1);
 		//os << endl;
 		return os;
@@ -106,7 +106,7 @@ namespace llscm {
 		printTabs(os, tabs);
 		os << "lambda:" << endl;
 		arg_list->print(os, tabs + 1);
-		os << endl;
+		//os << endl;
 		body_list->print(os, tabs + 1);
 		//os << endl;
 		return os;
@@ -124,7 +124,7 @@ namespace llscm {
 		printTabs(os, tabs);
 		os << "call:" << endl;
 		fexpr->print(os, tabs + 1);
-		os << endl;
+		//os << endl;
 		arg_list->print(os, tabs + 1);
 		//os << endl;
 		return os;
@@ -134,9 +134,9 @@ namespace llscm {
 		printTabs(os, tabs);
 		os << "if:" << endl;
 		cond_expr->print(os, tabs + 1);
-		os << endl;
+		//os << endl;
 		then_expr->print(os, tabs + 1);
-		os << endl;
+		//os << endl;
 		else_expr->print(os, tabs + 1);
 		//os << endl;
 		return os;

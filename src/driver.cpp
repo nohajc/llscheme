@@ -17,7 +17,7 @@ namespace llscm {
 			return false;
 		}
 		for (auto & e: prog) {
-			cout << *e << endl;
+			cout << *e;
 		}
 
 		return true;

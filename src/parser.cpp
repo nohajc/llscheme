@@ -19,7 +19,7 @@ namespace llscm {
 	}
 
 	void Parser::error(const string & msg) {
-		cerr << "Error: " << msg << endl;
+		cout << "Error: " << msg << endl;
 		err_flag = true;
 	}
 
@@ -31,7 +31,7 @@ namespace llscm {
 		vector<P_ScmObj> prog;
 		bool first = true;
 
-		D(cout << "NT_Prog: " << endl);
+		D(cerr << "NT_Prog: " << endl);
 
 		while (true) {
 			tok = reader->nextToken();
@@ -43,7 +43,7 @@ namespace llscm {
 				}
 				else break;
 			}
-			//D(cout << tok->name << endl);
+			//D(cerr << tok->name << endl);
 			P_ScmObj form = NT_Form();
 			if (fail()) break;
 			prog.push_back(move(form));
@@ -62,8 +62,8 @@ namespace llscm {
 		const Token * tok = reader->currToken();
 		P_ScmObj obj;
 
-		D(cout << "NT_Form: " << endl);
-		D(cout << tok->name << endl);
+		D(cerr << "NT_Form: " << endl);
+		D(cerr << tok->name << endl);
 
 		if (tok->t == KWRD && tok->kw == KW_LPAR) {
 			tok = reader->nextToken();
@@ -71,7 +71,7 @@ namespace llscm {
 				error("Reached EOF while parsing a list.");
 				return nullptr;
 			}
-			//D(cout << tok->name << endl);
+			//D(cerr << tok->name << endl);
 			if (tok->t == KWRD && (tok->kw == KW_DEFINE || tok->kw == KW_LET)) {
 				// Current token is "define" or "let"
 				obj = NT_Def();
@@ -169,14 +169,14 @@ namespace llscm {
 		P_ScmObj name, lst, expr;
 
 		if (tok->kw == KW_DEFINE) {
-			D(cout << "NT_Def: " << endl);
+			D(cerr << "NT_Def: " << endl);
 
 			tok = reader->nextToken();
 			if (!tok) {
 				error("Reached EOF while parsing a definition.");
 				return nullptr;
 			}
-			D(cout << tok->name << endl);
+			D(cerr << tok->name << endl);
 
 			if (tok->t == KWRD && tok->kw == KW_LPAR) {
 				// Function definition
@@ -203,7 +203,7 @@ namespace llscm {
 			}
 			name = make_unique<ScmSym>(tok->name);
 			tok = reader->nextToken();
-			//D(cout << tok->name << endl);
+			//D(cerr << tok->name << endl);
 			if (tok && tok->t == KWRD && tok->kw == KW_RPAR) {
 				error("Missing expression in variable definition.");
 				return nullptr;
@@ -212,18 +212,18 @@ namespace llscm {
 			expr = NT_Expr();
 			if (fail()) return nullptr;
 			reader->nextToken();
-			//D(cout << tok->name << endl);
+			//D(cerr << tok->name << endl);
 
 			return make_unique<ScmDefineVarSyntax>(move(name), move(expr));
 		}
 		else { // tok->kw == KW_LET
-			D(cout << "NT_Let: " << endl);
+			D(cerr << "NT_Let: " << endl);
 
 			if (!match(reader->nextToken(), Token(KW_LPAR))) {
 				return nullptr;
 			}
 			reader->nextToken();
-			//D(cout << tok->name << endl);
+			//D(cerr << tok->name << endl);
 
 			lst = NT_BindList();
 			if (fail()) return nullptr;
@@ -231,7 +231,7 @@ namespace llscm {
 				return nullptr;
 			}
 			reader->nextToken();
-			//D(cout << tok->name << endl);
+			//D(cerr << tok->name << endl);
 
 			return make_unique<ScmLetSyntax>(move(lst), NT_Body());
 		}
@@ -245,7 +245,7 @@ namespace llscm {
 		const Token * tok = reader->currToken();
 		P_ScmObj obj;
 
-		D(cout << "NT_Expr: " << endl);
+		D(cerr << "NT_Expr: " << endl);
 
 		if (!tok) {
 			error("Expected expression.");
@@ -262,7 +262,7 @@ namespace llscm {
 			}
 			return obj;
 		}
-		D(cout << tok->name << endl);
+		D(cerr << tok->name << endl);
 		return NT_Atom(false);
 	}
 
@@ -273,7 +273,7 @@ namespace llscm {
 		const Token * tok = reader->currToken();
 		P_ScmObj obj;
 
-		D(cout << "NT_Expr: " << endl);
+		D(cerr << "NT_Expr: " << endl);
 
 		if (!tok) {
 			error("Expected atom or list.");
@@ -290,7 +290,7 @@ namespace llscm {
 			}
 			return obj;
 		}
-		D(cout << tok->name << endl);
+		D(cerr << tok->name << endl);
 		return NT_Atom(true);
 	}
 
@@ -336,13 +336,13 @@ namespace llscm {
 		const Token * tok = reader->currToken();
 		P_ScmObj obj;
 
-		D(cout << "NT_List: " << endl);
+		D(cerr << "NT_List: " << endl);
 		if (!tok) {
 			error("Reached EOF while parsing a list.");
 			return nullptr;
 		}
 
-		D(cout << tok->name << endl);
+		D(cerr << tok->name << endl);
 
 		if (tok->t == KWRD && tok->kw == KW_RPAR) {
 			// Empty list
@@ -386,13 +386,13 @@ namespace llscm {
 		const Token * tok = reader->currToken();
 		vector<P_ScmObj> vec;
 
-		D(cout << "NT_BindList" << endl);
+		D(cerr << "NT_BindList" << endl);
 		if (!tok) {
 			error("Reached EOF while parsing a list.");
 			return nullptr;
 		}
 
-		D(cout << tok->name << endl);
+		D(cerr << tok->name << endl);
 
 		if (tok->t == KWRD && tok->kw == KW_RPAR) {
 			// Empty list
@@ -402,7 +402,7 @@ namespace llscm {
 			return nullptr;
 		}
 		tok = reader->nextToken();
-		//D(cout << tok->name << endl);
+		//D(cerr << tok->name << endl);
 
 		if (!tok || tok->t != SYM) {
 			error("First element of binding list must be a symbol.");
@@ -421,14 +421,14 @@ namespace llscm {
 			error("Binding list must have exactly two elements: id, expression.");
 			return nullptr;
 		}
-		//D(cout << tok->name << endl);
+		//D(cerr << tok->name << endl);
 
 		vec.push_back(NT_Expr());
 		if (!match(reader->nextToken(), Token(KW_RPAR))) {
 			return nullptr;
 		}
 		reader->nextToken();
-		//D(cout << tok->name << endl);
+		//D(cerr << tok->name << endl);
 
 		return make_unique<ScmCons>(makeScmList(move(vec)), NT_BindList());
 	}
@@ -443,14 +443,14 @@ namespace llscm {
 		bool parsing_defs = true;
 		bool no_expr = true;
 
-		D(cout << "NT_Body" << endl);
+		D(cerr << "NT_Body" << endl);
 
 		while (parsing_defs) {
 			if (!tok) {
 				error("Reached EOF while parsing a body.");
 				return nullptr;
 			}
-			D(cout << tok->name << endl);
+			D(cerr << tok->name << endl);
 
 			if (tok->t == KWRD && tok->kw == KW_RPAR) {
 				if (no_expr) {
