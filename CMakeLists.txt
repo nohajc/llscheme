@@ -30,3 +30,5 @@ add_executable(schemec ${SOURCE_FILES})
 llvm_map_components_to_libnames(llvm_libs support core irreader)
 
 target_link_libraries(schemec ${llvm_libs})
+
+add_custom_command(TARGET schemec POST_BUILD COMMAND "${PROJECT_SOURCE_DIR}/test/test.rb" "${PROJECT_SOURCE_DIR}/test/parser.tests")

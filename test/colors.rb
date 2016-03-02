@@ -4,6 +4,10 @@ class String
     "\e[#{color_code}m#{self}\e[0m"
   end
 
+  def bold
+    "\x1B[1m#{self}"
+  end
+
   def red
     colorize(31)
   end
@@ -14,6 +18,10 @@ class String
 
   def yellow
     colorize(33)
+  end
+
+  def light_yellow
+    colorize(93)
   end
 
   def blue
