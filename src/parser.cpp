@@ -101,6 +101,12 @@ namespace llscm {
 		P_ScmObj expr, ce, te, ee;
 		vector<P_ScmObj> lst;
 
+		D(cerr << "NT_CallOrSyntax: " << endl);
+		if (!tok) {
+			error("Reached EOF while parsing a list.");
+			return nullptr;
+		}
+
 		if (tok->t == KWRD) {
 			switch (tok->kw) {
 				case KW_LAMBDA:
@@ -118,30 +124,52 @@ namespace llscm {
 					reader->nextToken();
 					return make_unique<ScmLambdaSyntax>(move(expr), NT_Body());
 				case KW_QUOTE:
-					reader->nextToken();
+					tok = reader->nextToken();
+					if (!tok || (tok->t == KWRD && tok->kw == KW_RPAR)) {
+						error("Expected atom or list to quote.");
+						return nullptr;
+					}
 					expr = NT_Data();
 					if (fail()) return nullptr;
 					reader->nextToken();
 					return make_unique<ScmQuoteSyntax>(move(expr));
 					break;
 				case KW_IF:
-					reader->nextToken();
+					tok = reader->nextToken();
+					if (!tok || (tok->t == KWRD && tok->kw == KW_RPAR)) {
+						error("Missing condition expression.");
+						return nullptr;
+					}
 					ce = NT_Expr();
 					if (fail()) return nullptr;
-					reader->nextToken();
+					tok = reader->nextToken();
+					if (!tok || (tok->t == KWRD && tok->kw == KW_RPAR)) {
+						error("Missing then expression.");
+						return nullptr;
+					}
 					te = NT_Expr();
 					if (fail()) return nullptr;
-					reader->nextToken();
-					ee =NT_Expr();
+					tok = reader->nextToken();
+					if (!tok || (tok->t == KWRD && tok->kw == KW_RPAR)) {
+						error("Missing else expression.");
+						return nullptr;
+					}
+					ee = NT_Expr();
 					if (fail()) return nullptr;
 					reader->nextToken();
 					return make_unique<ScmIfSyntax>(move(ce), move(te), move(ee));
+				case KW_LPAR:
+					break; // Fall through to function call
+				case KW_RPAR:
+					error("Missing function expression or syntax keyword.");
+					return nullptr;
 				default:
 					error("Unexpected keyword at first list position.");
 					return nullptr;
 			}
 		}
 		// else: function call
+
 		expr = NT_Expr(); // function
 		if (fail()) return nullptr;
 		tok = reader->nextToken();
@@ -273,7 +301,7 @@ namespace llscm {
 		const Token * tok = reader->currToken();
 		P_ScmObj obj;
 
-		D(cerr << "NT_Expr: " << endl);
+		D(cerr << "NT_Data: " << endl);
 
 		if (!tok) {
 			error("Expected atom or list.");
@@ -299,6 +327,8 @@ namespace llscm {
 	 */
 	P_ScmObj Parser::NT_Atom(bool quoted) {
 		const Token * tok = reader->currToken();
+
+		D(cerr << "NT_Atom: " << endl);
 
 		switch (tok->t) {
 			case STR:

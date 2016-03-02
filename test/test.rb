@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby
 
+require "open3"
 require_relative "colors"
 
-SCMC = File.join(__dir__, "../bin/Debug/schemec - 2>/dev/null")
+SCMC = File.join(__dir__, "../bin/Debug/schemec -")
 
 class Test
 	def initialize(test_file)
@@ -14,10 +15,14 @@ class Test
 	end
 
 	def test_out(test_name, input_str, expected_output)
-		output = `echo "#{input_str}" | #{SCMC}`
+		stdin, stdout, stderr = Open3.popen3(SCMC)
+
+		stdin.puts(input_str)
+		stdin.close
+
 		print "#{test_name}: "
 		@test_count += 1
-		if output == expected_output
+		if stdout.gets == expected_output
 			puts "OK".bold.green
 		else
 			puts "FAIL".bold.red
@@ -25,6 +30,14 @@ class Test
 			#puts "#{output.chars}"
 			#puts "#{expected_output.chars}"
 		end
+
+		stdout.close
+		stderr.close
+	end
+
+	def show_out(input_str)
+		output = `echo "#{input_str}" | #{SCMC}`
+		puts "#{output}"
 	end
 end
 

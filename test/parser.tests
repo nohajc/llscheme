@@ -1,3 +1,4 @@
+# INVALID SYNTAX ERROR MESSAGES
 test_out "Test empty program", "", "Error: Program is empty.\n"
 
 test_out "Test incomplete list 1", "(", "Error: Reached EOF while parsing a list.\n"
@@ -17,8 +18,10 @@ test_out "Test missing expression in definition 2", "(define foo", "Error: Expec
 
 test_out "Test incomplete argument list", "(define (foo bar", "Error: Reached EOF while parsing a list.\n"
 
-test_out "Test invalid expression in argument list", "(define (foo \\\"bar\\\") #t)", "Error: Invalid expression in argument list. Only symbols are allowed.\n"
+test_out "Test invalid expression in argument list", "(define (foo \"bar\") #t)", "Error: Invalid expression in argument list. Only symbols are allowed.\n"
 test_out "Test invalid expression in argument list 2", "(define (foo \'bar\') #t)", "Error: Invalid expression in argument list. Only symbols are allowed.\n"
+test_out "Test invalid expression in argument list 3", "(lambda (2))", "Error: Invalid expression in argument list. Only symbols are allowed.\n"
+test_out "Test invalid expression in argument list 4", "(lambda (\"arg\"))", "Error: Invalid expression in argument list. Only symbols are allowed.\n"
 
 test_out "Test incomplete binding list", "(let ((a)) #f)", "Error: Binding list must have exactly two elements: id, expression.\n"
 
@@ -27,3 +30,22 @@ test_out "Test invalid expression in binding list", "(let ((2 foo)) null)", "Err
 test_out "Test incomplete body 1", "(let ((foo 2)))", "Error: Missing expression in a body.\n"
 test_out "Test incomplete body 2", "(let ((foo 2))", "Error: Reached EOF while parsing a body.\n"
 test_out "Test incomplete body 3", "(let ((foo 2)) foo", "Error: Reached EOF while parsing a body.\n"
+test_out "Test incomplete body 4", "(lambda ())", "Error: Missing expression in a body.\n"
+
+test_out "Empty quote", "(quote)", "Error: Expected atom or list to quote.\n"
+test_out "Incomplete quote", "(quote define", "Error: Expected token \")\".\n"
+
+test_out "Empty lambda", "(lambda)", "Error: Expected token \"(\".\n"
+
+test_out "Incomplete lambda", "(lambda ()", "Error: Reached EOF while parsing a body.\n"
+
+test_out "Empty if", "(if)", "Error: Missing condition expression.\n"
+test_out "Missing then expression in if", "(if (< 2 3))", "Error: Missing then expression.\n"
+test_out "Missing else expression in if", "(if (< 2 3) #t)", "Error: Missing else expression.\n"
+
+test_out "Empty list", "()", "Error: Missing function expression or syntax keyword.\n"
+
+test_out "Incomplete function call", "(foo bar", "Error: Reached EOF while parsing function call.\n"
+test_out "Unexpected keyword at first list position", "(null)", "Error: Unexpected keyword at first list position.\n"
+
+# VALID SYNTAX
