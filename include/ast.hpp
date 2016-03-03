@@ -235,7 +235,7 @@ namespace llscm {
 		P_ScmObj else_expr;
 	};
 
-	class ScmLetSyntax: public ScmDefineSyntax {
+	class ScmLetSyntax: public ScmExpr {
 		virtual ostream & print(ostream & os, int tabs) const;
 	public:
 		ScmLetSyntax(P_ScmObj bl, P_ScmObj b):

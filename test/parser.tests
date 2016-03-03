@@ -27,10 +27,11 @@ test_out "Test incomplete binding list", "(let ((a)) #f)", "Error: Binding list 
 
 test_out "Test invalid expression in binding list", "(let ((2 foo)) null)", "Error: First element of binding list must be a symbol.\n"
 
-test_out "Test incomplete body 1", "(let ((foo 2)))", "Error: Missing expression in a body.\n"
+test_out "Test incomplete body 1", "(let ((foo 2)))", "Error: Missing expression at the end of a body.\n"
 test_out "Test incomplete body 2", "(let ((foo 2))", "Error: Reached EOF while parsing a body.\n"
 test_out "Test incomplete body 3", "(let ((foo 2)) foo", "Error: Reached EOF while parsing a body.\n"
-test_out "Test incomplete body 4", "(lambda ())", "Error: Missing expression in a body.\n"
+test_out "Test incomplete body 4", "(lambda ())", "Error: Missing expression at the end of a body.\n"
+test_out "Test incomplete body 5", "(define (foo a b c) (+ a b c) (define d a))", "Error: Missing expression at the end of a body.\n"
 
 test_out "Test empty quote", "(quote)", "Error: Expected atom or list to quote.\n"
 test_out "Test incomplete quote", "(quote define", "Error: Expected token \")\".\n"
@@ -72,3 +73,4 @@ test_out "Test function definition (long form)", "(define foo (lambda (a b c) (+
 test_out "Test function definition (short form)", "(define (foo a b c) (+ a b c))", "define [func]:\n\tfoo\n\tlist:\n\t\ta\n\t\tb\n\t\tc\n\tlist:\n\t\tcall:\n\t\t\t+\n\t\t\tlist:\n\t\t\t\ta\n\t\t\t\tb\n\t\t\t\tc\n"
 test_out "Test variable definition", "(define bacon (sausage 3.14 0 -1))", "define [var]:\n\tbacon\n\tcall:\n\t\tsausage\n\t\tlist:\n\t\t\t3.14\n\t\t\t0\n\t\t\t-1\n"
 test_out "Test let expression", "(define (python x y z) (print \"side\") (let ((a (+ x y)) (b (- y z))) (print \"effect\") (* a b)))", "define [func]:\n\tpython\n\tlist:\n\t\tx\n\t\ty\n\t\tz\n\tlist:\n\t\tcall:\n\t\t\tprint\n\t\t\tlist:\n\t\t\t\t\"side\"\n\t\tlet:\n\t\t\tlist:\n\t\t\t\tlist:\n\t\t\t\t\ta\n\t\t\t\t\tcall:\n\t\t\t\t\t\t+\n\t\t\t\t\t\tlist:\n\t\t\t\t\t\t\tx\n\t\t\t\t\t\t\ty\n\t\t\t\tlist:\n\t\t\t\t\tb\n\t\t\t\t\tcall:\n\t\t\t\t\t\t-\n\t\t\t\t\t\tlist:\n\t\t\t\t\t\t\ty\n\t\t\t\t\t\t\tz\n\t\t\tlist:\n\t\t\t\tcall:\n\t\t\t\t\tprint\n\t\t\t\t\tlist:\n\t\t\t\t\t\t\"effect\"\n\t\t\t\tcall:\n\t\t\t\t\t*\n\t\t\t\t\tlist:\n\t\t\t\t\t\ta\n\t\t\t\t\t\tb\n"
+test_out "Test let inside if", "(define (foo x y) (if (> x y) (let ((a (+ x y)) (b (* x y))) (- a b)) (let ((a (- x y)) (b (/ x y))) (+ a b))))", "define [func]:\n\tfoo\n\tlist:\n\t\tx\n\t\ty\n\tlist:\n\t\tif:\n\t\t\tcall:\n\t\t\t\t>\n\t\t\t\tlist:\n\t\t\t\t\tx\n\t\t\t\t\ty\n\t\t\tlet:\n\t\t\t\tlist:\n\t\t\t\t\tlist:\n\t\t\t\t\t\ta\n\t\t\t\t\t\tcall:\n\t\t\t\t\t\t\t+\n\t\t\t\t\t\t\tlist:\n\t\t\t\t\t\t\t\tx\n\t\t\t\t\t\t\t\ty\n\t\t\t\t\tlist:\n\t\t\t\t\t\tb\n\t\t\t\t\t\tcall:\n\t\t\t\t\t\t\t*\n\t\t\t\t\t\t\tlist:\n\t\t\t\t\t\t\t\tx\n\t\t\t\t\t\t\t\ty\n\t\t\t\tlist:\n\t\t\t\t\tcall:\n\t\t\t\t\t\t-\n\t\t\t\t\t\tlist:\n\t\t\t\t\t\t\ta\n\t\t\t\t\t\t\tb\n\t\t\tlet:\n\t\t\t\tlist:\n\t\t\t\t\tlist:\n\t\t\t\t\t\ta\n\t\t\t\t\t\tcall:\n\t\t\t\t\t\t\t-\n\t\t\t\t\t\t\tlist:\n\t\t\t\t\t\t\t\tx\n\t\t\t\t\t\t\t\ty\n\t\t\t\t\tlist:\n\t\t\t\t\t\tb\n\t\t\t\t\t\tcall:\n\t\t\t\t\t\t\t/\n\t\t\t\t\t\t\tlist:\n\t\t\t\t\t\t\t\tx\n\t\t\t\t\t\t\t\ty\n\t\t\t\tlist:\n\t\t\t\t\tcall:\n\t\t\t\t\t\t+\n\t\t\t\t\t\tlist:\n\t\t\t\t\t\t\ta\n\t\t\t\t\t\t\tb\n"
