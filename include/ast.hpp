@@ -56,8 +56,8 @@ namespace llscm {
 		ScmType t;
 	};
 
-	typedef unique_ptr<ScmObj> P_ScmObj;
-	typedef shared_ptr<ScmObj> ShP_ScmObj;
+	//typedef unique_ptr<ScmObj> P_ScmObj;
+	typedef shared_ptr<ScmObj> P_ScmObj;
 	typedef char scm_op;
 
 	class ScmInt: public ScmObj {
@@ -122,6 +122,9 @@ namespace llscm {
 	class ScmSym: public ScmLit {
 	public:
 		ScmSym(const string & value): ScmLit(T_SYM, value) {}
+		bool operator==(const ScmSym & other) const {
+			return val == other.val;
+		}
 	};
 
 	class ScmCons: public ScmObj {
@@ -149,17 +152,41 @@ namespace llscm {
 	// native functions that will also be updated with user definitions.
 	class ScmFunc: public ScmObj {
 	public:
-		ScmFunc(const string & fname, int32_t argc, P_ScmObj args, P_ScmObj bodies):
-				ScmObj(T_FUNC), name(fname), arg_list(move(args)), body_list(move(bodies)) {
+		ScmFunc(int32_t argc, P_ScmObj args = nullptr, P_ScmObj bodies = nullptr):
+				ScmObj(T_FUNC), arg_list(move(args)), body_list(move(bodies)) {
 			argc_expected = argc;
 		}
 		//virtual ~ScmFunc();
 
-		string name;
 		int32_t argc_expected;
 		P_ScmObj arg_list;
 		P_ScmObj body_list;
-		// scm_env def_env; // TODO
+		// ScmEnv def_env; // TODO
+	};
+
+	class ScmConsFunc: public ScmFunc {
+	public:
+		ScmConsFunc(): ScmFunc(2) {}
+	};
+
+	class ScmCarFunc: public ScmFunc {
+	public:
+		ScmCarFunc(): ScmFunc(2) {}
+	};
+
+	class ScmCdrFunc: public ScmFunc {
+	public:
+		ScmCdrFunc(): ScmFunc(2) {}
+	};
+
+	class ScmPlusFunc: public ScmFunc {
+	public:
+		ScmPlusFunc(): ScmFunc(ArgsAnyCount) {}
+	};
+
+	class ScmMinusFunc: public ScmFunc {
+	public:
+		ScmMinusFunc(): ScmFunc(ArgsAnyCount) {}
 	};
 
 	class ScmCall: public ScmObj {
@@ -246,6 +273,17 @@ namespace llscm {
 	};
 
 	P_ScmObj makeScmList(vector<P_ScmObj> && elems);
+}
+
+// Define a specialization of std::hash<T> for ScmSym class
+namespace std {
+	template <>
+	class hash<llscm::ScmSym> {
+	public:
+		size_t operator()(const llscm::ScmSym & sym) const {
+			return hash<string>()(sym.val);
+		}
+	};
 }
 
 #endif //LLSCHEME_TYPES_HPP

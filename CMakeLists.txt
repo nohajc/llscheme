@@ -23,7 +23,9 @@ set(SOURCE_FILES
         src/reader.cpp
         include/reader.hpp
         src/ast.cpp
-        include/ast.hpp)
+        include/ast.hpp
+        src/environment.cpp
+        include/environment.hpp)
 
 add_executable(schemec ${SOURCE_FILES})
 
