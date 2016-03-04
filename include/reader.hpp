@@ -33,7 +33,6 @@ namespace llscm {
 		Token(Keyword k);
 		friend bool operator==(const Token & lhs, const Token & rhs);
 		friend bool operator!=(const Token & lhs, const Token & rhs);
-
 		void deduceType();
 	};
 

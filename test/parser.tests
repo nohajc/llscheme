@@ -18,10 +18,9 @@ test_out "Test missing expression in definition 2", "(define foo", "Error: Expec
 
 test_out "Test incomplete argument list", "(define (foo bar", "Error: Reached EOF while parsing a list.\n"
 
-test_out "Test invalid expression in argument list", "(define (foo \"bar\") #t)", "Error: Invalid expression in argument list. Only symbols are allowed.\n"
-test_out "Test invalid expression in argument list 2", "(define (foo \'bar\') #t)", "Error: Invalid expression in argument list. Only symbols are allowed.\n"
-test_out "Test invalid expression in argument list 3", "(lambda (2))", "Error: Invalid expression in argument list. Only symbols are allowed.\n"
-test_out "Test invalid expression in argument list 4", "(lambda (\"arg\"))", "Error: Invalid expression in argument list. Only symbols are allowed.\n"
+test_out "Test invalid expression in argument list 1", "(define (foo \"bar\") #t)", "Error: Invalid expression in argument list. Only symbols are allowed.\n"
+test_out "Test invalid expression in argument list 2", "(lambda (2))", "Error: Invalid expression in argument list. Only symbols are allowed.\n"
+test_out "Test invalid expression in argument list 3", "(lambda (\"arg\"))", "Error: Invalid expression in argument list. Only symbols are allowed.\n"
 
 test_out "Test incomplete binding list", "(let ((a)) #f)", "Error: Binding list must have exactly two elements: id, expression.\n"
 
@@ -52,7 +51,7 @@ test_out "Test unexpected keyword at first list position", "(null)", "Error: Une
 test_out "Test definition inside expression", "(+ (define a 4) 5))", "Error: Unexpected keyword at first list position.\n"
 
 # VALID SYNTAX AST PRINTOUT
-test_out "Test string", "\"spam\"", "\"spam\"\n"
+test_out "Test string", "\"spam eggs bacon sausage	and spam\"", "\"spam eggs bacon sausage	and spam\"\n"
 test_out "Test symbol", "eggs", "eggs\n"
 test_out "Test integer", "2048", "2048\n"
 test_out "Test float", "2.71828", "2.71828\n"

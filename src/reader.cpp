@@ -38,13 +38,6 @@ namespace llscm {
 		bool is_keyword = false;
 		size_t first_digit_idx = 0;
 
-		if (((name[0] == '\"') && (name[name.length() - 1] == '\"'))
-			  || ((name[0] == '\'') && (name[name.length() - 1] == '\''))) {
-			t = STR;
-			//D(cerr << "string token ");
-			return;
-		}
-
 		if (name[0] == '-') {
 			first_digit_idx = 1;
 			if (name.length() == 1) {
@@ -117,48 +110,57 @@ namespace llscm {
 
 	const Token * Reader::nextToken() {
 		char c;
+		tok.name = "";
 
-		if (par_left > 0) {
-			par_left--;
-			if (tok.t != KWRD || tok.kw != KW_RPAR) {
+		do {
+			is->get(c);
+			if (is->eof()) {
+				return nullptr;
+			}
+		} while (isspace(c));
+
+		switch (c) {
+			case '(':
+				tok.name = "(";
+				tok.t = KWRD;
+				tok.kw = KW_LPAR;
+				return &tok;
+			case ')':
 				tok.name = ")";
 				tok.t = KWRD;
 				tok.kw = KW_RPAR;
+				return &tok;
+			case '\"':
+				goto read_string;
+			default:;
+		}
+		// Read literal
+		do {
+			D(cerr << "DEBUG: " << c << endl);
+			tok.name += c;
+			is->get(c);
+			if (is->eof()) {
+				break;
 			}
-			//D(cerr << "keyword token [" << KwrdNames[(int)tok.kw] << "] ");
-			return &tok;
-		}
-
-		*is >> c;
-		if (is->eof()) {
-			return nullptr;
-		}
-
-		if (c == '(') {
-			tok.name = "(";
-			tok.t = KWRD;
-			tok.kw = KW_LPAR;
-			//D(cerr << "keyword token [" << KwrdNames[(int)tok.kw] << "] ");
-			return &tok;
-		}
-
-		if (c == ')') {
-			tok.name = ")";
-			tok.t = KWRD;
-			tok.kw = KW_RPAR;
-			//D(cerr << "keyword token [" << KwrdNames[(int)tok.kw] << "] ");
-			return &tok;
-		}
-
+		} while (c != ')' && !isspace(c));
 		is->unget();
 		is->clear();
-		*is >> tok.name;
-		while (tok.name[tok.name.length() - 1] == ')') {
-			par_left++;
-			tok.name.pop_back();
-		}
 		tok.deduceType();
-		//D(cerr << tok.name << " ");
+		return &tok;
+
+		read_string:
+		do {
+			tok.name += c;
+			is->get(c);
+			if (is->eof()) {
+				tok.t = ERR;
+				D(cerr << "ERR:" << tok.name << " ");
+				return &tok;
+			}
+		} while (c != '\"');
+		tok.name += c;
+		tok.t = STR;
+		D(cerr << "STR:" << tok.name << " ");
 		return &tok;
 	}
 
