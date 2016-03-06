@@ -44,6 +44,7 @@ namespace llscm {
 	public:
 		const Token * nextToken();
 		const Token * currToken();
+		void error(const string & msg);
 
 		Reader();
 		virtual ~Reader() {};

@@ -153,8 +153,10 @@ namespace llscm {
 			tok.name += c;
 			is->get(c);
 			if (is->eof()) {
+				is->clear();
 				tok.t = ERR;
 				D(cerr << "ERR:" << tok.name << " ");
+				error("Reached EOF while parsing a string.");
 				return &tok;
 			}
 		} while (c != '\"');
@@ -170,4 +172,9 @@ namespace llscm {
 		}
 		return &tok;
 	}
+
+	void Reader::error(const string & msg) {
+		cout << "Error: " << msg << endl;
+	}
+
 }

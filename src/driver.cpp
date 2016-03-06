@@ -12,7 +12,7 @@ namespace llscm {
 	using namespace llvm;
 
 	bool compile(unique_ptr<Parser> && p) {
-		vector<P_ScmObj> prog = p->NT_Prog();
+		ScmProg prog = p->NT_Prog();
 		if (p->fail()) {
 			return false;
 		}
@@ -51,8 +51,14 @@ namespace llscm {
 }
 
 int main(int argc, char * argv[]) {
-	if (argc == 2) {
-		if (!llscm::compileSourceFile(argv[1])) {
+	if (argc >= 2) {
+		if (!strcmp(argv[1], "-s")) {
+			if (argc != 3) return EXIT_SUCCESS;
+			if (!llscm::compileString(argv[2])) {
+				return EXIT_FAILURE;
+			}
+		}
+		else if (!llscm::compileSourceFile(argv[1])) {
 			return EXIT_FAILURE;
 		}
 	}

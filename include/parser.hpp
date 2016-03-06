@@ -2,6 +2,7 @@
 #define LLSCHEME_PARSER_HPP
 
 #include <memory>
+#include <list>
 #include <llvm/ADT/STLExtras.h>
 #include "ast.hpp"
 #include "reader.hpp"
@@ -18,6 +19,8 @@ namespace llscm {
 		}
 	};*/
 
+	typedef list<P_ScmObj> ScmProg;
+
 	class Parser {
 		const unique_ptr<Reader>& reader;
 		bool err_flag;
@@ -32,7 +35,7 @@ namespace llscm {
 			return err_flag;
 		}
 
-		vector<P_ScmObj> NT_Prog();
+		ScmProg NT_Prog();
 		P_ScmObj NT_Form();
 		P_ScmObj NT_Def();
 		P_ScmObj NT_CallOrSyntax();

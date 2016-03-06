@@ -37,6 +37,12 @@ namespace llscm {
 	 * Evaluating defines, looking up functions by their names, creating nodes
 	 * for lambdas, function calls, expressions and processing macros.
 	 */
+	class ScmObj;
+	class ScmEnv;
+
+	typedef shared_ptr<ScmObj> P_ScmObj;
+	typedef shared_ptr<ScmEnv> P_ScmEnv;
+
 	class ScmObj {
 	protected:
 		void printTabs(ostream & os, int tabs) const {
@@ -48,9 +54,15 @@ namespace llscm {
 		}
 
 		virtual ~ScmObj() {}
-		virtual ostream & print(ostream & os, int tabs = 0) const = 0;
+		virtual ostream & print(ostream & os, int tabs = 0) const {
+			return os;
+		}
 		friend ostream & operator<<(ostream & os, const ScmObj & obj) {
 			return obj.print(os);
+		}
+
+		virtual P_ScmObj CT_Eval(P_ScmEnv env) {
+			return P_ScmObj(this);
 		}
 
 		ScmType t;
@@ -58,7 +70,7 @@ namespace llscm {
 
 	//typedef unique_ptr<ScmObj> P_ScmObj;
 	typedef shared_ptr<ScmObj> P_ScmObj;
-	typedef char scm_op;
+	//typedef char scm_op;
 
 	class ScmInt: public ScmObj {
 		virtual ostream & print(ostream & os, int tabs) const;
@@ -125,16 +137,16 @@ namespace llscm {
 		bool operator==(const ScmSym & other) const {
 			return val == other.val;
 		}
+		virtual P_ScmObj CT_Eval(P_ScmEnv env);
 	};
 
 	class ScmCons: public ScmObj {
 		virtual ostream & print(ostream & os, int tabs) const;
-
 	public:
 		ScmCons(P_ScmObj pcar, P_ScmObj pcdr):
 				ScmObj(T_CONS), car(move(pcar)), cdr(move(pcdr)) {}
 
-		//virtual ~ScmCons();
+		virtual P_ScmObj CT_Eval(P_ScmEnv env);
 
 		P_ScmObj car;
 		P_ScmObj cdr;
@@ -156,7 +168,7 @@ namespace llscm {
 				ScmObj(T_FUNC), arg_list(move(args)), body_list(move(bodies)) {
 			argc_expected = argc;
 		}
-		//virtual ~ScmFunc();
+		virtual P_ScmObj CT_Eval(P_ScmEnv env);
 
 		int32_t argc_expected;
 		P_ScmObj arg_list;
@@ -194,6 +206,7 @@ namespace llscm {
 	public:
 		ScmCall(P_ScmObj f, P_ScmObj args): // Unresolved call
 				ScmObj(T_CALL), fexpr(move(f)), arg_list(move(args)) {}
+		virtual P_ScmObj CT_Eval(P_ScmEnv env);
 
 		P_ScmObj fexpr; // Expression returning a function object
 		P_ScmObj arg_list;
@@ -217,6 +230,7 @@ namespace llscm {
 	public:
 		ScmDefineVarSyntax(P_ScmObj n, P_ScmObj v):
 				name(move(n)), val(move(v)) {}
+		virtual P_ScmObj CT_Eval(P_ScmEnv env);
 
 		P_ScmObj name;
 		P_ScmObj val;
@@ -227,6 +241,7 @@ namespace llscm {
 	public:
 		ScmDefineFuncSyntax(P_ScmObj n, P_ScmObj al, P_ScmObj b):
 				name(move(n)), arg_list(move(al)), body_list(move(b)) {}
+		virtual P_ScmObj CT_Eval(P_ScmEnv env);
 
 		P_ScmObj name;
 		P_ScmObj arg_list;
@@ -238,6 +253,7 @@ namespace llscm {
 	public:
 		ScmLambdaSyntax(P_ScmObj al, P_ScmObj b):
 				arg_list(move(al)), body_list(move(b)) {}
+		virtual P_ScmObj CT_Eval(P_ScmEnv env);
 
 		P_ScmObj arg_list;
 		P_ScmObj body_list;
@@ -256,6 +272,7 @@ namespace llscm {
 	public:
 		ScmIfSyntax(P_ScmObj ce, P_ScmObj te, P_ScmObj ee):
 				cond_expr(move(ce)), then_expr(move(te)), else_expr(move(ee)) {}
+		virtual P_ScmObj CT_Eval(P_ScmEnv env);
 
 		P_ScmObj cond_expr;
 		P_ScmObj then_expr;
@@ -267,6 +284,7 @@ namespace llscm {
 	public:
 		ScmLetSyntax(P_ScmObj bl, P_ScmObj b):
 				bind_list(move(bl)), body_list(move(b)) {}
+		virtual P_ScmObj CT_Eval(P_ScmEnv env);
 
 		P_ScmObj bind_list;
 		P_ScmObj body_list;

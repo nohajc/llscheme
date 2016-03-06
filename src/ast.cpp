@@ -2,6 +2,7 @@
 #include <memory>
 #include <llvm/ADT/STLExtras.h>
 #include "../include/ast.hpp"
+#include "../include/environment.hpp"
 
 namespace llscm {
 	using namespace llvm;
@@ -141,4 +142,73 @@ namespace llscm {
 		//os << endl;
 		return os;
 	}
+
+	P_ScmObj ScmSym::CT_Eval(P_ScmEnv env) {
+		return P_ScmObj(this); // TODO: check whether the symbol is bound
+	}
+
+	P_ScmObj ScmCons::CT_Eval(P_ScmEnv env) {
+		car = car->CT_Eval(env);
+		cdr = cdr->CT_Eval(env);
+
+		return P_ScmObj(this);
+	}
+
+	P_ScmObj ScmFunc::CT_Eval(P_ScmEnv env) {
+		// TODO: bind arguments to a special type ScmArg,
+		// create new function environment and eval body_list in it.
+		// Argument values may not be known during compilation
+		// but we need to know they are not unbound.
+
+		return P_ScmObj(this);
+	}
+
+	P_ScmObj ScmCall::CT_Eval(P_ScmEnv env) {
+		// TODO: decide if the call should be direct or indirect
+		// fexpr can be either a symbol referencing ScmFunc
+		// or it can be a call to function factory.
+		// In the first case, the function pointer can be hardcoded,
+		// in the second case we must emit an indirect call to the pointer
+		// returned by the factory function. The pointer type will have
+		// to be checked at runtime.
+		fexpr = fexpr->CT_Eval(env);
+		arg_list = arg_list->CT_Eval(env);
+		return P_ScmObj(this);
+	}
+
+	P_ScmObj ScmDefineVarSyntax::CT_Eval(P_ScmEnv env) {
+		val = val->CT_Eval(env);
+		// Bind symbol to value
+		env->set(*dynamic_cast<ScmSym*>(name.get()), val);
+
+		return P_ScmObj(this);
+	}
+
+	P_ScmObj ScmDefineFuncSyntax::CT_Eval(P_ScmEnv env) {
+		// TODO: convert to ScmDefineVarSyntax and ScmFunc.
+		// Then call CT_Eval on the new object and return it.
+		return P_ScmObj(this);
+	}
+
+	P_ScmObj ScmLambdaSyntax::CT_Eval(P_ScmEnv env) {
+		// TODO: create new symbol (name) for the anonymous function.
+		// Then convert this object to ScmDefineVarSyntax, prepend
+		// the definition to env->prog and return the new symbol.
+		return P_ScmObj(this);
+	}
+
+	P_ScmObj ScmIfSyntax::CT_Eval(P_ScmEnv env) {
+		// TODO: detect dead branches
+		cond_expr = cond_expr->CT_Eval(env);
+		then_expr = then_expr->CT_Eval(env);
+		else_expr = else_expr->CT_Eval(env);
+		return P_ScmObj(this);
+	}
+
+	P_ScmObj ScmLetSyntax::CT_Eval(P_ScmEnv env) {
+		// TODO: populate new environment according to bind_list,
+		// then eval body_list in the new environment.
+		return P_ScmObj(this);
+	}
 }
+

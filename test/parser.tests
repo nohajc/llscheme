@@ -1,6 +1,8 @@
 # INVALID SYNTAX ERROR MESSAGES
 test_out "Test empty program", "", "Error: Program is empty.\n"
 
+test_out "Test incomplete string", "\"incompl", "Error: Reached EOF while parsing a string.\n"
+
 test_out "Test incomplete list 1", "(", "Error: Reached EOF while parsing a list.\n"
 test_out "Test incomplete list 2", "(foo", "Error: Reached EOF while parsing function call.\n"
 test_out "Test incomplete list 3", "(foo bar", "Error: Reached EOF while parsing function call.\n"

@@ -26,9 +26,9 @@ namespace llscm {
 	/*
 	 * prog = form { form }
 	 */
-	vector<P_ScmObj> Parser::NT_Prog() {
+	ScmProg Parser::NT_Prog() {
 		const Token * tok;
-		vector<P_ScmObj> prog;
+		ScmProg prog;
 		bool first = true;
 
 		D(cerr << "NT_Prog: " << endl);
@@ -335,6 +335,9 @@ namespace llscm {
 				return make_unique<ScmInt>(tok->int_val);
 			case FLOAT:
 				return make_unique<ScmFloat>(tok->float_val);
+			case ERR:
+				err_flag = true;
+				return nullptr;
 			default:;
 		}
 
