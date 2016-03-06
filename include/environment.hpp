@@ -19,8 +19,10 @@ namespace llscm {
         ScmEnv(ScmProg & p, shared_ptr<ScmEnv> penv = nullptr):
                 prog(p), parent_env(penv) {}
 
-        P_ScmObj get(const ScmSym & k);
-        void set(const ScmSym & k, P_ScmObj obj);
+        P_ScmObj get(P_ScmObj k);
+        P_ScmObj get(ScmSym * sym);
+        bool set(P_ScmObj k, P_ScmObj obj);
+        bool set(const string & k, P_ScmObj obj);
         void error(const string & msg);
     };
 

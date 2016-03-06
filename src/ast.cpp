@@ -144,7 +144,20 @@ namespace llscm {
 	}
 
 	P_ScmObj ScmSym::CT_Eval(P_ScmEnv env) {
-		return P_ScmObj(this); // TODO: check whether the symbol is bound
+		P_ScmObj sym = shared_ptr<ScmObj>(this);
+		P_ScmObj last_sym;
+
+		do {
+			last_sym = sym;
+			sym = env->get(last_sym);
+		} while(sym && sym->t == T_SYM);
+
+		if (!sym) {
+			env->error(dynamic_cast<ScmSym*>(last_sym.get())->val + " is not defined.");
+			return nullptr;
+		}
+
+		return last_sym;
 	}
 
 	P_ScmObj ScmCons::CT_Eval(P_ScmEnv env) {
@@ -179,7 +192,7 @@ namespace llscm {
 	P_ScmObj ScmDefineVarSyntax::CT_Eval(P_ScmEnv env) {
 		val = val->CT_Eval(env);
 		// Bind symbol to value
-		env->set(*dynamic_cast<ScmSym*>(name.get()), val);
+		env->set(name, val);
 
 		return P_ScmObj(this);
 	}

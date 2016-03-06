@@ -6,6 +6,7 @@
 #include <llvm/ADT/STLExtras.h>
 #include "../include/driver.hpp"
 #include "../include/parser.hpp"
+#include "../include/environment.hpp"
 
 namespace llscm {
 	using namespace std;
@@ -13,11 +14,13 @@ namespace llscm {
 
 	bool compile(unique_ptr<Parser> && p) {
 		ScmProg prog = p->NT_Prog();
+		shared_ptr<ScmEnv> env = createGlobalEnvironment(prog);
 		if (p->fail()) {
 			return false;
 		}
 		for (auto & e: prog) {
 			cout << *e;
+			//e->CT_Eval(env);
 		}
 
 		return true;
