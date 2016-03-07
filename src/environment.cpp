@@ -17,12 +17,12 @@ namespace llscm {
         return env;
     }
 
-    P_ScmObj ScmEnv::get(P_ScmObj k) {
+    P_ScmObj ScmEnv::get(P_ScmObj k, P_ScmEnv * def_env) {
         ScmSym * sym = dynamic_cast<ScmSym*>(k.get());
-        return get(sym);
+        return get(sym, def_env);
     }
 
-    P_ScmObj ScmEnv::get(ScmSym * sym) {
+    P_ScmObj ScmEnv::get(ScmSym * sym, P_ScmEnv * def_env) {
         auto elem_it = binding.find(*sym);
         if (elem_it == binding.end()) {
             if (parent_env) {
@@ -30,6 +30,9 @@ namespace llscm {
             }
             return nullptr;
         }
+        // If valid pointer given in def_env, return
+        // the environment where we've found the symbol binding.
+        if (def_env) *def_env = P_ScmEnv(this);
         return elem_it->second;
     }
 

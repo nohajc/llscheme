@@ -13,14 +13,15 @@ namespace llscm {
         bool err_flag;
         shared_ptr<ScmEnv> parent_env;
         unordered_map<ScmSym, P_ScmObj> binding;
-        ScmProg & prog;
-
     public:
-        ScmEnv(ScmProg & p, shared_ptr<ScmEnv> penv = nullptr):
+        ScmProg & prog;
+        P_ScmObj context;
+
+        ScmEnv(ScmProg & p, P_ScmEnv penv = nullptr):
                 prog(p), parent_env(penv) {}
 
-        P_ScmObj get(P_ScmObj k);
-        P_ScmObj get(ScmSym * sym);
+        P_ScmObj get(P_ScmObj k, P_ScmEnv * def_env = nullptr);
+        P_ScmObj get(ScmSym * sym, P_ScmEnv * def_env = nullptr);
         bool set(P_ScmObj k, P_ScmObj obj);
         bool set(const string & k, P_ScmObj obj);
         void error(const string & msg);

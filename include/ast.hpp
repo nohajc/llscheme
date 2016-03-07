@@ -18,6 +18,7 @@ namespace llscm {
 		T_FLOAT,
 		T_STR,
 		T_SYM,
+		T_ARG,
 		T_CONS,
 		T_TRUE,
 		T_FALSE,
@@ -66,6 +67,11 @@ namespace llscm {
 		}
 
 		ScmType t;
+	};
+
+	class ScmArg: public ScmObj {
+	public:
+		ScmArg(): ScmObj(T_ARG) {}
 	};
 
 	//typedef unique_ptr<ScmObj> P_ScmObj;
@@ -173,7 +179,7 @@ namespace llscm {
 		int32_t argc_expected;
 		P_ScmObj arg_list;
 		P_ScmObj body_list;
-		// ScmEnv def_env; // TODO
+		P_ScmEnv fn_env;
 	};
 
 	class ScmConsFunc: public ScmFunc {

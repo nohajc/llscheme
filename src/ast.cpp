@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <cassert>
 #include <memory>
 #include <llvm/ADT/STLExtras.h>
 #include "../include/ast.hpp"
@@ -168,11 +169,36 @@ namespace llscm {
 	}
 
 	P_ScmObj ScmFunc::CT_Eval(P_ScmEnv env) {
-		// TODO: bind arguments to a special type ScmArg,
-		// create new function environment and eval body_list in it.
-		// Argument values may not be known during compilation
-		// but we need to know they are not unbound.
+		if (arg_list && body_list) {
+			// Create a new environment for the function
+			// and save it in the object.
+			// We will work with it during code generation.
+			// ScmEnv must hold a reference to its corresponding function
+			// because when accessing variables from closures, we need to know where they are defined.
+			fn_env = make_shared<ScmEnv>(env->prog, env);
+			fn_env->context = P_ScmObj(this);
 
+			// Bind all argument names to ScmArg - we need to tell them apart from unbound variables.
+			P_ScmObj arg_type = make_shared<ScmArg>();
+			ScmObj * args = arg_list.get();
+			while (args->t != T_NULL) {
+				assert(args->t == T_CONS);
+				ScmCons * l_args = (ScmCons*)args;
+
+				fn_env->set(l_args->car, arg_type);
+				args = l_args->cdr.get();
+			}
+
+			// Eval function bodies in the function environment
+			ScmObj * bodies = body_list.get();
+			while (bodies->t != T_NULL) {
+				assert(bodies->t == T_CONS);
+				ScmCons * l_bodies = (ScmCons*)bodies;
+
+				l_bodies->car->CT_Eval(fn_env);
+				bodies = l_bodies->cdr.get();
+			}
+		}
 		return P_ScmObj(this);
 	}
 
