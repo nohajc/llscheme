@@ -25,6 +25,7 @@ namespace llscm {
 		T_TRUE,
 		T_FALSE,
 		T_NULL,
+		T_DEF,
 		T_EXPR,
 		T_FUNC,
 		T_CALL,
@@ -150,11 +151,20 @@ namespace llscm {
 
 	class ScmCons: public ScmObj {
 		virtual ostream & print(ostream & os, int tabs) const;
+		ssize_t len;
 	public:
 		ScmCons(P_ScmObj pcar, P_ScmObj pcdr):
-				ScmObj(T_CONS), car(move(pcar)), cdr(move(pcdr)) {}
+				ScmObj(T_CONS), car(move(pcar)), cdr(move(pcdr)) {
+			len = -1;
+		}
 
 		virtual P_ScmObj CT_Eval(P_ScmEnv env);
+		ssize_t length() {
+			if (len >= 0) return len;
+			ssize_t cnt = 0;
+			each([&cnt](P_ScmObj e) { cnt++; });
+			return len = cnt;
+		}
 
 		template<typename F>
 		void each(F && lambda) {
@@ -229,6 +239,7 @@ namespace llscm {
 
 		P_ScmObj fexpr; // Expression returning a function object
 		P_ScmObj arg_list;
+		bool indirect;
 	};
 
 	/* Classes derived from ScmInlineCall represent primitive functions
@@ -240,7 +251,9 @@ namespace llscm {
 		ScmInlineCall(P_ScmObj args): ScmCall(nullptr, move(args)) {}
 	};
 
-	class ScmDefineSyntax: public ScmExpr {
+	class ScmDefineSyntax: public ScmObj {
+	public:
+		ScmDefineSyntax(): ScmObj(T_DEF) {}
 	};
 
 	class ScmDefineVarSyntax: public ScmDefineSyntax {

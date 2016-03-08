@@ -188,8 +188,8 @@ namespace llscm {
 
 			// Eval function bodies in the function environment
 			assert(body_list->t == T_CONS);
-			DPC<ScmCons>(body_list)->each([&new_env](P_ScmObj e) {
-				e->CT_Eval(new_env);
+			DPC<ScmCons>(body_list)->each([&new_env](P_ScmObj & e) {
+				e = e->CT_Eval(new_env);
 			});
 
 			fn_env = new_env;
@@ -198,14 +198,31 @@ namespace llscm {
 	}
 
 	P_ScmObj ScmCall::CT_Eval(P_ScmEnv env) {
-		// TODO: decide if the call should be direct or indirect
-		// fexpr can be either a symbol referencing ScmFunc
-		// or it can be a call to function factory.
-		// In the first case, the function pointer can be hardcoded,
-		// in the second case we must emit an indirect call to the pointer
-		// returned by the factory function. The pointer type will have
-		// to be checked at runtime.
+		P_ScmObj func;
 		fexpr = fexpr->CT_Eval(env);
+		// After evaluation of fexpr, it can either be ScmSym bound to ScmFunc
+		// or some ScmExpr (Quote, If, Let). It cannot be Lambda because that is reduced
+		// to the first case after fexpr->CT_Eval. We know for certain that Quote won't
+		// be a valid case as it always returns data.
+		if (fexpr->t == T_SYM && (func = env->get(fexpr))->t == T_FUNC) {
+			// Function is known at compilation time - we can hardcode its pointer
+			indirect = false;
+			fexpr = func; // We don't call CT_Eval on func here - that's done from its definition.
+		}
+		else if (fexpr->t == T_EXPR && !DPC<ScmQuoteSyntax>(fexpr)) {
+			// TODO: this could be optimized further...
+			// Maybe we could traverse the expression recursively and determine
+			// whether it returns ScmFunc. That way we could eliminate more invalid
+			// expressions at compilation time.
+			// We only get the particular function pointer at runtime.
+			// Therefore we will have to verify it is in fact pointer to a function.
+			indirect = true;
+		}
+		else {
+			env->error("Invalid expression in the function slot.");
+			return nullptr;
+		}
+
 		arg_list = arg_list->CT_Eval(env);
 		return P_ScmObj(this);
 	}
@@ -219,16 +236,35 @@ namespace llscm {
 	}
 
 	P_ScmObj ScmDefineFuncSyntax::CT_Eval(P_ScmEnv env) {
-		// TODO: convert to ScmDefineVarSyntax and ScmFunc.
-		// Then call CT_Eval on the new object and return it.
-		return P_ScmObj(this);
+		// Converts to ScmDefineVarSyntax with ScmFunc.
+		// Then calls CT_Eval on the new object and return it.
+
+		P_ScmObj func = make_shared<ScmFunc>(
+				DPC<ScmCons>(arg_list)->length(),
+				move(arg_list), move(body_list)
+		);
+		P_ScmObj def_var = make_shared<ScmDefineVarSyntax>(name, func);
+
+		return def_var->CT_Eval(env);
 	}
 
 	P_ScmObj ScmLambdaSyntax::CT_Eval(P_ScmEnv env) {
-		// TODO: create new symbol (name) for the anonymous function.
-		// Then convert this object to ScmDefineVarSyntax, prepend
-		// the definition to env->prog and return the new symbol.
-		return P_ScmObj(this);
+		// Creates a new symbol (name) for the anonymous function.
+		string fname = env->getUniqID("lambda");
+		P_ScmObj fsym = make_shared<ScmSym>(fname);
+
+		// Converts this object to ScmDefineVarSyntax.
+		P_ScmObj func = make_shared<ScmFunc>(
+				DPC<ScmCons>(arg_list)->length(),
+				move(arg_list), move(body_list)
+		);
+		P_ScmObj def_var = make_shared<ScmDefineVarSyntax>(fsym, func);
+		// Prepends the definition to env->prog, runs CT_Eval on the definition.
+		env->prog.push_front(def_var->CT_Eval(env));
+
+		// We've moved the inplace lambda definition to a separate node
+		// at the start of ScmProg and now we just return the unique symbol bound to it.
+		return fsym;
 	}
 
 	P_ScmObj ScmIfSyntax::CT_Eval(P_ScmEnv env) {
@@ -240,8 +276,23 @@ namespace llscm {
 	}
 
 	P_ScmObj ScmLetSyntax::CT_Eval(P_ScmEnv env) {
-		// TODO: populate new environment according to bind_list,
-		// then eval body_list in the new environment.
+		P_ScmEnv let_env = make_shared<ScmEnv>(env->prog, env);
+
+		assert(bind_list->t == T_CONS);
+		// Populates new environment according to bind_list.
+		DPC<ScmCons>(bind_list)->each([&let_env, &env](P_ScmObj e) {
+			assert(e->t == T_CONS);
+			shared_ptr<ScmCons> kv = DPC<ScmCons>(e);
+			P_ScmObj id = kv->car;
+
+			assert(kv->cdr->t == T_CONS);
+			P_ScmObj & expr = DPC<ScmCons>(kv->cdr)->car;
+			expr = expr->CT_Eval(env);
+			let_env->set(id, expr);
+		});
+		// Evals body_list in the new environment.
+		body_list = body_list->CT_Eval(let_env);
+
 		return P_ScmObj(this);
 	}
 }

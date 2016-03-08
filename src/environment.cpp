@@ -1,3 +1,4 @@
+#include <sstream>
 #include <llvm/ADT/STLExtras.h>
 #include "../include/environment.hpp"
 
@@ -15,6 +16,15 @@ namespace llscm {
         env->set("-", make_shared<ScmMinusFunc>());
 
         return env;
+    }
+
+    ScmEnv::ScmEnv(ScmProg & p, P_ScmEnv penv): prog(p), parent_env(penv) {
+        if (!penv) {
+            top_level_env = this;
+        }
+        else {
+            top_level_env = penv->top_level_env;
+        }
     }
 
     P_ScmObj ScmEnv::get(P_ScmObj k, P_ScmEnv * def_env) {
@@ -59,4 +69,17 @@ namespace llscm {
         err_flag = true;
     }
 
+    string ScmEnv::getUniqID(const string & name) {
+        auto kv = top_level_env->uniq_id.find(name);
+        stringstream ss;
+        if (kv != top_level_env->uniq_id.end()) {
+            kv->second++;
+            ss << name << kv->second;
+        }
+        else {
+            uniq_id[name] = 0;
+            ss << name << 0;
+        }
+        return ss.str();
+    }
 }
