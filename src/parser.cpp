@@ -486,7 +486,7 @@ namespace llscm {
 				return makeScmList(move(lst));
 			}
 			obj = NT_Form();
-			if (dynamic_cast<ScmDefineSyntax*>(obj.get())) {
+			if (DPC<ScmDefineSyntax>(obj)) {
 				expr = false;
 			}
 			else {

@@ -1,5 +1,5 @@
 #include <cstdint>
-#include <cassert>
+
 #include <memory>
 #include <llvm/ADT/STLExtras.h>
 #include "../include/ast.hpp"
@@ -154,7 +154,7 @@ namespace llscm {
 		} while(sym && sym->t == T_SYM);
 
 		if (!sym) {
-			env->error(dynamic_cast<ScmSym*>(last_sym.get())->val + " is not defined.");
+			env->error(DPC<ScmSym>(last_sym)->val + " is not defined.");
 			return nullptr;
 		}
 
@@ -175,29 +175,24 @@ namespace llscm {
 			// We will work with it during code generation.
 			// ScmEnv must hold a reference to its corresponding function
 			// because when accessing variables from closures, we need to know where they are defined.
-			fn_env = make_shared<ScmEnv>(env->prog, env);
-			fn_env->context = P_ScmObj(this);
+			P_ScmEnv new_env = make_shared<ScmEnv>(env->prog, env);
+			new_env->context = P_ScmObj(this);
 
 			// Bind all argument names to ScmArg - we need to tell them apart from unbound variables.
 			P_ScmObj arg_type = make_shared<ScmArg>();
-			ScmObj * args = arg_list.get();
-			while (args->t != T_NULL) {
-				assert(args->t == T_CONS);
-				ScmCons * l_args = (ScmCons*)args;
 
-				fn_env->set(l_args->car, arg_type);
-				args = l_args->cdr.get();
-			}
+			assert(arg_list->t == T_CONS);
+			DPC<ScmCons>(arg_list)->each([&new_env, &arg_type](P_ScmObj e) {
+				new_env->set(e, arg_type);
+			});
 
 			// Eval function bodies in the function environment
-			ScmObj * bodies = body_list.get();
-			while (bodies->t != T_NULL) {
-				assert(bodies->t == T_CONS);
-				ScmCons * l_bodies = (ScmCons*)bodies;
+			assert(body_list->t == T_CONS);
+			DPC<ScmCons>(body_list)->each([&new_env](P_ScmObj e) {
+				e->CT_Eval(new_env);
+			});
 
-				l_bodies->car->CT_Eval(fn_env);
-				bodies = l_bodies->cdr.get();
-			}
+			fn_env = new_env;
 		}
 		return P_ScmObj(this);
 	}

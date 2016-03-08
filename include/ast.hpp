@@ -2,11 +2,13 @@
 #define LLSCHEME_TYPES_HPP
 
 #include <cstdint>
+#include <cassert>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
 #include <llvm/ADT/STLExtras.h>
+#include "common.hpp"
 
 namespace llscm {
 	using namespace std;
@@ -153,6 +155,17 @@ namespace llscm {
 				ScmObj(T_CONS), car(move(pcar)), cdr(move(pcdr)) {}
 
 		virtual P_ScmObj CT_Eval(P_ScmEnv env);
+
+		template<typename F>
+		void each(F && lambda) {
+			ScmObj * obj = this;
+			while (obj->t != T_NULL) {
+				assert(obj->t == T_CONS);
+				ScmCons * lst = (ScmCons*)obj;
+				lambda(lst->car);
+				obj = lst->cdr.get();
+			}
+		}
 
 		P_ScmObj car;
 		P_ScmObj cdr;

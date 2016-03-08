@@ -25,7 +25,7 @@ set(SOURCE_FILES
         src/ast.cpp
         include/ast.hpp
         src/environment.cpp
-        include/environment.hpp)
+        include/environment.hpp include/common.hpp)
 
 add_executable(schemec ${SOURCE_FILES})
 
