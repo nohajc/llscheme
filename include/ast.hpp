@@ -61,6 +61,9 @@ namespace llscm {
 		virtual ostream & print(ostream & os, int tabs = 0) const {
 			return os;
 		}
+		virtual ostream & printSrc(ostream & os) const {
+			return os;
+		}
 		friend ostream & operator<<(ostream & os, const ScmObj & obj) {
 			return obj.print(os);
 		}
@@ -83,6 +86,7 @@ namespace llscm {
 
 	class ScmInt: public ScmObj {
 		virtual ostream & print(ostream & os, int tabs) const;
+		virtual ostream & printSrc(ostream & os) const;
 
 	public:
 		ScmInt(int64_t value): ScmObj(T_INT) {
@@ -94,7 +98,7 @@ namespace llscm {
 
 	class ScmFloat: public ScmObj {
 		virtual ostream & print(ostream & os, int tabs) const;
-
+		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmFloat(double value): ScmObj(T_FLOAT) {
 			val = value;
@@ -105,28 +109,28 @@ namespace llscm {
 
 	class ScmTrue: public ScmObj {
 		virtual ostream & print(ostream & os, int tabs) const;
-
+		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmTrue(): ScmObj(T_TRUE) {}
 	};
 
 	class ScmFalse: public ScmObj {
 		virtual ostream & print(ostream & os, int tabs) const;
-
+		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmFalse(): ScmObj(T_FALSE) {}
 	};
 
 	class ScmNull: public ScmObj {
 		virtual ostream & print(ostream & os, int tabs) const;
-
+		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmNull(): ScmObj(T_NULL) {}
 	};
 
 	class ScmLit: public ScmObj {
 		virtual ostream & print(ostream & os, int tabs) const;
-
+		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmLit(ScmType type, const string & value):
 				ScmObj(type), val(value) {}
@@ -151,12 +155,14 @@ namespace llscm {
 
 	class ScmCons: public ScmObj {
 		virtual ostream & print(ostream & os, int tabs) const;
+		virtual ostream & printSrc(ostream & os) const;
 		ssize_t len;
 	public:
 		ScmCons(P_ScmObj pcar, P_ScmObj pcdr):
 				ScmObj(T_CONS), car(move(pcar)), cdr(move(pcdr)) {
 			len = -1;
 		}
+		virtual ostream & printElems(ostream & os) const;
 
 		virtual P_ScmObj CT_Eval(P_ScmEnv env);
 		ssize_t length() {
@@ -192,6 +198,7 @@ namespace llscm {
 	// There will be a compile-time environment populated with
 	// native functions that will also be updated with user definitions.
 	class ScmFunc: public ScmObj {
+		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmFunc(int32_t argc, P_ScmObj args = nullptr, P_ScmObj bodies = nullptr):
 				ScmObj(T_FUNC), arg_list(move(args)), body_list(move(bodies)) {
@@ -232,6 +239,7 @@ namespace llscm {
 
 	class ScmCall: public ScmObj {
 		virtual ostream & print(ostream & os, int tabs) const;
+		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmCall(P_ScmObj f, P_ScmObj args): // Unresolved call
 				ScmObj(T_CALL), fexpr(move(f)), arg_list(move(args)) {}
@@ -258,7 +266,7 @@ namespace llscm {
 
 	class ScmDefineVarSyntax: public ScmDefineSyntax {
 		virtual ostream & print(ostream & os, int tabs) const;
-
+		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmDefineVarSyntax(P_ScmObj n, P_ScmObj v):
 				name(move(n)), val(move(v)) {}
@@ -293,6 +301,7 @@ namespace llscm {
 
 	class ScmQuoteSyntax: public ScmExpr {
 		virtual ostream & print(ostream & os, int tabs) const;
+		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmQuoteSyntax(P_ScmObj d): data(move(d)) {}
 
@@ -301,6 +310,7 @@ namespace llscm {
 
 	class ScmIfSyntax: public ScmExpr {
 		virtual ostream & print(ostream & os, int tabs) const;
+		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmIfSyntax(P_ScmObj ce, P_ScmObj te, P_ScmObj ee):
 				cond_expr(move(ce)), then_expr(move(te)), else_expr(move(ee)) {}
@@ -313,6 +323,7 @@ namespace llscm {
 
 	class ScmLetSyntax: public ScmExpr {
 		virtual ostream & print(ostream & os, int tabs) const;
+		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmLetSyntax(P_ScmObj bl, P_ScmObj b):
 				bind_list(move(bl)), body_list(move(b)) {}

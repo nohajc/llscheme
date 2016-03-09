@@ -27,11 +27,23 @@ namespace llscm {
 		return os;
 	}
 
+	ostream &ScmInt::printSrc(ostream &os) const {
+		os << val << endl;
+		return os;
+	}
+
+
 	ostream &ScmFloat::print(ostream & os, int tabs) const {
 		printTabs(os, tabs);
 		os << val << endl;
 		return os;
 	}
+
+	ostream &ScmFloat::printSrc(ostream &os) const {
+		os << val << endl;
+		return os;
+	}
+
 
 	ostream &ScmTrue::print(ostream & os, int tabs) const {
 		printTabs(os, tabs);
@@ -39,11 +51,23 @@ namespace llscm {
 		return os;
 	}
 
+	ostream &ScmTrue::printSrc(ostream &os) const {
+		os << "#t" << endl;
+		return os;
+	}
+
+
 	ostream &ScmFalse::print(ostream & os, int tabs) const {
 		printTabs(os, tabs);
 		os << "#f" << endl;
 		return os;
 	}
+
+	ostream &ScmFalse::printSrc(ostream &os) const {
+		os << "#f" << endl;
+		return os;
+	}
+
 
 	ostream &ScmNull::print(ostream & os, int tabs) const {
 		printTabs(os, tabs);
@@ -51,11 +75,23 @@ namespace llscm {
 		return os;
 	}
 
+	ostream &ScmNull::printSrc(ostream &os) const {
+		os << "null" << endl;
+		return os;
+	}
+
+
 	ostream &ScmLit::print(ostream & os, int tabs) const {
 		printTabs(os, tabs);
 		os << val << endl;
 		return os;
 	}
+
+	ostream &ScmLit::printSrc(ostream &os) const {
+		os << val << endl;
+		return os;
+	}
+
 
 	ostream &ScmCons::print(ostream & os, int tabs) const {
 		printTabs(os, tabs);
@@ -122,6 +158,14 @@ namespace llscm {
 		return os;
 	}
 
+	ostream &ScmQuoteSyntax::printSrc(ostream &os) const {
+		os << "(quote ";
+		data->printSrc(os);
+		os << ")";
+		return os;
+	}
+
+
 	ostream &ScmCall::print(ostream & os, int tabs) const {
 		printTabs(os, tabs);
 		os << "call:" << endl;
@@ -168,6 +212,32 @@ namespace llscm {
 		return P_ScmObj(this);
 	}
 
+	ostream &ScmCons::printSrc(ostream &os) const {
+		os << "(";
+		printElems(os);
+		os << ")";
+		return os;
+	}
+
+	ostream &ScmCons::printElems(ostream &os) const {
+		const ScmCons * lst_end = this;
+		bool first = true;
+
+		while (lst_end) {
+			if (first) first = false;
+			else {
+				os << " ";
+			}
+			lst_end->car->printSrc(os);
+			//os << endl;
+			lst_end = dynamic_cast<ScmCons*>(lst_end->cdr.get());
+			// TODO: handle degenerate lists
+		}
+
+		return os;
+	}
+
+
 	P_ScmObj ScmFunc::CT_Eval(P_ScmEnv env) {
 		if (arg_list && body_list) {
 			// Create a new environment for the function
@@ -196,6 +266,16 @@ namespace llscm {
 		}
 		return P_ScmObj(this);
 	}
+
+	ostream &ScmFunc::printSrc(ostream &os) const {
+		os << "(lambda ";
+		arg_list->printSrc(os);
+		os << " ";
+		DPC<ScmCons>(body_list)->printElems(os);
+		os << ")";
+		return os;
+	}
+
 
 	P_ScmObj ScmCall::CT_Eval(P_ScmEnv env) {
 		P_ScmObj func;
@@ -227,6 +307,16 @@ namespace llscm {
 		return P_ScmObj(this);
 	}
 
+	ostream &ScmCall::printSrc(ostream &os) const {
+		os << "(";
+		fexpr->printSrc(os);
+		os << " ";
+		DPC<ScmCons>(arg_list)->printElems(os);
+		os << ")";
+		return os;
+	}
+
+
 	P_ScmObj ScmDefineVarSyntax::CT_Eval(P_ScmEnv env) {
 		val = val->CT_Eval(env);
 		// Bind symbol to value
@@ -234,6 +324,16 @@ namespace llscm {
 
 		return P_ScmObj(this);
 	}
+
+	ostream &ScmDefineVarSyntax::printSrc(ostream &os) const {
+		os << "(define ";
+		name->printSrc(os);
+		os << " ";
+		val->printSrc(os);
+		os << ")";
+		return os;
+	}
+
 
 	P_ScmObj ScmDefineFuncSyntax::CT_Eval(P_ScmEnv env) {
 		// Converts to ScmDefineVarSyntax with ScmFunc.
@@ -275,6 +375,18 @@ namespace llscm {
 		return P_ScmObj(this);
 	}
 
+	ostream &ScmIfSyntax::printSrc(ostream &os) const {
+		os << "(if ";
+		cond_expr->printSrc(os);
+		os << " ";
+		then_expr->printSrc(os);
+		os << " ";
+		else_expr->printSrc(os);
+		os << ")";
+		return os;
+	}
+
+
 	P_ScmObj ScmLetSyntax::CT_Eval(P_ScmEnv env) {
 		P_ScmEnv let_env = make_shared<ScmEnv>(env->prog, env);
 
@@ -294,6 +406,15 @@ namespace llscm {
 		body_list = body_list->CT_Eval(let_env);
 
 		return P_ScmObj(this);
+	}
+
+	ostream &ScmLetSyntax::printSrc(ostream &os) const {
+		os << "(let ";
+		bind_list->printSrc(os);
+		os << " ";
+		DPC<ScmCons>(body_list)->printElems(os);
+		os << ")";
+		return os;
 	}
 }
 
