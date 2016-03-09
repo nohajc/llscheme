@@ -348,6 +348,18 @@ namespace llscm {
 		return def_var->CT_Eval(env);
 	}
 
+	ostream &ScmDefineFuncSyntax::printSrc(ostream &os) const {
+		os << "(define (";
+		name->printSrc(os);
+		os << " ";
+		DPC<ScmCons>(arg_list)->printElems(os);
+		os << ") ";
+		DPC<ScmCons>(body_list)->printElems(os);
+		os << ")";
+		return os;
+	}
+
+
 	P_ScmObj ScmLambdaSyntax::CT_Eval(P_ScmEnv env) {
 		// Creates a new symbol (name) for the anonymous function.
 		string fname = env->getUniqID("lambda");
@@ -366,6 +378,16 @@ namespace llscm {
 		// at the start of ScmProg and now we just return the unique symbol bound to it.
 		return fsym;
 	}
+
+	ostream &ScmLambdaSyntax::printSrc(ostream &os) const {
+		os << "(lambda ";
+		arg_list->printSrc(os);
+		os << " ";
+		DPC<ScmCons>(body_list)->printElems(os);
+		os << ")";
+		return os;
+	}
+
 
 	P_ScmObj ScmIfSyntax::CT_Eval(P_ScmEnv env) {
 		// TODO: detect dead branches

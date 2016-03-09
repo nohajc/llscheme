@@ -278,6 +278,7 @@ namespace llscm {
 
 	class ScmDefineFuncSyntax: public ScmDefineSyntax {
 		virtual ostream & print(ostream & os, int tabs) const;
+		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmDefineFuncSyntax(P_ScmObj n, P_ScmObj al, P_ScmObj b):
 				name(move(n)), arg_list(move(al)), body_list(move(b)) {}
@@ -290,6 +291,7 @@ namespace llscm {
 
 	class ScmLambdaSyntax: public ScmExpr {
 		virtual ostream & print(ostream & os, int tabs) const;
+		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmLambdaSyntax(P_ScmObj al, P_ScmObj b):
 				arg_list(move(al)), body_list(move(b)) {}
