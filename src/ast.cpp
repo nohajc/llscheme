@@ -28,7 +28,7 @@ namespace llscm {
 	}
 
 	ostream &ScmInt::printSrc(ostream &os) const {
-		os << val << endl;
+		os << val;
 		return os;
 	}
 
@@ -40,7 +40,7 @@ namespace llscm {
 	}
 
 	ostream &ScmFloat::printSrc(ostream &os) const {
-		os << val << endl;
+		os << val;
 		return os;
 	}
 
@@ -52,7 +52,7 @@ namespace llscm {
 	}
 
 	ostream &ScmTrue::printSrc(ostream &os) const {
-		os << "#t" << endl;
+		os << "#t";
 		return os;
 	}
 
@@ -64,7 +64,7 @@ namespace llscm {
 	}
 
 	ostream &ScmFalse::printSrc(ostream &os) const {
-		os << "#f" << endl;
+		os << "#f";
 		return os;
 	}
 
@@ -76,7 +76,7 @@ namespace llscm {
 	}
 
 	ostream &ScmNull::printSrc(ostream &os) const {
-		os << "null" << endl;
+		os << "null";
 		return os;
 	}
 
@@ -88,7 +88,7 @@ namespace llscm {
 	}
 
 	ostream &ScmLit::printSrc(ostream &os) const {
-		os << val << endl;
+		os << val;
 		return os;
 	}
 

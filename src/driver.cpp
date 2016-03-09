@@ -20,6 +20,8 @@ namespace llscm {
 		}
 		for (auto & e: prog) {
 			cout << *e;
+			e->printSrc(cerr);
+			cerr << endl;
 			//e->CT_Eval(env);
 		}
 
