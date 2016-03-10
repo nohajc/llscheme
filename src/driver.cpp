@@ -20,9 +20,15 @@ namespace llscm {
 		}
 		for (auto & e: prog) {
 			cout << *e;
+			e = e->CT_Eval(env);
+			if (env->fail()) {
+				return false;
+			}
+		}
+
+		for (auto & e: prog) {
 			e->printSrc(cerr);
 			cerr << endl;
-			//e->CT_Eval(env);
 		}
 
 		return true;

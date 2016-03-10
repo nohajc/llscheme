@@ -14,6 +14,11 @@ namespace llscm {
         env->set("cdr", make_shared<ScmCdrFunc>());
         env->set("+", make_shared<ScmPlusFunc>());
         env->set("-", make_shared<ScmMinusFunc>());
+        env->set("null?", make_shared<ScmNullFunc>());
+        env->set(">", make_shared<ScmGtFunc>());
+        env->set("*", make_shared<ScmTimesFunc>());
+        env->set("/", make_shared<ScmDivFunc>());
+        env->set("print", make_shared<ScmPrintFunc>());
 
         return env;
     }
@@ -42,7 +47,7 @@ namespace llscm {
         }
         // If valid pointer given in def_env, return
         // the environment where we've found the symbol binding.
-        if (def_env) *def_env = P_ScmEnv(this);
+        if (def_env) *def_env = shared_from_this();
         return elem_it->second;
     }
 
@@ -66,7 +71,7 @@ namespace llscm {
 
     void ScmEnv::error(const string &msg) {
         cout << "Error: " << msg << endl;
-        err_flag = true;
+        top_level_env->err_flag = err_flag = true;
     }
 
     string ScmEnv::getUniqID(const string & name) {

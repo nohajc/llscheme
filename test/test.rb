@@ -15,16 +15,18 @@ class Test
 	end
 
 	def test_out(test_name, input_str, expected_output)
+		print "#{test_name}: "
 		stdin, stdout, stderr = Open3.popen3(SCMC)
 
 		stdin.puts(input_str)
 		stdin.close
 		output = stdout.read
+		err = stderr.read
 
-		print "#{test_name}: "
 		@test_count += 1
 		if output == expected_output
 			puts "OK".bold.green
+			puts "#{err}"
 		else
 			puts "FAIL".bold.red
 			@failed += 1

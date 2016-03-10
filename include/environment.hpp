@@ -10,7 +10,7 @@
 namespace llscm {
     using namespace std;
 
-    class ScmEnv {
+    class ScmEnv: public enable_shared_from_this<ScmEnv> {
         bool err_flag;
         shared_ptr<ScmEnv> parent_env;
         ScmEnv * top_level_env;
@@ -33,6 +33,9 @@ namespace llscm {
         bool set(P_ScmObj k, P_ScmObj obj);
         bool set(const string & k, P_ScmObj obj);
         void error(const string & msg);
+        bool fail() {
+            return err_flag;
+        }
     };
 
     shared_ptr<ScmEnv> createGlobalEnvironment(ScmProg & prog);

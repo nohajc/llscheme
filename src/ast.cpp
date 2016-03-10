@@ -189,21 +189,29 @@ namespace llscm {
 	}
 
 	P_ScmObj ScmSym::CT_Eval(P_ScmEnv env) {
-		P_ScmObj sym = shared_ptr<ScmObj>(this);
+		P_ScmObj sym = shared_from_this();
 		P_ScmObj last_sym;
 		string last_sym_name;
 
 		do {
+			//cout << "DEBUG: " << DPC<ScmSym>(sym)->val << endl;
 			last_sym = sym;
 			sym = env->get(last_sym);
 		} while(sym && sym->t == T_SYM);
 
 		last_sym_name = DPC<ScmSym>(last_sym)->val;
 
+		while (sym && sym->t == T_REF) {
+			sym = DPC<ScmRef>(sym)->ref_obj;
+		}
+		//cout << "BOUND TO: " << sym->t << endl;
+
 		if (!sym) {
 			env->error(last_sym_name + " is not defined.");
 			return nullptr;
 		}
+
+
 
 		return make_shared<ScmRef>(last_sym_name, sym);
 	}
@@ -212,7 +220,7 @@ namespace llscm {
 		car = car->CT_Eval(env);
 		cdr = cdr->CT_Eval(env);
 
-		return P_ScmObj(this);
+		return shared_from_this();
 	}
 
 	ostream &ScmCons::printSrc(ostream &os) const {
@@ -249,7 +257,7 @@ namespace llscm {
 			// ScmEnv must hold a reference to its corresponding function
 			// because when accessing variables from closures, we need to know where they are defined.
 			P_ScmEnv new_env = make_shared<ScmEnv>(env->prog, env);
-			new_env->context = P_ScmObj(this);
+			new_env->context = shared_from_this();
 
 			// Bind all argument names to ScmArg - we need to tell them apart from unbound variables.
 			P_ScmObj arg_type = make_shared<ScmArg>();
@@ -265,9 +273,9 @@ namespace llscm {
 				e = e->CT_Eval(new_env);
 			});
 
-			fn_env = new_env; // TODO: remove
+			//fn_env = new_env; // TODO: remove
 		}
-		return P_ScmObj(this);
+		return shared_from_this();
 	}
 
 	ostream &ScmFunc::printSrc(ostream &os) const {
@@ -284,6 +292,9 @@ namespace llscm {
 		P_ScmObj obj;
 		shared_ptr<ScmRef> fref;
 		fexpr = fexpr->CT_Eval(env);
+		if (env->fail()) {
+			return nullptr;
+		}
 		fref = DPC<ScmRef>(fexpr);
 
 		// After evaluation of fexpr, it can either be ScmSym bound to ScmFunc
@@ -317,7 +328,7 @@ namespace llscm {
 		}
 
 		arg_list = arg_list->CT_Eval(env);
-		return P_ScmObj(this);
+		return shared_from_this();
 	}
 
 	ostream &ScmCall::printSrc(ostream &os) const {
@@ -331,11 +342,15 @@ namespace llscm {
 
 
 	P_ScmObj ScmDefineVarSyntax::CT_Eval(P_ScmEnv env) {
+		// TODO: handle lambda inside define
+		//P_ScmObj lambda = DPC<ScmLambdaSyntax>(val);
+
 		val = val->CT_Eval(env);
+
 		// Bind symbol to value
 		env->set(name, val);
 
-		return P_ScmObj(this);
+		return shared_from_this();
 	}
 
 	ostream &ScmDefineVarSyntax::printSrc(ostream &os) const {
@@ -407,7 +422,7 @@ namespace llscm {
 		cond_expr = cond_expr->CT_Eval(env);
 		then_expr = then_expr->CT_Eval(env);
 		else_expr = else_expr->CT_Eval(env);
-		return P_ScmObj(this);
+		return shared_from_this();
 	}
 
 	ostream &ScmIfSyntax::printSrc(ostream &os) const {
@@ -440,7 +455,7 @@ namespace llscm {
 		// Evals body_list in the new environment.
 		body_list = body_list->CT_Eval(let_env);
 
-		return P_ScmObj(this);
+		return shared_from_this();
 	}
 
 	ostream &ScmLetSyntax::printSrc(ostream &os) const {

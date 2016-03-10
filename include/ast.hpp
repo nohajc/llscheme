@@ -48,7 +48,7 @@ namespace llscm {
 	typedef shared_ptr<ScmObj> P_ScmObj;
 	typedef shared_ptr<ScmEnv> P_ScmEnv;
 
-	class ScmObj {
+	class ScmObj: public enable_shared_from_this<ScmObj> {
 	protected:
 		void printTabs(ostream & os, int tabs) const {
 			for (int i = 0; i < tabs; ++i) os << "\t";
@@ -70,7 +70,7 @@ namespace llscm {
 		}
 
 		virtual P_ScmObj CT_Eval(P_ScmEnv env) {
-			return P_ScmObj(this);
+			return shared_from_this();
 		}
 
 		ScmType t;
@@ -136,7 +136,7 @@ namespace llscm {
 		ScmLit(ScmType type, const string & value):
 				ScmObj(type), val(value) {}
 
-		int32_t length;
+		int32_t length; // TODO: remove... useless
 		string val;
 	};
 
@@ -167,7 +167,7 @@ namespace llscm {
 		// which could be passed to closure function as an implicit hidden argument.
 	public:
 		ScmRef(const string & name, P_ScmObj obj):
-				ScmLit(T_REF, name), ref_obj(move(obj)) {}
+				ScmLit(T_REF, name), ref_obj(obj) {}
 		P_ScmObj ref_obj;
 	};
 
@@ -227,7 +227,7 @@ namespace llscm {
 		int32_t argc_expected;
 		P_ScmObj arg_list;
 		P_ScmObj body_list;
-		P_ScmEnv fn_env; // TODO: remove this - we probably don't need it, thanks to ScmRef type
+		//P_ScmEnv fn_env; // TODO: remove this - we probably don't need it, thanks to ScmRef type
 	};
 
 	class ScmConsFunc: public ScmFunc {
@@ -237,12 +237,17 @@ namespace llscm {
 
 	class ScmCarFunc: public ScmFunc {
 	public:
-		ScmCarFunc(): ScmFunc(2) {}
+		ScmCarFunc(): ScmFunc(1) {}
 	};
 
 	class ScmCdrFunc: public ScmFunc {
 	public:
-		ScmCdrFunc(): ScmFunc(2) {}
+		ScmCdrFunc(): ScmFunc(1) {}
+	};
+
+	class ScmNullFunc: public ScmFunc {
+	public:
+		ScmNullFunc(): ScmFunc(1) {}
 	};
 
 	class ScmPlusFunc: public ScmFunc {
@@ -253,6 +258,26 @@ namespace llscm {
 	class ScmMinusFunc: public ScmFunc {
 	public:
 		ScmMinusFunc(): ScmFunc(ArgsAnyCount) {}
+	};
+
+	class ScmTimesFunc: public ScmFunc {
+	public:
+		ScmTimesFunc(): ScmFunc(ArgsAnyCount) {}
+	};
+
+	class ScmDivFunc: public ScmFunc {
+	public:
+		ScmDivFunc(): ScmFunc(ArgsAnyCount) {}
+	};
+
+	class ScmGtFunc: public ScmFunc {
+	public:
+		ScmGtFunc(): ScmFunc(2) {}
+	};
+
+	class ScmPrintFunc: public ScmFunc {
+	public:
+		ScmPrintFunc(): ScmFunc(1) {}
 	};
 
 	class ScmCall: public ScmObj {
