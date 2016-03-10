@@ -21,6 +21,7 @@ namespace llscm {
 		T_STR,
 		T_SYM,
 		T_ARG,
+		T_REF,
 		T_CONS,
 		T_TRUE,
 		T_FALSE,
@@ -153,6 +154,23 @@ namespace llscm {
 		virtual P_ScmObj CT_Eval(P_ScmEnv env);
 	};
 
+	// ScmRef is a resolved symbol.
+	// As we traverse the code and change symbol bindings dynamically
+	// (redefinitions are permitted), we need to establish a permanent binding
+	// for each occurence of every symbol. So, in the CT_Eval phase, we replace
+	// every ScmSym with ScmRef (except quoted symbols).
+	class ScmRef: public ScmLit {
+		// TODO: we need multiple reference types: refs to globals, locals and closure data,
+		// maybe even stack locals, heap locals and heap closure data (with the level
+		// of indirection specified - because there can be closures inside of closures).
+		// Each function would then have its own pointer to heap locals
+		// which could be passed to closure function as an implicit hidden argument.
+	public:
+		ScmRef(const string & name, P_ScmObj obj):
+				ScmLit(T_REF, name), ref_obj(move(obj)) {}
+		P_ScmObj ref_obj;
+	};
+
 	class ScmCons: public ScmObj {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;
@@ -209,7 +227,7 @@ namespace llscm {
 		int32_t argc_expected;
 		P_ScmObj arg_list;
 		P_ScmObj body_list;
-		P_ScmEnv fn_env;
+		P_ScmEnv fn_env; // TODO: remove this - we probably don't need it, thanks to ScmRef type
 	};
 
 	class ScmConsFunc: public ScmFunc {

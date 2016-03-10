@@ -191,18 +191,21 @@ namespace llscm {
 	P_ScmObj ScmSym::CT_Eval(P_ScmEnv env) {
 		P_ScmObj sym = shared_ptr<ScmObj>(this);
 		P_ScmObj last_sym;
+		string last_sym_name;
 
 		do {
 			last_sym = sym;
 			sym = env->get(last_sym);
 		} while(sym && sym->t == T_SYM);
 
+		last_sym_name = DPC<ScmSym>(last_sym)->val;
+
 		if (!sym) {
-			env->error(DPC<ScmSym>(last_sym)->val + " is not defined.");
+			env->error(last_sym_name + " is not defined.");
 			return nullptr;
 		}
 
-		return last_sym;
+		return make_shared<ScmRef>(last_sym_name, sym);
 	}
 
 	P_ScmObj ScmCons::CT_Eval(P_ScmEnv env) {
@@ -262,7 +265,7 @@ namespace llscm {
 				e = e->CT_Eval(new_env);
 			});
 
-			fn_env = new_env;
+			fn_env = new_env; // TODO: remove
 		}
 		return P_ScmObj(this);
 	}
@@ -278,18 +281,28 @@ namespace llscm {
 
 
 	P_ScmObj ScmCall::CT_Eval(P_ScmEnv env) {
-		P_ScmObj func;
+		P_ScmObj obj;
+		shared_ptr<ScmRef> fref;
 		fexpr = fexpr->CT_Eval(env);
+		fref = DPC<ScmRef>(fexpr);
+
 		// After evaluation of fexpr, it can either be ScmSym bound to ScmFunc
 		// or some ScmExpr (Quote, If, Let). It cannot be Lambda because that is reduced
 		// to the first case after fexpr->CT_Eval. We know for certain that Quote won't
 		// be a valid case as it always returns data.
-		if (fexpr->t == T_SYM && (func = env->get(fexpr))->t == T_FUNC) {
-			// Function is known at compilation time - we can hardcode its pointer
-			indirect = false;
-			fexpr = func; // We don't call CT_Eval on func here - that's done from its definition.
+		if (fref) {
+			obj = fref->ref_obj;
 		}
-		else if (fexpr->t == T_EXPR && !DPC<ScmQuoteSyntax>(fexpr)) {
+		else {
+			obj = fexpr;
+		}
+
+		if (obj->t == T_FUNC) {
+			// Function is known at compilation time - we can hardcode its pointer
+			// TODO: check if the number of given arguments corresponds to function arity
+			indirect = false;
+		}
+		else if (obj->t == T_EXPR && !DPC<ScmQuoteSyntax>(obj)) {
 			// TODO: this could be optimized further...
 			// Maybe we could traverse the expression recursively and determine
 			// whether it returns ScmFunc. That way we could eliminate more invalid
@@ -376,7 +389,7 @@ namespace llscm {
 
 		// We've moved the inplace lambda definition to a separate node
 		// at the start of ScmProg and now we just return the unique symbol bound to it.
-		return fsym;
+		return make_shared<ScmRef>(fname, func);
 	}
 
 	ostream &ScmLambdaSyntax::printSrc(ostream &os) const {
