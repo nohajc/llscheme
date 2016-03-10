@@ -58,7 +58,6 @@ namespace llscm {
 			t = type;
 		}
 
-		virtual ~ScmObj() {}
 		virtual ostream & print(ostream & os, int tabs = 0) const {
 			return os;
 		}
@@ -208,7 +207,6 @@ namespace llscm {
 	class ScmExpr: public ScmObj {
 	public:
 		ScmExpr(): ScmObj(T_EXPR) {}
-		//virtual ~ScmExpr();
 	};
 
 	// When args and bodies are set to nullptr, ScmFunc
