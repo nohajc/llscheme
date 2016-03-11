@@ -211,14 +211,18 @@ namespace llscm {
 			return nullptr;
 		}
 
-
-
 		return make_shared<ScmRef>(last_sym_name, sym);
 	}
 
 	P_ScmObj ScmCons::CT_Eval(P_ScmEnv env) {
 		car = car->CT_Eval(env);
+		if (env->fail()) {
+			return nullptr;
+		}
 		cdr = cdr->CT_Eval(env);
+		if (env->fail()) {
+			return nullptr;
+		}
 
 		return shared_from_this();
 	}
@@ -272,8 +276,9 @@ namespace llscm {
 			DPC<ScmCons>(body_list)->each([&new_env](P_ScmObj & e) {
 				e = e->CT_Eval(new_env);
 			});
-
-			//fn_env = new_env; // TODO: remove
+			if (new_env->fail()) {
+				return nullptr;
+			}
 		}
 		return shared_from_this();
 	}
@@ -328,6 +333,9 @@ namespace llscm {
 		}
 
 		arg_list = arg_list->CT_Eval(env);
+		if (env->fail()) {
+			return nullptr;
+		}
 		return shared_from_this();
 	}
 
@@ -346,6 +354,9 @@ namespace llscm {
 		//P_ScmObj lambda = DPC<ScmLambdaSyntax>(val);
 
 		val = val->CT_Eval(env);
+		if (env->fail()) {
+			return nullptr;
+		}
 
 		// Bind symbol to value
 		env->set(name, val);
@@ -372,8 +383,12 @@ namespace llscm {
 				move(arg_list), move(body_list)
 		);
 		P_ScmObj def_var = make_shared<ScmDefineVarSyntax>(name, func);
+		def_var = def_var->CT_Eval(env);
+		if (env->fail()) {
+			return nullptr;
+		}
 
-		return def_var->CT_Eval(env);
+		return def_var;
 	}
 
 	ostream &ScmDefineFuncSyntax::printSrc(ostream &os) const {
@@ -400,7 +415,11 @@ namespace llscm {
 		);
 		P_ScmObj def_var = make_shared<ScmDefineVarSyntax>(fsym, func);
 		// Prepends the definition to env->prog, runs CT_Eval on the definition.
-		env->prog.push_front(def_var->CT_Eval(env));
+		def_var = def_var->CT_Eval(env);
+		if (env->fail()) {
+			return nullptr;
+		}
+		env->prog.push_front(def_var);
 
 		// We've moved the inplace lambda definition to a separate node
 		// at the start of ScmProg and now we just return the unique symbol bound to it.
@@ -420,8 +439,17 @@ namespace llscm {
 	P_ScmObj ScmIfSyntax::CT_Eval(P_ScmEnv env) {
 		// TODO: detect dead branches
 		cond_expr = cond_expr->CT_Eval(env);
+		if (env->fail()) {
+			return nullptr;
+		}
 		then_expr = then_expr->CT_Eval(env);
+		if (env->fail()) {
+			return nullptr;
+		}
 		else_expr = else_expr->CT_Eval(env);
+		if (env->fail()) {
+			return nullptr;
+		}
 		return shared_from_this();
 	}
 
@@ -452,8 +480,14 @@ namespace llscm {
 			expr = expr->CT_Eval(env);
 			let_env->set(id, expr);
 		});
+		if (env->fail()) {
+			return nullptr;
+		}
 		// Evals body_list in the new environment.
 		body_list = body_list->CT_Eval(let_env);
+		if (let_env->fail()) {
+			return nullptr;
+		}
 
 		return shared_from_this();
 	}

@@ -135,7 +135,6 @@ namespace llscm {
 		ScmLit(ScmType type, const string & value):
 				ScmObj(type), val(value) {}
 
-		int32_t length; // TODO: remove... useless
 		string val;
 	};
 
@@ -225,7 +224,6 @@ namespace llscm {
 		int32_t argc_expected;
 		P_ScmObj arg_list;
 		P_ScmObj body_list;
-		//P_ScmEnv fn_env; // TODO: remove this - we probably don't need it, thanks to ScmRef type
 	};
 
 	class ScmConsFunc: public ScmFunc {
