@@ -8,10 +8,15 @@
 #include <string>
 #include <vector>
 #include <llvm/ADT/STLExtras.h>
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Verifier.h"
 #include "common.hpp"
 
 namespace llscm {
 	using namespace std;
+	using namespace llvm;
 
 	extern const int32_t ArgsAnyCount;
 
@@ -73,6 +78,7 @@ namespace llscm {
 		}
 
 		ScmType t;
+		Value * IR_val;
 	};
 
 	class ScmArg: public ScmObj {
@@ -80,9 +86,7 @@ namespace llscm {
 		ScmArg(): ScmObj(T_ARG) {}
 	};
 
-	//typedef unique_ptr<ScmObj> P_ScmObj;
 	typedef shared_ptr<ScmObj> P_ScmObj;
-	//typedef char scm_op;
 
 	class ScmInt: public ScmObj {
 		virtual ostream & print(ostream & os, int tabs) const;

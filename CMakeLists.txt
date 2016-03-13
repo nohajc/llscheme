@@ -26,7 +26,7 @@ set(SOURCE_FILES
         include/ast.hpp
         src/environment.cpp
         include/environment.hpp
-        include/common.hpp)
+        include/common.hpp src/codegen.cpp include/codegen.hpp)
 
 set(EXEC_FILES
         src/driver.cpp

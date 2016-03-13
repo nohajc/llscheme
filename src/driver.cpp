@@ -7,6 +7,7 @@
 #include "../include/driver.hpp"
 #include "../include/parser.hpp"
 #include "../include/environment.hpp"
+#include "../include/codegen.hpp"
 
 namespace llscm {
 	using namespace std;
@@ -30,6 +31,9 @@ namespace llscm {
 			e->printSrc(cerr);
 			cerr << endl;
 		}
+
+		ScmCodeGen cg(getGlobalContext());
+		cg.dump();
 
 		return true;
 	}
