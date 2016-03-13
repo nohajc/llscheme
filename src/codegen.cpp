@@ -2,21 +2,13 @@
 #include "../include/codegen.hpp"
 
 namespace llscm {
-    ScmCodeGen::ScmCodeGen(LLVMContext &ctxt) : context(ctxt), builder(ctxt) {
+    ScmCodeGen::ScmCodeGen(LLVMContext &ctxt, ScmProg * tree):
+            context(ctxt), builder(ctxt), ast(tree) {
         module = make_unique<Module>("scm_module", context);
         initTypes();
+        testAstVisit();
         addTestFunc();
     }
-
-    /*
-     Type * scm_type;
-     Type * scm_int;
-     Type * scm_float;
-     Type * scm_str;
-     Type * scm_sym;
-     Type * scm_cons;
-     Type * scm_func;
-    */
 
     void ScmCodeGen::initTypes() {
         vector<Type*> fields;
@@ -103,6 +95,20 @@ namespace llscm {
         builder.CreateAlloca(t.scm_cons);
         builder.CreateAlloca(t.scm_func);
         builder.CreateRetVoid();
+    }
+
+    void ScmCodeGen::testAstVisit() {
+        Value * code = vis.codegen(ast);
+        assert(code == nullptr);
+    }
+
+    any_ptr AstCGVisitor::visit(const ScmProg * node) const {
+        // Test
+        for (auto & e: *node) {
+            e->printSrc(cerr);
+            cerr << endl;
+        }
+        return any_ptr();
     }
 }
 

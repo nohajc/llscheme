@@ -19,8 +19,6 @@ namespace llscm {
 		}
 	};*/
 
-	typedef list<P_ScmObj> ScmProg;
-
 	class Parser {
 		const unique_ptr<Reader>& reader;
 		bool err_flag;

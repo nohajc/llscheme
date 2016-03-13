@@ -6,6 +6,10 @@
 // It serves as a type safe alternative to void *.
 // We only support pointers because if non-pointer types were used,
 // any_cast would have to throw an exception. LLVM does not like exceptions.
+// When a non-pointer type is passed to any_ptr constructor, it is allocated
+// on the heap and its pointer is stored in the holder. This is also the only
+// case when any_ptr containter owns the pointer and deletes it automatically
+// in holder destructor. Otherwise the pointer is presumed to be owned by someone else.
 
 #include <typeinfo>
 #include <memory>
@@ -26,8 +30,17 @@ public:
     class holder: public placeholder {
     public:
         T * val;
+        bool has_ownership;
 
-        holder(T * v): val(v) {}
+        holder(T * v, bool own = false): val(v) {
+            has_ownership = own;
+        }
+
+        virtual ~holder() {
+            if (has_ownership) {
+                delete val;
+            }
+        }
 
         virtual const type_info & type() const {
             return typeid(T);
@@ -43,6 +56,9 @@ public:
 
     template<typename T>
     any_ptr(T * v): dat(new holder<T>(v)) {}
+
+    template<typename T>
+    any_ptr(const T & v): dat(new holder<T>(new T(v), true)) {}
 
     any_ptr(const any_ptr & other):
             dat(other.dat ? other.dat->clone() : nullptr) {}

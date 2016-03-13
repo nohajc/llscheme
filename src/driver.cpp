@@ -32,7 +32,7 @@ namespace llscm {
 			cerr << endl;
 		}
 
-		ScmCodeGen cg(getGlobalContext());
+		ScmCodeGen cg(getGlobalContext(), &prog);
 		cg.dump();
 
 		return true;

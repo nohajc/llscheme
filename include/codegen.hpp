@@ -5,15 +5,29 @@
 #include <llvm/IR/Module.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/IRBuilder.h>
+#include "ast_visitor.hpp"
+#include "ast.hpp"
 
 namespace llscm {
     using namespace std;
     using namespace llvm;
 
+    class AstCGVisitor: public AstVisitor {
+    public:
+        virtual any_ptr visit(const ScmProg * node) const;
+
+        inline Value * codegen(VisitableObj * node) {
+            any_ptr ret = node->accept(this);
+            return APC<Value>(ret);
+        }
+    };
+
     class ScmCodeGen {
         unique_ptr<Module> module;
         LLVMContext & context;
         IRBuilder<> builder;
+        VisitableObj * ast;
+        AstCGVisitor vis;
 
         struct {
             StructType * scm_type;
@@ -28,8 +42,9 @@ namespace llscm {
 
         void initTypes();
         void addTestFunc();
+        void testAstVisit();
     public:
-        ScmCodeGen(LLVMContext & ctxt);
+        ScmCodeGen(LLVMContext & ctxt, ScmProg * tree);
         void dump() {
             module->dump();
         }

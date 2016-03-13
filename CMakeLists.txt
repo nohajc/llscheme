@@ -29,11 +29,13 @@ set(SOURCE_FILES
         include/common.hpp
         src/codegen.cpp
         include/codegen.hpp
-        include/any_ptr.hpp)
+        include/any_ptr.hpp
+        include/ast_visitor.hpp
+        src/ast_visitor.cpp)
 
 set(EXEC_FILES
         src/driver.cpp
-        include/driver.hpp)
+        include/driver.hpp src/ast_visitor.cpp)
 
 set(TEST_FILES
         src/test/main.cpp src/test/environment.cpp src/test/any_ptr.cpp)
