@@ -26,14 +26,17 @@ set(SOURCE_FILES
         include/ast.hpp
         src/environment.cpp
         include/environment.hpp
-        include/common.hpp src/codegen.cpp include/codegen.hpp)
+        include/common.hpp
+        src/codegen.cpp
+        include/codegen.hpp
+        include/any_ptr.hpp)
 
 set(EXEC_FILES
         src/driver.cpp
         include/driver.hpp)
 
 set(TEST_FILES
-        src/test/main.cpp src/test/environment.cpp)
+        src/test/main.cpp src/test/environment.cpp src/test/any_ptr.cpp)
 
 add_executable(schemec ${SOURCE_FILES} ${EXEC_FILES})
 add_executable(unit_tests ${SOURCE_FILES} ${TEST_FILES})
