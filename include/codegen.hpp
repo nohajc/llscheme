@@ -14,7 +14,7 @@ namespace llscm {
 
     class AstCGVisitor: public AstVisitor {
     public:
-        virtual any_ptr visit(const ScmProg * node) const;
+        virtual any_ptr visit(ScmProg * node);
 
         inline Value * codegen(VisitableObj * node) {
             any_ptr ret = node->accept(this);

@@ -321,6 +321,7 @@ namespace llscm {
 
 		P_ScmObj name;
 		P_ScmObj val;
+		bool is_val_func; // For LLVM IR codegen
 	};
 
 	class ScmDefineFuncSyntax: public ScmDefineSyntax, public Visitable<ScmDefineFuncSyntax> {

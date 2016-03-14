@@ -102,7 +102,7 @@ namespace llscm {
         assert(code == nullptr);
     }
 
-    any_ptr AstCGVisitor::visit(const ScmProg * node) const {
+    any_ptr AstCGVisitor::visit(ScmProg *node) {
         // Test
         for (auto & e: *node) {
             e->printSrc(cerr);

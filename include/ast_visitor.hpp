@@ -27,37 +27,37 @@ namespace llscm {
 
     class AstVisitor {
     public:
-        virtual any_ptr visit(const ScmProg * node) const;
-        virtual any_ptr visit(const ScmObj * node) const;
-        virtual any_ptr visit(const ScmInt * node) const;
-        virtual any_ptr visit(const ScmFloat * node) const;
-        virtual any_ptr visit(const ScmTrue * node) const;
-        virtual any_ptr visit(const ScmFalse * node) const;
-        virtual any_ptr visit(const ScmNull * node) const;
-        virtual any_ptr visit(const ScmStr * node) const;
-        virtual any_ptr visit(const ScmSym * node) const;
-        virtual any_ptr visit(const ScmRef * node) const;
-        virtual any_ptr visit(const ScmCons * node) const;
-        virtual any_ptr visit(const ScmFunc * node) const;
-        virtual any_ptr visit(const ScmCall * node) const;
-        virtual any_ptr visit(const ScmDefineVarSyntax * node) const;
-        virtual any_ptr visit(const ScmDefineFuncSyntax * node) const;
-        virtual any_ptr visit(const ScmLambdaSyntax * node) const;
-        virtual any_ptr visit(const ScmQuoteSyntax * node) const;
-        virtual any_ptr visit(const ScmIfSyntax * node) const;
-        virtual any_ptr visit(const ScmLetSyntax * node) const;
+        virtual any_ptr visit(ScmProg *node);
+        virtual any_ptr visit(ScmObj * node);
+        virtual any_ptr visit(ScmInt * node);
+        virtual any_ptr visit(ScmFloat * node);
+        virtual any_ptr visit(ScmTrue * node);
+        virtual any_ptr visit(ScmFalse * node);
+        virtual any_ptr visit(ScmNull * node);
+        virtual any_ptr visit(ScmStr * node);
+        virtual any_ptr visit(ScmSym * node);
+        virtual any_ptr visit(ScmRef * node);
+        virtual any_ptr visit(ScmCons * node);
+        virtual any_ptr visit(ScmFunc * node);
+        virtual any_ptr visit(ScmCall * node);
+        virtual any_ptr visit(ScmDefineVarSyntax * node);
+        virtual any_ptr visit(ScmDefineFuncSyntax * node);
+        virtual any_ptr visit(ScmLambdaSyntax * node);
+        virtual any_ptr visit(ScmQuoteSyntax * node);
+        virtual any_ptr visit(ScmIfSyntax * node);
+        virtual any_ptr visit(ScmLetSyntax * node);
     };
 
     class VisitableObj {
     public:
-        virtual any_ptr accept(AstVisitor * visitor) const = 0;
+        virtual any_ptr accept(AstVisitor * visitor) = 0;
     };
 
     template<typename T>
     class Visitable: public VisitableObj {
     public:
-        virtual any_ptr accept(AstVisitor * visitor) const {
-            return visitor->visit(static_cast<const T*>(this));
+        virtual any_ptr accept(AstVisitor * visitor) {
+            return visitor->visit(static_cast<T*>(this));
         }
     };
 }
