@@ -98,11 +98,11 @@ namespace llscm {
     }
 
     void ScmCodeGen::testAstVisit() {
-        Value * code = vis.codegen(ast);
+        Value * code = codegen(ast);
         assert(code == nullptr);
     }
 
-    any_ptr AstCGVisitor::visit(ScmProg *node) {
+    any_ptr ScmCodeGen::visit(ScmProg *node) {
         // Test
         for (auto & e: *node) {
             e->printSrc(cerr);

@@ -12,22 +12,11 @@ namespace llscm {
     using namespace std;
     using namespace llvm;
 
-    class AstCGVisitor: public AstVisitor {
-    public:
-        virtual any_ptr visit(ScmProg * node);
-
-        inline Value * codegen(VisitableObj * node) {
-            any_ptr ret = node->accept(this);
-            return APC<Value>(ret);
-        }
-    };
-
-    class ScmCodeGen {
+    class ScmCodeGen: public AstVisitor {
         unique_ptr<Module> module;
         LLVMContext & context;
         IRBuilder<> builder;
         VisitableObj * ast;
-        AstCGVisitor vis;
 
         struct {
             StructType * scm_type;
@@ -43,6 +32,13 @@ namespace llscm {
         void initTypes();
         void addTestFunc();
         void testAstVisit();
+
+        virtual any_ptr visit(ScmProg * node);
+
+        inline Value * codegen(VisitableObj * node) {
+            any_ptr ret = node->accept(this);
+            return APC<Value>(ret);
+        }
     public:
         ScmCodeGen(LLVMContext & ctxt, ScmProg * tree);
         void dump() {
