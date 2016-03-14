@@ -30,6 +30,7 @@ namespace llscm {
         else {
             top_level_env = penv->top_level_env;
         }
+        err_flag = false;
     }
 
     P_ScmObj ScmEnv::get(P_ScmObj k, P_ScmEnv * def_env) {
