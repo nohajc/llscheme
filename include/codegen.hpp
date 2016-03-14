@@ -30,6 +30,7 @@ namespace llscm {
         } t;
 
         void initTypes();
+        void addMainFunc(); // Called when we want to compile a standalone app
         void addTestFunc();
         void testAstVisit();
 

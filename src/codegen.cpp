@@ -7,7 +7,8 @@ namespace llscm {
         module = make_unique<Module>("scm_module", context);
         initTypes();
         testAstVisit();
-        addTestFunc();
+        //addTestFunc();
+        addMainFunc(); // This call will be conditional
     }
 
     void ScmCodeGen::initTypes() {
@@ -67,6 +68,7 @@ namespace llscm {
         }
 
         // %scm_func = type { i32, i32, %scm_type* (i32, ...)* }
+        // TODO: every function does not have to be varargs
         t.scm_fn_sig = FunctionType::get(scm_type_ptr, { ti32 }, true);
         scm_fn_ptr = PointerType::get(t.scm_fn_sig, 0);
         t.scm_func = module->getTypeByName("scm_func");
@@ -100,6 +102,46 @@ namespace llscm {
     void ScmCodeGen::testAstVisit() {
         Value * code = codegen(ast);
         assert(code == nullptr);
+    }
+
+    void ScmCodeGen::addMainFunc() {
+        vector<Type*> main_args_type = {
+                builder.getInt32Ty(),
+                PointerType::get(builder.getInt8PtrTy(0), 0)
+        };
+        FunctionType * main_func_type = FunctionType::get(
+                builder.getInt32Ty(),
+                main_args_type,
+                false
+        );
+        Function * main_func = Function::Create(
+                main_func_type,
+                GlobalValue::ExternalLinkage,
+                "main", module.get()
+        );
+
+        main_func->setDoesNotThrow();
+        main_func->setHasUWTable();
+
+        auto args = main_func->arg_begin();
+        Value * int_argc = args++;
+        Value * ptr_argv = args++;
+        int_argc->setName("argc");
+        ptr_argv->setName("argv");
+        // TODO: wrap arguments in Scm compatible objects
+
+        BasicBlock * bb = BasicBlock::Create(context, "entry", main_func);
+        builder.SetInsertPoint(bb);
+
+        GlobalVariable * g_exit_code = new GlobalVariable(
+                *module, builder.getInt32Ty(), false,
+                GlobalValue::InternalLinkage,
+                builder.getInt32(0), "exit_code"
+        );
+
+        LoadInst * exit_c = builder.CreateLoad(g_exit_code);
+        ReturnInst * ret = builder.CreateRet(exit_c);
+        builder.SetInsertPoint(ret);
     }
 
     any_ptr ScmCodeGen::visit(ScmProg *node) {
