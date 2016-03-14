@@ -2,7 +2,7 @@
 #define LLSCHEME_ANY_PTR_HPP
 
 // A simplified version of boost::any class.
-// It is capable of holding generic pointer.
+// It is capable of holding a generic pointer.
 // It serves as a type safe alternative to void *.
 // We only support pointers because if non-pointer types were used,
 // any_cast would have to throw an exception. LLVM does not like exceptions.
@@ -10,9 +10,13 @@
 // on the heap and its pointer is stored in the holder. This is also the only
 // case when any_ptr containter owns the pointer and deletes it automatically
 // in holder destructor. Otherwise the pointer is presumed to be owned by someone else.
+// It is considerably slower than void pointer, therefore we use it in the Debug build only.
+
+#define APC any_ptr_cast
+
+#ifdef DEBUG
 
 #include <typeinfo>
-#include <memory>
 
 using namespace std;
 
@@ -87,5 +91,34 @@ T * any_ptr_cast(const any_ptr & ptr) {
     }
     return nullptr;
 }
+
+#else
+
+// This is way faster but type unsafe. Used in Release build.
+// This is basically just a void * pointer wrapped in a class
+// which allows us to omit explicit casts to any_ptr type
+// because there's a template constructor for every type we'd
+// like to store. Casting from any_ptr to the original type is
+// still necessary, so we have also a simplified any_ptr_cast
+// helper which does const_ and static_cast.
+
+class any_ptr {
+    const void * val;
+public:
+    any_ptr(): val(nullptr) {}
+
+    template<typename T>
+    any_ptr(T * v): val(static_cast<const void*>(v)) {}
+
+    template<typename T>
+    friend T * any_ptr_cast(const any_ptr & ptr);
+};
+
+template<typename T>
+T * any_ptr_cast(const any_ptr & ptr) {
+    return static_cast<T*>(const_cast<void*>(ptr.val));
+}
+
+#endif
 
 #endif //LLSCHEME_ANY_PTR_HPP
