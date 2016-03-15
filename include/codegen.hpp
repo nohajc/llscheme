@@ -34,12 +34,39 @@ namespace llscm {
         void addTestFunc();
         void testAstVisit();
 
+        /*
+            class ScmProg;
+            class ScmObj;
+            class ScmInt;
+            class ScmFloat;
+            class ScmTrue;
+            class ScmFalse;
+            class ScmNull;
+            class ScmStr;
+            class ScmSym;
+            class ScmRef;
+            class ScmCons;
+            class ScmFunc;
+            class ScmCall;
+            class ScmDefineVarSyntax;
+            class ScmDefineFuncSyntax;
+            class ScmLambdaSyntax;
+            class ScmQuoteSyntax;
+            class ScmIfSyntax;
+            class ScmLetSyntax;
+        */
+
         virtual any_ptr visit(ScmProg * node);
+        virtual any_ptr visit(ScmInt * node);
 
         inline Value * codegen(VisitableObj * node) {
             any_ptr ret = node->accept(this);
             return APC<Value>(ret);
         }
+
+        /*inline Value * codegen(P_ScmObj node) {
+            return codegen(node.get());
+        }*/
     public:
         ScmCodeGen(LLVMContext & ctxt, ScmProg * tree);
         void dump() {

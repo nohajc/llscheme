@@ -1,5 +1,6 @@
 #include <llvm/ADT/STLExtras.h>
 #include "../include/codegen.hpp"
+#include "../include/debug.hpp"
 
 namespace llscm {
     ScmCodeGen::ScmCodeGen(LLVMContext &ctxt, ScmProg * tree):
@@ -144,13 +145,21 @@ namespace llscm {
         builder.SetInsertPoint(ret);
     }
 
-    any_ptr ScmCodeGen::visit(ScmProg *node) {
-        // Test
+    any_ptr ScmCodeGen::visit(ScmProg * node) {
+        D(cerr << "VISITED ScmProg!" << endl);
         for (auto & e: *node) {
-            e->printSrc(cerr);
-            cerr << endl;
+            //e->printSrc(cerr);
+            //cerr << endl;
+            codegen(e.get());
         }
         return any_ptr();
     }
+
+    any_ptr ScmCodeGen::visit(ScmInt * node) {
+        D(cerr << "VISITED ScmInt!" << endl);
+        return builder.getInt64((uint64_t)node->val);
+    }
+
+
 }
 

@@ -486,7 +486,7 @@ namespace llscm {
 				return makeScmList(move(lst));
 			}
 			obj = NT_Form();
-			if (DPC<ScmDefineSyntax>(obj)) {
+			if (obj->t == T_DEF) {
 				expr = false;
 			}
 			else {

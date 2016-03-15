@@ -1,6 +1,7 @@
 #ifndef LLSCHEME_AST_VISITOR_HPP
 #define LLSCHEME_AST_VISITOR_HPP
 
+#include <utility>
 #include "any_ptr.hpp"
 
 namespace llscm {
@@ -53,11 +54,17 @@ namespace llscm {
         virtual any_ptr accept(AstVisitor * visitor) = 0;
     };
 
-    template<typename T>
-    class Visitable: public VisitableObj {
+    // This brilliant trick comes from http://stackoverflow.com/a/7874289
+    // With this we can use CRTP in multi-level class hierarchy!
+    template<class Derived, class Base = VisitableObj>
+    class Visitable: public Base {
     public:
+        // Parent constructor "passthrough"
+        template<typename ...Args>
+        Visitable(Args && ...args): Base(std::forward<Args>(args)...) {}
+
         virtual any_ptr accept(AstVisitor * visitor) {
-            return visitor->visit(static_cast<T*>(this));
+            return visitor->visit(static_cast<Derived*>(this));
         }
     };
 }

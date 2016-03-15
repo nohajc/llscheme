@@ -37,7 +37,8 @@ namespace llscm {
 		T_EXPR,
 		T_FUNC,
 		T_CALL,
-		T_VECTOR
+		T_VECTOR,
+		T_PROG
 	};
 
 	/*
@@ -55,8 +56,6 @@ namespace llscm {
 	typedef shared_ptr<ScmObj> P_ScmObj;
 	typedef shared_ptr<ScmEnv> P_ScmEnv;
 
-	class ScmProg: public list<P_ScmObj>, public Visitable<ScmProg> {};
-
 	class ScmObj: public enable_shared_from_this<ScmObj>, public Visitable<ScmObj> {
 	protected:
 		void printTabs(ostream & os, int tabs) const {
@@ -65,6 +64,7 @@ namespace llscm {
 	public:
 		ScmObj(ScmType type) {
 			t = type;
+			IR_val = nullptr;
 		}
 
 		virtual ostream & print(ostream & os, int tabs = 0) const {
@@ -85,75 +85,93 @@ namespace llscm {
 		Value * IR_val;
 	};
 
-	class ScmArg: public ScmObj {
+	class ScmProg: public Visitable<ScmProg, ScmObj> {
+		list<P_ScmObj> form_lst;
 	public:
-		ScmArg(): ScmObj(T_ARG) {}
+		ScmProg(): Visitable(T_PROG) {}
+		void push_front(P_ScmObj o) {
+			form_lst.push_front(o);
+		}
+		void push_back(P_ScmObj o) {
+			form_lst.push_back(o);
+		}
+		list<P_ScmObj>::iterator begin() {
+			return form_lst.begin();
+		}
+		list<P_ScmObj>::iterator end() {
+			return form_lst.end();
+		}
+	};
+
+	class ScmArg: public Visitable<ScmArg, ScmObj> {
+	public:
+		ScmArg(): Visitable(T_ARG) {}
 	};
 
 	typedef shared_ptr<ScmObj> P_ScmObj;
 
-	class ScmInt: public ScmObj, public Visitable<ScmInt> {
+	class ScmInt: public Visitable<ScmInt, ScmObj> {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;
 
 	public:
-		ScmInt(int64_t value): ScmObj(T_INT) {
+		ScmInt(int64_t value): Visitable(T_INT) {
 			val = value;
 		}
 
 		int64_t val;
 	};
 
-	class ScmFloat: public ScmObj, public Visitable<ScmFloat> {
+	class ScmFloat: public Visitable<ScmFloat, ScmObj> {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;
 	public:
-		ScmFloat(double value): ScmObj(T_FLOAT) {
+		ScmFloat(double value): Visitable(T_FLOAT) {
 			val = value;
 		}
 
 		double val;
 	};
 
-	class ScmTrue: public ScmObj, public Visitable<ScmTrue> {
+	class ScmTrue: public Visitable<ScmTrue, ScmObj> {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;
 	public:
-		ScmTrue(): ScmObj(T_TRUE) {}
+		ScmTrue(): Visitable(T_TRUE) {}
 	};
 
-	class ScmFalse: public ScmObj, public Visitable<ScmFalse> {
+	class ScmFalse: public Visitable<ScmFalse, ScmObj> {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;
 	public:
-		ScmFalse(): ScmObj(T_FALSE) {}
+		ScmFalse(): Visitable(T_FALSE) {}
 	};
 
-	class ScmNull: public ScmObj, public Visitable<ScmNull> {
+	class ScmNull: public Visitable<ScmNull, ScmObj> {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;
 	public:
-		ScmNull(): ScmObj(T_NULL) {}
+		ScmNull(): Visitable(T_NULL) {}
 	};
 
-	class ScmLit: public ScmObj {
+	class ScmLit: public Visitable<ScmLit, ScmObj> {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmLit(ScmType type, const string & value):
-				ScmObj(type), val(value) {}
+				Visitable(type), val(value) {}
 
 		string val;
 	};
 
-	class ScmStr: public ScmLit, public Visitable<ScmStr> {
+	class ScmStr: public Visitable<ScmStr, ScmLit> {
 	public:
-		ScmStr(const string & value): ScmLit(T_STR, value) {}
+		ScmStr(const string & value): Visitable(T_STR, value) {}
 	};
 
-	class ScmSym: public ScmLit, public Visitable<ScmSym> {
+	class ScmSym: public Visitable<ScmSym, ScmLit> {
 	public:
-		ScmSym(const string & value): ScmLit(T_SYM, value) {}
+		ScmSym(const string & value): Visitable(T_SYM, value) {}
 		bool operator==(const ScmSym & other) const {
 			return val == other.val;
 		}
@@ -165,7 +183,7 @@ namespace llscm {
 	// (redefinitions are permitted), we need to establish a permanent binding
 	// for each occurence of every symbol. So, in the CT_Eval phase, we replace
 	// every ScmSym with ScmRef (except quoted symbols).
-	class ScmRef: public ScmLit, public Visitable<ScmRef> {
+	class ScmRef: public Visitable<ScmRef, ScmLit> {
 		// TODO: we need multiple reference types: refs to globals, locals and closure data,
 		// maybe even stack locals, heap locals and heap closure data (with the level
 		// of indirection specified - because there can be closures inside of closures).
@@ -173,17 +191,17 @@ namespace llscm {
 		// which could be passed to closure function as an implicit hidden argument.
 	public:
 		ScmRef(const string & name, P_ScmObj obj):
-				ScmLit(T_REF, name), ref_obj(obj) {}
+				Visitable(T_REF, name), ref_obj(obj) {}
 		P_ScmObj ref_obj;
 	};
 
-	class ScmCons: public ScmObj, public Visitable<ScmCons> {
+	class ScmCons: public Visitable<ScmCons, ScmObj> {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;
 		ssize_t len;
 	public:
 		ScmCons(P_ScmObj pcar, P_ScmObj pcdr):
-				ScmObj(T_CONS), car(move(pcar)), cdr(move(pcdr)) {
+				Visitable(T_CONS), car(move(pcar)), cdr(move(pcdr)) {
 			len = -1;
 		}
 		virtual ostream & printElems(ostream & os) const;
@@ -211,20 +229,20 @@ namespace llscm {
 		P_ScmObj cdr;
 	};
 
-	class ScmExpr: public ScmObj {
+	class ScmExpr: public Visitable<ScmExpr, ScmObj> {
 	public:
-		ScmExpr(): ScmObj(T_EXPR) {}
+		ScmExpr(): Visitable(T_EXPR) {}
 	};
 
 	// When args and bodies are set to nullptr, ScmFunc
 	// is a reference to an external runtime library function.
 	// There will be a compile-time environment populated with
 	// native functions that will also be updated with user definitions.
-	class ScmFunc: public ScmObj, public Visitable<ScmFunc> {
+	class ScmFunc: public Visitable<ScmFunc, ScmObj> {
 		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmFunc(int32_t argc, P_ScmObj args = nullptr, P_ScmObj bodies = nullptr):
-				ScmObj(T_FUNC), arg_list(move(args)), body_list(move(bodies)) {
+				Visitable(T_FUNC), arg_list(move(args)), body_list(move(bodies)) {
 			argc_expected = argc;
 		}
 		virtual P_ScmObj CT_Eval(P_ScmEnv env);
@@ -234,62 +252,62 @@ namespace llscm {
 		P_ScmObj body_list;
 	};
 
-	class ScmConsFunc: public ScmFunc, public Visitable<ScmConsFunc> {
+	class ScmConsFunc: public Visitable<ScmConsFunc, ScmFunc> {
 	public:
-		ScmConsFunc(): ScmFunc(2) {}
+		ScmConsFunc(): Visitable(2) {}
 	};
 
-	class ScmCarFunc: public ScmFunc, public Visitable<ScmCarFunc> {
+	class ScmCarFunc: public Visitable<ScmCarFunc, ScmFunc> {
 	public:
-		ScmCarFunc(): ScmFunc(1) {}
+		ScmCarFunc(): Visitable(1) {}
 	};
 
-	class ScmCdrFunc: public ScmFunc, public Visitable<ScmCdrFunc> {
+	class ScmCdrFunc: public Visitable<ScmCdrFunc, ScmFunc> {
 	public:
-		ScmCdrFunc(): ScmFunc(1) {}
+		ScmCdrFunc(): Visitable(1) {}
 	};
 
-	class ScmNullFunc: public ScmFunc, public Visitable<ScmNullFunc> {
+	class ScmNullFunc: public Visitable<ScmNullFunc, ScmFunc> {
 	public:
-		ScmNullFunc(): ScmFunc(1) {}
+		ScmNullFunc(): Visitable(1) {}
 	};
 
-	class ScmPlusFunc: public ScmFunc, public Visitable<ScmPlusFunc> {
+	class ScmPlusFunc: public Visitable<ScmPlusFunc, ScmFunc> {
 	public:
-		ScmPlusFunc(): ScmFunc(ArgsAnyCount) {}
+		ScmPlusFunc(): Visitable(ArgsAnyCount) {}
 	};
 
-	class ScmMinusFunc: public ScmFunc, public Visitable<ScmMinusFunc> {
+	class ScmMinusFunc: public Visitable<ScmMinusFunc, ScmFunc> {
 	public:
-		ScmMinusFunc(): ScmFunc(ArgsAnyCount) {}
+		ScmMinusFunc(): Visitable(ArgsAnyCount) {}
 	};
 
-	class ScmTimesFunc: public ScmFunc, public Visitable<ScmTimesFunc> {
+	class ScmTimesFunc: public Visitable<ScmTimesFunc, ScmFunc> {
 	public:
-		ScmTimesFunc(): ScmFunc(ArgsAnyCount) {}
+		ScmTimesFunc(): Visitable(ArgsAnyCount) {}
 	};
 
-	class ScmDivFunc: public ScmFunc, public Visitable<ScmDivFunc> {
+	class ScmDivFunc: public Visitable<ScmDivFunc, ScmFunc> {
 	public:
-		ScmDivFunc(): ScmFunc(ArgsAnyCount) {}
+		ScmDivFunc(): Visitable(ArgsAnyCount) {}
 	};
 
-	class ScmGtFunc: public ScmFunc, public Visitable<ScmGtFunc> {
+	class ScmGtFunc: public Visitable<ScmGtFunc, ScmFunc> {
 	public:
-		ScmGtFunc(): ScmFunc(2) {}
+		ScmGtFunc(): Visitable(2) {}
 	};
 
-	class ScmPrintFunc: public ScmFunc, public Visitable<ScmPrintFunc> {
+	class ScmPrintFunc: public Visitable<ScmPrintFunc, ScmFunc> {
 	public:
-		ScmPrintFunc(): ScmFunc(1) {}
+		ScmPrintFunc(): Visitable(1) {}
 	};
 
-	class ScmCall: public ScmObj, public Visitable<ScmCall> {
+	class ScmCall: public Visitable<ScmCall, ScmObj> {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmCall(P_ScmObj f, P_ScmObj args): // Unresolved call
-				ScmObj(T_CALL), fexpr(move(f)), arg_list(move(args)) {}
+				Visitable(T_CALL), fexpr(move(f)), arg_list(move(args)) {}
 		virtual P_ScmObj CT_Eval(P_ScmEnv env);
 
 		P_ScmObj fexpr; // Expression returning a function object
@@ -301,17 +319,17 @@ namespace llscm {
 	 * such as arithmetic operations for which we want to emit instructions
 	 * inline instead of an explicit function call.
 	 */
-	class ScmInlineCall: public ScmCall, public Visitable<ScmInlineCall> {
+	class ScmInlineCall: public Visitable<ScmInlineCall, ScmCall> {
 	public:
-		ScmInlineCall(P_ScmObj args): ScmCall(nullptr, move(args)) {}
+		ScmInlineCall(P_ScmObj args): Visitable(nullptr, move(args)) {}
 	};
 
-	class ScmDefineSyntax: public ScmObj, public Visitable<ScmDefineSyntax> {
+	class ScmDefineSyntax: public Visitable<ScmDefineSyntax, ScmObj> {
 	public:
-		ScmDefineSyntax(): ScmObj(T_DEF) {}
+		ScmDefineSyntax(): Visitable(T_DEF) {}
 	};
 
-	class ScmDefineVarSyntax: public ScmDefineSyntax, public Visitable<ScmDefineVarSyntax> {
+	class ScmDefineVarSyntax: public Visitable<ScmDefineVarSyntax, ScmDefineSyntax> {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;
 	public:
@@ -324,7 +342,7 @@ namespace llscm {
 		bool is_val_func; // For LLVM IR codegen
 	};
 
-	class ScmDefineFuncSyntax: public ScmDefineSyntax, public Visitable<ScmDefineFuncSyntax> {
+	class ScmDefineFuncSyntax: public Visitable<ScmDefineFuncSyntax, ScmDefineSyntax> {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;
 	public:
@@ -337,7 +355,7 @@ namespace llscm {
 		P_ScmObj body_list;
 	};
 
-	class ScmLambdaSyntax: public ScmExpr, public Visitable<ScmLambdaSyntax> {
+	class ScmLambdaSyntax: public Visitable<ScmLambdaSyntax, ScmExpr> {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;
 	public:
@@ -349,7 +367,7 @@ namespace llscm {
 		P_ScmObj body_list;
 	};
 
-	class ScmQuoteSyntax: public ScmExpr, public Visitable<ScmQuoteSyntax> {
+	class ScmQuoteSyntax: public Visitable<ScmQuoteSyntax, ScmExpr> {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;
 	public:
@@ -358,7 +376,7 @@ namespace llscm {
 		P_ScmObj data;
 	};
 
-	class ScmIfSyntax: public ScmExpr, public Visitable<ScmIfSyntax> {
+	class ScmIfSyntax: public Visitable<ScmIfSyntax, ScmExpr> {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;
 	public:
@@ -371,7 +389,7 @@ namespace llscm {
 		P_ScmObj else_expr;
 	};
 
-	class ScmLetSyntax: public ScmExpr, public Visitable<ScmLetSyntax> {
+	class ScmLetSyntax: public Visitable<ScmLetSyntax, ScmExpr> {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;
 	public:
