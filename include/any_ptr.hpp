@@ -14,7 +14,9 @@
 
 #define APC any_ptr_cast
 
-#ifdef DEBUG
+#if 0
+
+// THIS IS BROKEN: any_cast probably doesn't handle casts to a base class of polymorphic type.
 
 #include <typeinfo>
 

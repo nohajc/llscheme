@@ -80,6 +80,26 @@ namespace llscm {
         }
     }
 
+    template<>
+    Constant * ScmCodeGen::initScmConstant<ScmCodeGen::INT>(vector<Constant*> & fields, int64_t && val) {
+        D(cerr << "constant int" << endl);
+        fields.push_back(builder.getInt64((uint64_t)val));
+        return ConstantStruct::get(t.scm_int, fields);
+    }
+
+    template<>
+    Constant * ScmCodeGen::initScmConstant<ScmCodeGen::FLOAT>(vector<Constant*> & fields, double && val) {
+        D(cerr << "constant float" << endl);
+        fields.push_back(ConstantFP::get(context, APFloat(val)));
+        return ConstantStruct::get(t.scm_float, fields);
+    }
+
+    StructType *ScmCodeGen::getScmStrType(Type *t) {
+        Type * ti32 = builder.getInt32Ty();
+        vector<Type*> fields = { ti32, ti32, t };
+        return StructType::get(context, fields);
+    }
+
     void ScmCodeGen::addTestFunc() {
         Function * func = Function::Create(
                 FunctionType::get(builder.getVoidTy(), {}, false),
@@ -150,16 +170,92 @@ namespace llscm {
         for (auto & e: *node) {
             //e->printSrc(cerr);
             //cerr << endl;
-            codegen(e.get());
+            codegen(e);
         }
         return any_ptr();
     }
 
     any_ptr ScmCodeGen::visit(ScmInt * node) {
         D(cerr << "VISITED ScmInt!" << endl);
-        return builder.getInt64((uint64_t)node->val);
+        Constant * c = getScmConstant<INT>(node->val);
+        return new GlobalVariable(
+                *module, t.scm_int, true,
+                GlobalValue::ExternalLinkage,
+                c, ""
+        );
     }
 
+    any_ptr ScmCodeGen::visit(ScmFloat * node) {
+        D(cerr << "VISITED ScmFloat!" << endl);
+        Constant * c = getScmConstant<FLOAT>(node->val);
+        return new GlobalVariable(
+                *module, t.scm_float, true,
+                GlobalValue::ExternalLinkage,
+                c, ""
+        );
+    }
 
+    any_ptr ScmCodeGen::visit(ScmTrue * node) {
+        D(cerr << "VISITED ScmTrue!" << endl);
+        Constant * c = getScmConstant<TRUE>();
+        return new GlobalVariable(
+                *module, t.scm_type, true,
+                GlobalValue::ExternalLinkage,
+                c, ""
+        );
+    }
+
+    any_ptr ScmCodeGen::visit(ScmFalse * node) {
+        D(cerr << "VISITED ScmFalse!" << endl);
+        Constant * c = getScmConstant<FALSE>();
+        return new GlobalVariable(
+                *module, t.scm_type, true,
+                GlobalValue::ExternalLinkage,
+                c, ""
+        );
+    }
+
+    any_ptr ScmCodeGen::visit(ScmNull * node) {
+        D(cerr << "VISITED ScmNull!" << endl);
+        Constant * c = getScmConstant<NIL>();
+        return new GlobalVariable(
+                *module, t.scm_type, true,
+                GlobalValue::ExternalLinkage,
+                c, ""
+        );
+    }
+
+    any_ptr ScmCodeGen::visit(ScmStr * node) {
+        D(cerr << "VISITED ScmStr!" << endl);
+        // Each string has a different type according to its length.
+        // That type must match with the global variable type.
+        Constant * c = getScmConstant<STR>(node->val);
+        Type * str_type = c->getAggregateElement(2)->getType();
+        return new GlobalVariable(
+                *module, getScmStrType(str_type), true,
+                GlobalValue::ExternalLinkage,
+                c, ""
+        );
+    }
+
+    any_ptr ScmCodeGen::visit(ScmSym *node) {
+        D(cerr << "VISITED ScmSym!" << endl);
+        // Each string has a different type according to its length.
+        // That type must match with the global variable type.
+        Constant * c = getScmConstant<SYM>(node->val);
+        Type * str_type = c->getAggregateElement(2)->getType();
+        return new GlobalVariable(
+                *module, getScmStrType(str_type), true,
+                GlobalValue::ExternalLinkage,
+                c, ""
+        );
+    }
+
+    any_ptr ScmCodeGen::visit(ScmQuoteSyntax *node) {
+        D(cerr << "VISITED ScmQuoteSyntax!" << endl);
+        return codegen(node->data);
+    }
+
+    // TODO: cache results in ScmObj::IR_val, change linkage type of constants
 }
 
