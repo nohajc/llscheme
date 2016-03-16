@@ -241,12 +241,13 @@ namespace llscm {
 	class ScmFunc: public Visitable<ScmFunc, ScmObj> {
 		virtual ostream & printSrc(ostream & os) const;
 	public:
-		ScmFunc(int32_t argc, P_ScmObj args = nullptr, P_ScmObj bodies = nullptr):
-				Visitable(T_FUNC), arg_list(move(args)), body_list(move(bodies)) {
+		ScmFunc(int32_t argc, const string & fname = "", P_ScmObj args = nullptr, P_ScmObj bodies = nullptr):
+				Visitable(T_FUNC), name(fname), arg_list(move(args)), body_list(move(bodies)) {
 			argc_expected = argc;
 		}
 		virtual P_ScmObj CT_Eval(P_ScmEnv env);
 
+		string name;
 		int32_t argc_expected;
 		P_ScmObj arg_list;
 		P_ScmObj body_list;

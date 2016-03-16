@@ -36,6 +36,8 @@ namespace llscm {
             StructType * scm_cons;
             StructType * scm_func;
             FunctionType * scm_fn_sig;
+            PointerType * scm_type_ptr;
+            Type * ti32;
         } t;
 
         enum Tag {
@@ -94,8 +96,8 @@ namespace llscm {
             class ScmFunc;
             class ScmCall;
             class ScmDefineVarSyntax;
-            class ScmDefineFuncSyntax;
-            class ScmLambdaSyntax;
+            class ScmDefineFuncSyntax; // NOT PRESENT IN AST AFTER CT_Eval
+            class ScmLambdaSyntax; // NOT PRESENT IN AST AFTER CT_Eval
             class ScmQuoteSyntax;
             class ScmIfSyntax;
             class ScmLetSyntax;
@@ -111,7 +113,12 @@ namespace llscm {
         virtual any_ptr visit(ScmSym * node);
         virtual any_ptr visit(ScmRef * node);
         virtual any_ptr visit(ScmCons * node);
+        virtual any_ptr visit(ScmFunc * node);
+        virtual any_ptr visit(ScmCall * node);
+        virtual any_ptr visit(ScmDefineVarSyntax * node);
         virtual any_ptr visit(ScmQuoteSyntax * node);
+        virtual any_ptr visit(ScmIfSyntax * node);
+        virtual any_ptr visit(ScmLetSyntax * node);
 
         inline Value * codegen(VisitableObj * node) {
             any_ptr ret = node->accept(this);

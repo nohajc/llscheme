@@ -316,7 +316,15 @@ namespace llscm {
 
 		if (obj->t == T_FUNC) {
 			// Function is known at compilation time - we can hardcode its pointer
-			// TODO: check if the number of given arguments corresponds to function arity
+			int32_t argc_expected = DPC<ScmFunc>(obj)->argc_expected;
+			ssize_t argc_given = DPC<ScmCons>(arg_list)->length();
+			if (argc_expected != ArgsAnyCount && argc_given != argc_expected) {
+				stringstream ss;
+				ss << "Function expects " << argc_expected << " arguments, " << argc_given << " given.";
+				env->error(ss.str());
+				return nullptr;
+			}
+
 			indirect = false;
 		}
 		else if (obj->t == T_EXPR && !DPC<ScmQuoteSyntax>(obj)) {
@@ -382,9 +390,10 @@ namespace llscm {
 	P_ScmObj ScmDefineFuncSyntax::CT_Eval(P_ScmEnv env) {
 		// Converts to ScmDefineVarSyntax with ScmFunc.
 		// Then calls CT_Eval on the new object and return it.
+		const string & fname = DPC<ScmSym>(name)->val;
 
 		P_ScmObj func = make_shared<ScmFunc>(
-				DPC<ScmCons>(arg_list)->length(),
+				DPC<ScmCons>(arg_list)->length(), fname,
 				move(arg_list), move(body_list)
 		);
 		P_ScmObj def_var = make_shared<ScmDefineVarSyntax>(name, func);
@@ -415,7 +424,7 @@ namespace llscm {
 
 		// Converts this object to ScmDefineVarSyntax.
 		P_ScmObj func = make_shared<ScmFunc>(
-				DPC<ScmCons>(arg_list)->length(),
+				DPC<ScmCons>(arg_list)->length(), fname,
 				move(arg_list), move(body_list)
 		);
 		P_ScmObj def_var = make_shared<ScmDefineVarSyntax>(fsym, func);
