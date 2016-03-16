@@ -94,6 +94,17 @@ namespace llscm {
         return ConstantStruct::get(t.scm_float, fields);
     }
 
+    template<>
+    Constant * ScmCodeGen::initScmConstant<ScmCodeGen::CONS>(vector<Constant*> & fields, Constant *&& car, Constant *&& cdr) {
+        D(cerr << "constant cons" << endl);
+        Type * scm_type_ptr = PointerType::get(t.scm_type, 0);
+        Constant * c_car = ConstantExpr::getCast(Instruction::BitCast, car, scm_type_ptr);
+        Constant * c_cdr = ConstantExpr::getCast(Instruction::BitCast, cdr, scm_type_ptr);
+        fields.push_back(c_car);
+        fields.push_back(c_cdr);
+        return ConstantStruct::get(t.scm_cons, fields);
+    }
+
     StructType *ScmCodeGen::getScmStrType(Type *t) {
         Type * ti32 = builder.getInt32Ty();
         vector<Type*> fields = { ti32, ti32, t };
@@ -178,9 +189,9 @@ namespace llscm {
     any_ptr ScmCodeGen::visit(ScmInt * node) {
         D(cerr << "VISITED ScmInt!" << endl);
         Constant * c = getScmConstant<INT>(node->val);
-        return new GlobalVariable(
+        return node->IR_val = new GlobalVariable(
                 *module, t.scm_int, true,
-                GlobalValue::ExternalLinkage,
+                GlobalValue::InternalLinkage,
                 c, ""
         );
     }
@@ -188,9 +199,9 @@ namespace llscm {
     any_ptr ScmCodeGen::visit(ScmFloat * node) {
         D(cerr << "VISITED ScmFloat!" << endl);
         Constant * c = getScmConstant<FLOAT>(node->val);
-        return new GlobalVariable(
+        return node->IR_val = new GlobalVariable(
                 *module, t.scm_float, true,
-                GlobalValue::ExternalLinkage,
+                GlobalValue::InternalLinkage,
                 c, ""
         );
     }
@@ -198,9 +209,9 @@ namespace llscm {
     any_ptr ScmCodeGen::visit(ScmTrue * node) {
         D(cerr << "VISITED ScmTrue!" << endl);
         Constant * c = getScmConstant<TRUE>();
-        return new GlobalVariable(
+        return node->IR_val = new GlobalVariable(
                 *module, t.scm_type, true,
-                GlobalValue::ExternalLinkage,
+                GlobalValue::InternalLinkage,
                 c, ""
         );
     }
@@ -208,9 +219,9 @@ namespace llscm {
     any_ptr ScmCodeGen::visit(ScmFalse * node) {
         D(cerr << "VISITED ScmFalse!" << endl);
         Constant * c = getScmConstant<FALSE>();
-        return new GlobalVariable(
+        return node->IR_val = new GlobalVariable(
                 *module, t.scm_type, true,
-                GlobalValue::ExternalLinkage,
+                GlobalValue::InternalLinkage,
                 c, ""
         );
     }
@@ -218,9 +229,9 @@ namespace llscm {
     any_ptr ScmCodeGen::visit(ScmNull * node) {
         D(cerr << "VISITED ScmNull!" << endl);
         Constant * c = getScmConstant<NIL>();
-        return new GlobalVariable(
+        return node->IR_val = new GlobalVariable(
                 *module, t.scm_type, true,
-                GlobalValue::ExternalLinkage,
+                GlobalValue::InternalLinkage,
                 c, ""
         );
     }
@@ -231,9 +242,9 @@ namespace llscm {
         // That type must match with the global variable type.
         Constant * c = getScmConstant<STR>(node->val);
         Type * str_type = c->getAggregateElement(2)->getType();
-        return new GlobalVariable(
+        return node->IR_val = new GlobalVariable(
                 *module, getScmStrType(str_type), true,
-                GlobalValue::ExternalLinkage,
+                GlobalValue::InternalLinkage,
                 c, ""
         );
     }
@@ -244,18 +255,36 @@ namespace llscm {
         // That type must match with the global variable type.
         Constant * c = getScmConstant<SYM>(node->val);
         Type * str_type = c->getAggregateElement(2)->getType();
-        return new GlobalVariable(
+        return node->IR_val = new GlobalVariable(
                 *module, getScmStrType(str_type), true,
-                GlobalValue::ExternalLinkage,
+                GlobalValue::InternalLinkage,
+                c, ""
+        );
+    }
+
+    any_ptr ScmCodeGen::visit(ScmRef * node) {
+        D(cerr << "VISITED ScmRef!" << endl);
+        return node->ref_obj->IR_val;
+    }
+
+    any_ptr ScmCodeGen::visit(ScmCons * node) {
+        D(cerr << "VISITED ScmCons!" << endl);
+        Constant * car = dyn_cast<Constant>(codegen(node->car));
+        Constant * cdr = dyn_cast<Constant>(codegen(node->cdr));
+        assert(car);
+        assert(cdr);
+
+        Constant * c = getScmConstant<CONS>(car, cdr);
+        return node->IR_val = new GlobalVariable(
+                *module, t.scm_cons, true,
+                GlobalValue::InternalLinkage,
                 c, ""
         );
     }
 
     any_ptr ScmCodeGen::visit(ScmQuoteSyntax *node) {
         D(cerr << "VISITED ScmQuoteSyntax!" << endl);
-        return codegen(node->data);
+        return node->IR_val = codegen(node->data);
     }
-
-    // TODO: cache results in ScmObj::IR_val, change linkage type of constants
 }
 

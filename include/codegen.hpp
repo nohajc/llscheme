@@ -15,6 +15,12 @@ namespace llscm {
     using namespace std;
     using namespace llvm;
 
+    const struct {
+        const char * malloc;
+    } runtimeAPI = {
+            "scm_alloc"
+    };
+
     class ScmCodeGen: public AstVisitor {
         unique_ptr<Module> module;
         LLVMContext & context;
@@ -45,6 +51,7 @@ namespace llscm {
 
         template<Tag tag, typename ...Args>
         inline Constant * initScmConstant(vector<Constant*> & fields, Args && ...args) {
+            D(cerr << "WE DON'T WANT TO END UP HERE" << endl);
             assert(0);
             return nullptr;
         };
@@ -62,7 +69,6 @@ namespace llscm {
             fields.push_back(builder.getInt32((uint32_t)val.length()));
             fields.push_back(str);
             Constant * c = ConstantStruct::get(getScmStrType(str->getType()), fields);
-            assert(c != nullptr);
             return c;
         }
 
@@ -103,6 +109,8 @@ namespace llscm {
         virtual any_ptr visit(ScmNull * node);
         virtual any_ptr visit(ScmStr * node);
         virtual any_ptr visit(ScmSym * node);
+        virtual any_ptr visit(ScmRef * node);
+        virtual any_ptr visit(ScmCons * node);
         virtual any_ptr visit(ScmQuoteSyntax * node);
 
         inline Value * codegen(VisitableObj * node) {
