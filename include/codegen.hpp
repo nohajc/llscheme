@@ -20,6 +20,7 @@ namespace llscm {
         LLVMContext & context;
         IRBuilder<> builder;
         VisitableObj * ast;
+        Function * entry_func;
 
         struct {
             StructType * scm_type;

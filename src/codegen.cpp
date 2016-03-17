@@ -10,8 +10,10 @@ namespace llscm {
         initTypes();
         //testAstVisit();
         //addTestFunc();
+        entry_func = nullptr;
         addMainFunc(); // This call will be conditional
         codegen(ast);
+        verifyFunction(*entry_func, &errs());
     }
 
     void ScmCodeGen::initTypes() {
@@ -171,8 +173,9 @@ namespace llscm {
         );
 
         LoadInst * exit_c = builder.CreateLoad(g_exit_code);
-        ReturnInst * ret = builder.CreateRet(exit_c);
+        builder.CreateRet(exit_c);
         builder.SetInsertPoint(exit_c);
+        entry_func = main_func;
     }
 
     any_ptr ScmCodeGen::visit(ScmProg * node) {
@@ -290,7 +293,7 @@ namespace llscm {
         D(cerr << "VISITED ScmFunc!" << endl);
         if (node->IR_val) return node->IR_val;
 
-        vector<Type*> arg_types = { t.ti32 };
+        vector<Type*> arg_types;
         FunctionType * func_type;
         Function * func;
         bool varargs = false;
@@ -298,6 +301,7 @@ namespace llscm {
 
         if (node->argc_expected == ArgsAnyCount) {
             varargs = true;
+            arg_types.push_back(t.ti32);
         }
         else {
             arg_types.insert(arg_types.end(), (uint32_t)node->argc_expected, t.scm_type_ptr);
@@ -350,8 +354,17 @@ namespace llscm {
             assert(fn_obj);
             Function * func = dyn_cast<Function>(codegen(fn_obj));
 
-            DPC<ScmCons>(node->arg_list)->each([this, &args](P_ScmObj e) {
-                args.push_back(codegen(e));
+            ScmCons * arg_list = dynamic_cast<ScmCons*>(node->arg_list.get());
+            if (fn_obj->argc_expected == ArgsAnyCount) {
+                args.push_back(builder.getInt32((uint32_t)arg_list->length()));
+            }
+
+            arg_list->each([this, &args](P_ScmObj e) {
+                Value * a = codegen(e);
+                if (a->getType() != t.scm_type_ptr) {
+                    a = builder.CreateBitCast(a, t.scm_type_ptr);
+                }
+                args.push_back(a);
             });
 
             return builder.CreateCall(func, args, fn_obj->name);

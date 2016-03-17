@@ -317,7 +317,7 @@ namespace llscm {
 		if (obj->t == T_FUNC) {
 			// Function is known at compilation time - we can hardcode its pointer
 			int32_t argc_expected = DPC<ScmFunc>(obj)->argc_expected;
-			ssize_t argc_given = DPC<ScmCons>(arg_list)->length();
+			int32_t argc_given = DPC<ScmCons>(arg_list)->length();
 			if (argc_expected != ArgsAnyCount && argc_given != argc_expected) {
 				stringstream ss;
 				ss << "Function expects " << argc_expected << " arguments, " << argc_given << " given.";
