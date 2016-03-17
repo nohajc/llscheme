@@ -15,6 +15,7 @@
 #include "llvm/IR/Verifier.h"
 #include "common.hpp"
 #include "ast_visitor.hpp"
+#include "runtime.h"
 
 namespace llscm {
 	using namespace std;
@@ -241,7 +242,7 @@ namespace llscm {
 	class ScmFunc: public Visitable<ScmFunc, ScmObj> {
 		virtual ostream & printSrc(ostream & os) const;
 	public:
-		ScmFunc(int32_t argc, const string & fname = "", P_ScmObj args = nullptr, P_ScmObj bodies = nullptr):
+		ScmFunc(int32_t argc, const string & fname, P_ScmObj args = nullptr, P_ScmObj bodies = nullptr):
 				Visitable(T_FUNC), name(fname), arg_list(move(args)), body_list(move(bodies)) {
 			argc_expected = argc;
 		}
@@ -255,52 +256,52 @@ namespace llscm {
 
 	class ScmConsFunc: public Visitable<ScmConsFunc, ScmFunc> {
 	public:
-		ScmConsFunc(): Visitable(2) {}
+		ScmConsFunc(): Visitable(2, RuntimeSymbols::cons) {}
 	};
 
 	class ScmCarFunc: public Visitable<ScmCarFunc, ScmFunc> {
 	public:
-		ScmCarFunc(): Visitable(1) {}
+		ScmCarFunc(): Visitable(1, RuntimeSymbols::car) {}
 	};
 
 	class ScmCdrFunc: public Visitable<ScmCdrFunc, ScmFunc> {
 	public:
-		ScmCdrFunc(): Visitable(1) {}
+		ScmCdrFunc(): Visitable(1, RuntimeSymbols::cdr) {}
 	};
 
 	class ScmNullFunc: public Visitable<ScmNullFunc, ScmFunc> {
 	public:
-		ScmNullFunc(): Visitable(1) {}
+		ScmNullFunc(): Visitable(1, RuntimeSymbols::isNull) {}
 	};
 
 	class ScmPlusFunc: public Visitable<ScmPlusFunc, ScmFunc> {
 	public:
-		ScmPlusFunc(): Visitable(ArgsAnyCount) {}
+		ScmPlusFunc(): Visitable(ArgsAnyCount, RuntimeSymbols::plus) {}
 	};
 
 	class ScmMinusFunc: public Visitable<ScmMinusFunc, ScmFunc> {
 	public:
-		ScmMinusFunc(): Visitable(ArgsAnyCount) {}
+		ScmMinusFunc(): Visitable(ArgsAnyCount, RuntimeSymbols::minus) {}
 	};
 
 	class ScmTimesFunc: public Visitable<ScmTimesFunc, ScmFunc> {
 	public:
-		ScmTimesFunc(): Visitable(ArgsAnyCount) {}
+		ScmTimesFunc(): Visitable(ArgsAnyCount, RuntimeSymbols::times) {}
 	};
 
 	class ScmDivFunc: public Visitable<ScmDivFunc, ScmFunc> {
 	public:
-		ScmDivFunc(): Visitable(ArgsAnyCount) {}
+		ScmDivFunc(): Visitable(ArgsAnyCount, RuntimeSymbols::div) {}
 	};
 
 	class ScmGtFunc: public Visitable<ScmGtFunc, ScmFunc> {
 	public:
-		ScmGtFunc(): Visitable(2) {}
+		ScmGtFunc(): Visitable(2, RuntimeSymbols::gt) {}
 	};
 
 	class ScmPrintFunc: public Visitable<ScmPrintFunc, ScmFunc> {
 	public:
-		ScmPrintFunc(): Visitable(1) {}
+		ScmPrintFunc(): Visitable(1, RuntimeSymbols::print) {}
 	};
 
 	class ScmCall: public Visitable<ScmCall, ScmObj> {

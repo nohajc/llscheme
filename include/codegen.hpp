@@ -15,12 +15,6 @@ namespace llscm {
     using namespace std;
     using namespace llvm;
 
-    const struct {
-        const char * malloc;
-    } runtimeAPI = {
-            "scm_alloc"
-    };
-
     class ScmCodeGen: public AstVisitor {
         unique_ptr<Module> module;
         LLVMContext & context;
@@ -79,7 +73,7 @@ namespace llscm {
         void initTypes();
         void addMainFunc(); // Called when we want to compile a standalone app
         void addTestFunc();
-        void testAstVisit();
+        //void testAstVisit();
 
         /*
             class ScmProg;

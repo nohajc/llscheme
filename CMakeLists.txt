@@ -32,7 +32,8 @@ set(SOURCE_FILES
         include/codegen.hpp
         include/any_ptr.hpp
         include/ast_visitor.hpp
-        src/ast_visitor.cpp)
+        src/ast_visitor.cpp
+        src/runtime.cpp include/runtime.h)
 
 set(EXEC_FILES
         src/driver.cpp

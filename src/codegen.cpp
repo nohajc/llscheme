@@ -8,9 +8,10 @@ namespace llscm {
             context(ctxt), builder(ctxt), ast(tree) {
         module = make_unique<Module>("scm_module", context);
         initTypes();
-        testAstVisit();
+        //testAstVisit();
         //addTestFunc();
         addMainFunc(); // This call will be conditional
+        codegen(ast);
     }
 
     void ScmCodeGen::initTypes() {
@@ -129,10 +130,10 @@ namespace llscm {
         builder.CreateRetVoid();
     }
 
-    void ScmCodeGen::testAstVisit() {
+    /*void ScmCodeGen::testAstVisit() {
         Value * code = codegen(ast);
         assert(code == nullptr);
-    }
+    }*/
 
     void ScmCodeGen::addMainFunc() {
         vector<Type*> main_args_type = {
@@ -171,7 +172,7 @@ namespace llscm {
 
         LoadInst * exit_c = builder.CreateLoad(g_exit_code);
         ReturnInst * ret = builder.CreateRet(exit_c);
-        builder.SetInsertPoint(ret);
+        builder.SetInsertPoint(exit_c);
     }
 
     any_ptr ScmCodeGen::visit(ScmProg * node) {
@@ -247,7 +248,7 @@ namespace llscm {
         );
     }
 
-    any_ptr ScmCodeGen::visit(ScmSym *node) {
+    any_ptr ScmCodeGen::visit(ScmSym * node) {
         D(cerr << "VISITED ScmSym!" << endl);
         // Each string has a different type according to its length.
         // That type must match with the global variable type.
@@ -286,6 +287,9 @@ namespace llscm {
     }
 
     any_ptr ScmCodeGen::visit(ScmFunc * node) {
+        D(cerr << "VISITED ScmFunc!" << endl);
+        if (node->IR_val) return node->IR_val;
+
         vector<Type*> arg_types = { t.ti32 };
         FunctionType * func_type;
         Function * func;
@@ -301,10 +305,14 @@ namespace llscm {
         func_type = FunctionType::get(t.scm_type_ptr, arg_types, varargs);
         // TODO: How to handle redefinitions?
         func = Function::Create(
-                func_type,
+                func_type, // TODO:
                 GlobalValue::ExternalLinkage,
-                "main", module.get()
+                node->name, module.get()
         );
+
+        if (!node->arg_list) { // Return declaration only (in case of extern functions).
+            return node->IR_val = func;
+        }
 
         auto arg_it = func->args().begin();
         DPC<ScmCons>(node->arg_list)->each([&arg_it](P_ScmObj e) {
@@ -329,7 +337,25 @@ namespace llscm {
     }
 
     any_ptr ScmCodeGen::visit(ScmCall * node) {
-        return AstVisitor::visit(node);
+        D(cerr << "VISITED ScmCall!" << endl);
+        if (node->indirect) {
+            // TODO: emit code for several runtime checks of the function pointer
+            return AstVisitor::visit(node);
+        }
+        else {
+            vector<Value*> args;
+            ScmRef * fn_ref = dynamic_cast<ScmRef*>(node->fexpr.get());
+            assert(fn_ref);
+            ScmFunc * fn_obj = dynamic_cast<ScmFunc*>(fn_ref->ref_obj.get());
+            assert(fn_obj);
+            Function * func = dyn_cast<Function>(codegen(fn_obj));
+
+            DPC<ScmCons>(node->arg_list)->each([this, &args](P_ScmObj e) {
+                args.push_back(codegen(e));
+            });
+
+            return builder.CreateCall(func, args, fn_obj->name);
+        }
     }
 
     any_ptr ScmCodeGen::visit(ScmDefineVarSyntax * node) {
