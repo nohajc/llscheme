@@ -256,52 +256,52 @@ namespace llscm {
 
 	class ScmConsFunc: public Visitable<ScmConsFunc, ScmFunc> {
 	public:
-		ScmConsFunc(): Visitable(2, runtime::Symbols::cons) {}
+		ScmConsFunc(): Visitable(2, runtime::Symbol::cons) {}
 	};
 
 	class ScmCarFunc: public Visitable<ScmCarFunc, ScmFunc> {
 	public:
-		ScmCarFunc(): Visitable(1, runtime::Symbols::car) {}
+		ScmCarFunc(): Visitable(1, runtime::Symbol::car) {}
 	};
 
 	class ScmCdrFunc: public Visitable<ScmCdrFunc, ScmFunc> {
 	public:
-		ScmCdrFunc(): Visitable(1, runtime::Symbols::cdr) {}
+		ScmCdrFunc(): Visitable(1, runtime::Symbol::cdr) {}
 	};
 
 	class ScmNullFunc: public Visitable<ScmNullFunc, ScmFunc> {
 	public:
-		ScmNullFunc(): Visitable(1, runtime::Symbols::isNull) {}
+		ScmNullFunc(): Visitable(1, runtime::Symbol::isNull) {}
 	};
 
 	class ScmPlusFunc: public Visitable<ScmPlusFunc, ScmFunc> {
 	public:
-		ScmPlusFunc(): Visitable(ArgsAnyCount, runtime::Symbols::plus) {}
+		ScmPlusFunc(): Visitable(ArgsAnyCount, runtime::Symbol::plus) {}
 	};
 
 	class ScmMinusFunc: public Visitable<ScmMinusFunc, ScmFunc> {
 	public:
-		ScmMinusFunc(): Visitable(ArgsAnyCount, runtime::Symbols::minus) {}
+		ScmMinusFunc(): Visitable(ArgsAnyCount, runtime::Symbol::minus) {}
 	};
 
 	class ScmTimesFunc: public Visitable<ScmTimesFunc, ScmFunc> {
 	public:
-		ScmTimesFunc(): Visitable(ArgsAnyCount, runtime::Symbols::times) {}
+		ScmTimesFunc(): Visitable(ArgsAnyCount, runtime::Symbol::times) {}
 	};
 
 	class ScmDivFunc: public Visitable<ScmDivFunc, ScmFunc> {
 	public:
-		ScmDivFunc(): Visitable(ArgsAnyCount, runtime::Symbols::div) {}
+		ScmDivFunc(): Visitable(ArgsAnyCount, runtime::Symbol::div) {}
 	};
 
 	class ScmGtFunc: public Visitable<ScmGtFunc, ScmFunc> {
 	public:
-		ScmGtFunc(): Visitable(2, runtime::Symbols::gt) {}
+		ScmGtFunc(): Visitable(2, runtime::Symbol::gt) {}
 	};
 
 	class ScmPrintFunc: public Visitable<ScmPrintFunc, ScmFunc> {
 	public:
-		ScmPrintFunc(): Visitable(1, runtime::Symbols::print) {}
+		ScmPrintFunc(): Visitable(1, runtime::Symbol::print) {}
 	};
 
 	class ScmCall: public Visitable<ScmCall, ScmObj> {

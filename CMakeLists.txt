@@ -48,6 +48,8 @@ set(TEST_FILES
 add_executable(schemec ${SOURCE_FILES} ${EXEC_FILES})
 add_executable(unit_tests ${SOURCE_FILES} ${TEST_FILES})
 
+add_library(llscmrt STATIC src/runtime.cpp include/runtime.h)
+
 llvm_map_components_to_libnames(llvm_libs support core irreader bitreader
         analysis mc scalaropts target asmprinter selectiondag
         cppbackend cppbackendcodegen cppbackendinfo

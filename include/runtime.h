@@ -1,9 +1,15 @@
 #ifndef LLSCHEME_RUNTIME_H
 #define LLSCHEME_RUNTIME_H
 
+#include <cstdarg>
+
 namespace llscm {
     namespace runtime {
-        struct Symbols {
+        enum Tag { // Code duplication (codegen.hpp). TODO: fix
+            FALSE, TRUE, NIL, INT, FLOAT, STR, SYM, CONS, FUNC
+        };
+
+        struct Symbol {
             static const char *malloc;
             static const char *cons;
             static const char *car;
@@ -56,6 +62,14 @@ namespace llscm {
             int32_t argc;
             scm_fnptr_t fnptr;
         };
+
+        struct Constant {
+            static scm_type_t scm_null;
+        };
+
+        extern "C" {
+            scm_type_t * scm_print(scm_type_t * str);
+        }
     }
 }
 
