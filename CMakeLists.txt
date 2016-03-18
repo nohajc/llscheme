@@ -14,6 +14,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -DDEBUG")
 #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
+#set(LLVM_TARGETS_TO_BUILD all)
+
 include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 
@@ -33,11 +35,12 @@ set(SOURCE_FILES
         include/any_ptr.hpp
         include/ast_visitor.hpp
         src/ast_visitor.cpp
-        src/runtime.cpp include/runtime.h)
+        src/runtime.cpp include/runtime.h
+        src/compiler.cpp include/compiler.hpp)
 
 set(EXEC_FILES
         src/driver.cpp
-        include/driver.hpp src/ast_visitor.cpp)
+        include/driver.hpp)
 
 set(TEST_FILES
         src/test/main.cpp src/test/environment.cpp src/test/any_ptr.cpp)
@@ -45,7 +48,13 @@ set(TEST_FILES
 add_executable(schemec ${SOURCE_FILES} ${EXEC_FILES})
 add_executable(unit_tests ${SOURCE_FILES} ${TEST_FILES})
 
-llvm_map_components_to_libnames(llvm_libs support core irreader)
+llvm_map_components_to_libnames(llvm_libs support core irreader bitreader
+        analysis mc scalaropts target asmprinter selectiondag
+        cppbackend cppbackendcodegen cppbackendinfo
+        x86 x86desc x86info x86asmparser
+        bpf bpfcodegen bpfdesc bpfinfo
+        nativecodegen codegen)
+# x86codegen mirparser
 
 target_link_libraries(schemec ${llvm_libs})
 target_link_libraries(unit_tests ${llvm_libs} ${LIB_UNIT_TEST_CPP})

@@ -8,10 +8,14 @@
 #include "../include/parser.hpp"
 #include "../include/environment.hpp"
 #include "../include/codegen.hpp"
+#include "../include/compiler.hpp"
 
 namespace llscm {
 	using namespace std;
 	using namespace llvm;
+
+	int argc;
+	char ** argv;
 
 	bool compile(unique_ptr<Parser> && p) {
 		ScmProg prog = p->NT_Prog();
@@ -35,7 +39,10 @@ namespace llscm {
 		ScmCodeGen cg(getGlobalContext(), &prog);
 		cg.dump();
 
-		return true;
+		ScmCompiler scm_compiler(cg.getModule(), cg.getContext());
+		int err_code = scm_compiler.run();
+
+		return !err_code;
 	}
 
 	bool compileSourceFile(const char * fname) {
@@ -63,19 +70,4 @@ namespace llscm {
 		unique_ptr<Reader> r = make_unique<StringReader>(str);
 		return compile(make_unique<Parser>(r));
 	}
-}
-
-int main(int argc, char * argv[]) {
-	if (argc >= 2) {
-		if (!strcmp(argv[1], "-s")) {
-			if (argc != 3) return EXIT_SUCCESS;
-			if (!llscm::compileString(argv[2])) {
-				return EXIT_FAILURE;
-			}
-		}
-		else if (!llscm::compileSourceFile(argv[1])) {
-			return EXIT_FAILURE;
-		}
-	}
-	return EXIT_SUCCESS;
 }

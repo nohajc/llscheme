@@ -16,7 +16,7 @@ namespace llscm {
     using namespace llvm;
 
     class ScmCodeGen: public AstVisitor {
-        unique_ptr<Module> module;
+        shared_ptr<Module> module;
         LLVMContext & context;
         IRBuilder<> builder;
         VisitableObj * ast;
@@ -127,6 +127,13 @@ namespace llscm {
         ScmCodeGen(LLVMContext & ctxt, ScmProg * tree);
         void dump() {
             module->dump();
+        }
+        shared_ptr<Module> getModule() {
+            return module;
+        }
+
+        LLVMContext & getContext() {
+            return context;
         }
     };
 }

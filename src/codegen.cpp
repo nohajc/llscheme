@@ -6,12 +6,13 @@
 namespace llscm {
     ScmCodeGen::ScmCodeGen(LLVMContext &ctxt, ScmProg * tree):
             context(ctxt), builder(ctxt), ast(tree) {
-        module = make_unique<Module>("scm_module", context);
+        module = make_shared<Module>("scm_module", context);
         initTypes();
         //testAstVisit();
         //addTestFunc();
         entry_func = nullptr;
-        addMainFunc(); // This call will be conditional
+        // TODO: Take these methods out of the constructor
+        addMainFunc();
         codegen(ast);
         verifyFunction(*entry_func, &errs());
     }
