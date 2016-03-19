@@ -398,30 +398,3 @@ namespace llscm {
         return 0;
     }
 }
-
-
-int main(int argc, char * argv[]) {
-    llvm_shutdown_obj Y;  // Call llvm_shutdown() on exit.
-    //cl::AddExtraVersionPrinter(TargetRegistry::printRegisteredTargetsForVersion);
-
-    cl::ParseCommandLineOptions(argc, argv, "llscheme compiler\n");
-
-    llscm::argc = argc;
-    llscm::argv = argv;
-
-    if (argc >= 2) {
-        /*if (!strcmp(argv[1], "-s")) {
-            if (argc != 3) return EXIT_SUCCESS;
-
-            if (!llscm::compileString(argv[2])) {
-                return EXIT_FAILURE;
-            }
-        }
-        else {*/
-        if (!llscm::compileSourceFile(InputFilename.c_str())) {
-            return EXIT_FAILURE;
-        }
-        //}
-    }
-    return EXIT_SUCCESS;
-}

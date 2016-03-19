@@ -128,8 +128,8 @@ namespace llscm {
         void dump() {
             module->dump();
         }
-        shared_ptr<Module> getModule() {
-            return module;
+        Module * getModule() {
+            return module.get();
         }
 
         LLVMContext & getContext() {

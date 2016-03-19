@@ -35,8 +35,8 @@ set(SOURCE_FILES
         include/any_ptr.hpp
         include/ast_visitor.hpp
         src/ast_visitor.cpp
-        src/runtime.cpp include/runtime.h
-        src/compiler.cpp include/compiler.hpp)
+        src/runtime.cpp include/runtime.h)
+        #src/compiler.cpp include/compiler.hpp)
 
 set(EXEC_FILES
         src/driver.cpp
@@ -50,13 +50,15 @@ add_executable(unit_tests ${SOURCE_FILES} ${TEST_FILES})
 
 add_library(llscmrt STATIC src/runtime.cpp include/runtime.h)
 
-llvm_map_components_to_libnames(llvm_libs support core irreader bitreader
-        analysis mc scalaropts target asmprinter selectiondag
-        cppbackend cppbackendcodegen cppbackendinfo
-        x86 x86desc x86info x86asmparser
-        bpf bpfcodegen bpfdesc bpfinfo
-        nativecodegen codegen)
-# x86codegen mirparser
+llvm_map_components_to_libnames(llvm_libs support core irreader bitwriter)
+
+# This is problematic because there are different target libs on different machines
+#llvm_map_components_to_libnames(llvm_libs support core irreader bitreader
+#        analysis mc scalaropts target asmprinter selectiondag
+#        cppbackend cppbackendcodegen cppbackendinfo
+#        x86 x86desc x86info x86asmparser
+#        bpf bpfcodegen bpfdesc bpfinfo
+#        nativecodegen codegen)
 
 target_link_libraries(schemec ${llvm_libs})
 target_link_libraries(unit_tests ${llvm_libs} ${LIB_UNIT_TEST_CPP})
