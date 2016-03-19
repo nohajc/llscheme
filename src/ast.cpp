@@ -4,6 +4,7 @@
 #include <llvm/ADT/STLExtras.h>
 #include "../include/ast.hpp"
 #include "../include/environment.hpp"
+#include "../include/codegen.hpp"
 
 namespace llscm {
 	using namespace llvm;
@@ -514,5 +515,25 @@ namespace llscm {
 		os << ")";
 		return os;
 	}
+
+	ScmConsFunc::ScmConsFunc() : Visitable(2, RuntimeSymbol::cons) {}
+
+	ScmCarFunc::ScmCarFunc() : Visitable(1, RuntimeSymbol::car) {}
+
+	ScmCdrFunc::ScmCdrFunc() : Visitable(1, RuntimeSymbol::cdr) {}
+
+	ScmNullFunc::ScmNullFunc() : Visitable(1, RuntimeSymbol::isNull) {}
+
+	ScmPlusFunc::ScmPlusFunc() : Visitable(ArgsAnyCount, RuntimeSymbol::plus) {}
+
+	ScmMinusFunc::ScmMinusFunc() : Visitable(ArgsAnyCount, RuntimeSymbol::minus) {}
+
+	ScmTimesFunc::ScmTimesFunc() : Visitable(ArgsAnyCount, RuntimeSymbol::times) {}
+
+	ScmDivFunc::ScmDivFunc() : Visitable(ArgsAnyCount, RuntimeSymbol::div) {}
+
+	ScmGtFunc::ScmGtFunc() : Visitable(2, RuntimeSymbol::gt) {}
+
+	ScmPrintFunc::ScmPrintFunc() : Visitable(1, RuntimeSymbol::print) {}
 }
 

@@ -256,52 +256,52 @@ namespace llscm {
 
 	class ScmConsFunc: public Visitable<ScmConsFunc, ScmFunc> {
 	public:
-		ScmConsFunc(): Visitable(2, runtime::Symbol::cons) {}
+		ScmConsFunc();
 	};
 
 	class ScmCarFunc: public Visitable<ScmCarFunc, ScmFunc> {
 	public:
-		ScmCarFunc(): Visitable(1, runtime::Symbol::car) {}
+		ScmCarFunc();
 	};
 
 	class ScmCdrFunc: public Visitable<ScmCdrFunc, ScmFunc> {
 	public:
-		ScmCdrFunc(): Visitable(1, runtime::Symbol::cdr) {}
+		ScmCdrFunc();
 	};
 
 	class ScmNullFunc: public Visitable<ScmNullFunc, ScmFunc> {
 	public:
-		ScmNullFunc(): Visitable(1, runtime::Symbol::isNull) {}
+		ScmNullFunc();
 	};
 
 	class ScmPlusFunc: public Visitable<ScmPlusFunc, ScmFunc> {
 	public:
-		ScmPlusFunc(): Visitable(ArgsAnyCount, runtime::Symbol::plus) {}
+		ScmPlusFunc();
 	};
 
 	class ScmMinusFunc: public Visitable<ScmMinusFunc, ScmFunc> {
 	public:
-		ScmMinusFunc(): Visitable(ArgsAnyCount, runtime::Symbol::minus) {}
+		ScmMinusFunc();
 	};
 
 	class ScmTimesFunc: public Visitable<ScmTimesFunc, ScmFunc> {
 	public:
-		ScmTimesFunc(): Visitable(ArgsAnyCount, runtime::Symbol::times) {}
+		ScmTimesFunc();
 	};
 
 	class ScmDivFunc: public Visitable<ScmDivFunc, ScmFunc> {
 	public:
-		ScmDivFunc(): Visitable(ArgsAnyCount, runtime::Symbol::div) {}
+		ScmDivFunc();
 	};
 
 	class ScmGtFunc: public Visitable<ScmGtFunc, ScmFunc> {
 	public:
-		ScmGtFunc(): Visitable(2, runtime::Symbol::gt) {}
+		ScmGtFunc();
 	};
 
 	class ScmPrintFunc: public Visitable<ScmPrintFunc, ScmFunc> {
 	public:
-		ScmPrintFunc(): Visitable(1, runtime::Symbol::print) {}
+		ScmPrintFunc();
 	};
 
 	class ScmCall: public Visitable<ScmCall, ScmObj> {

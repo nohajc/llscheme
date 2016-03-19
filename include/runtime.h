@@ -1,26 +1,10 @@
 #ifndef LLSCHEME_RUNTIME_H
 #define LLSCHEME_RUNTIME_H
 
-#include <cstdarg>
-
 namespace llscm {
     namespace runtime {
         enum Tag { // Code duplication (codegen.hpp). TODO: fix
             FALSE, TRUE, NIL, INT, FLOAT, STR, SYM, CONS, FUNC
-        };
-
-        struct Symbol {
-            static const char *malloc;
-            static const char *cons;
-            static const char *car;
-            static const char *cdr;
-            static const char *isNull;
-            static const char *plus;
-            static const char *minus;
-            static const char *times;
-            static const char *div;
-            static const char *gt;
-            static const char *print;
         };
 
         struct scm_type_t {
@@ -67,8 +51,43 @@ namespace llscm {
             static scm_type_t scm_null;
         };
 
+        // Smart tagged union with convenient operator overloads
+        union scm_ptr_t {
+            scm_type_t * asType;
+            scm_int_t * asInt;
+            scm_float_t * asFloat;
+            scm_str_t * asStr;
+            scm_sym_t * asSym;
+            scm_cons_t * asCons;
+            scm_func_t * asFunc;
+
+            scm_type_t * operator->() {
+                return asType;
+            }
+
+            operator scm_type_t*() {
+                return asType;
+            }
+
+            scm_ptr_t() {
+                asType = &Constant::scm_null;
+            }
+
+            template<class T>
+            scm_ptr_t(T * ptr) {
+                asType = (scm_type_t*)ptr;
+            }
+
+            template<class T>
+            scm_ptr_t operator=(T * ptr) {
+                asType = (scm_type_t*)ptr;
+                return *this;
+            }
+        };
+
         extern "C" {
-            scm_type_t * scm_print(scm_type_t * str);
+            scm_type_t * scm_print(scm_ptr_t obj);
+            scm_type_t * scm_plus(int32_t argc, ...);
         }
     }
 }

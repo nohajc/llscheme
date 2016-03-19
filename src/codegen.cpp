@@ -4,6 +4,18 @@
 #include "../include/debug.hpp"
 
 namespace llscm {
+    const char * RuntimeSymbol::malloc = "scm_alloc";
+    const char * RuntimeSymbol::cons = "scm_cons";
+    const char * RuntimeSymbol::car = "scm_car";
+    const char * RuntimeSymbol::cdr = "scm_cdr";
+    const char * RuntimeSymbol::isNull = "scm_is_null";
+    const char * RuntimeSymbol::plus = "scm_plus";
+    const char * RuntimeSymbol::minus = "scm_minus";
+    const char * RuntimeSymbol::times = "scm_times";
+    const char * RuntimeSymbol::div = "scm_div";
+    const char * RuntimeSymbol::gt = "scm_gt";
+    const char * RuntimeSymbol::print = "scm_print";
+
     ScmCodeGen::ScmCodeGen(LLVMContext &ctxt, ScmProg * tree):
             context(ctxt), builder(ctxt), ast(tree) {
         module = make_shared<Module>("scm_module", context);
