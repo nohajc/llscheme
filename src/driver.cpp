@@ -39,7 +39,7 @@ namespace llscm {
 
 		StringRef input_fname = argv[1];
 		string output_fname;
-		if (input_fname == "-") {
+		if (input_fname == "-" || input_fname == "-s") {
 			// TODO: pass the right -o option
 			ss << "llc - -filetype=null -O0" << endl;
 		}

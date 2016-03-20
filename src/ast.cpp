@@ -266,11 +266,11 @@ namespace llscm {
 
 			// Bind all argument names to ScmArg - we need to tell them apart from unbound variables.
 			assert(arg_list->t == T_CONS);
-			DPC<ScmCons>(arg_list)->each([&new_env](P_ScmObj e) {
+			DPC<ScmCons>(arg_list)->each([&new_env](P_ScmObj & e) {
 				new_env->set(e, make_shared<ScmArg>());
 				// We want to have ScmRefs in the formal arg_list so that codegen
 				// could store the right LLVM Values to each ScmArg
-				e->CT_Eval(new_env);
+				e = e->CT_Eval(new_env);
 			});
 
 			// Eval function bodies in the function environment
@@ -366,10 +366,6 @@ namespace llscm {
 		val = val->CT_Eval(env);
 		if (env->fail()) {
 			return nullptr;
-		}
-
-		if (DPC<ScmFunc>(val)) {
-			is_val_func = true;
 		}
 
 		// Bind symbol to value

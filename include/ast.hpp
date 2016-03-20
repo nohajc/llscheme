@@ -66,6 +66,7 @@ namespace llscm {
 		ScmObj(ScmType type) {
 			t = type;
 			IR_val = nullptr;
+			is_global_var = false;
 		}
 
 		virtual ostream & print(ostream & os, int tabs = 0) const {
@@ -84,6 +85,7 @@ namespace llscm {
 
 		ScmType t;
 		Value * IR_val;
+		bool is_global_var;
 	};
 
 	class ScmProg: public Visitable<ScmProg, ScmObj> {
@@ -341,7 +343,6 @@ namespace llscm {
 
 		P_ScmObj name;
 		P_ScmObj val;
-		bool is_val_func; // For LLVM IR codegen
 	};
 
 	class ScmDefineFuncSyntax: public Visitable<ScmDefineFuncSyntax, ScmDefineSyntax> {

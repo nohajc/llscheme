@@ -23,6 +23,7 @@ namespace llscm {
             else if(obj->tag == FLOAT) {
                 printf("%g", obj.asFloat->value);
             }
+            // TODO: rest of the types including CONS
 
             return SCM_NULL;
         }

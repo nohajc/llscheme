@@ -181,7 +181,7 @@ namespace llscm {
 
         GlobalVariable * g_exit_code = new GlobalVariable(
                 *module, builder.getInt32Ty(), false,
-                GlobalValue::InternalLinkage,
+                GlobalValue::ExternalLinkage,
                 builder.getInt32(0), "exit_code"
         );
 
@@ -281,6 +281,9 @@ namespace llscm {
         D(cerr << "VISITED ScmRef!" << endl);
         // TODO: We have to translate different kinds of Refs.
         // Direct access to locals and globals, indirect to closure variables.
+        if (node->ref_obj->is_global_var) {
+            return builder.CreateLoad(node->ref_obj->IR_val);
+        }
         return node->ref_obj->IR_val;
     }
 
@@ -340,13 +343,14 @@ namespace llscm {
         });
 
         BasicBlock * bb = BasicBlock::Create(context, "entry", func);
-        Value * ret_val;
+        Value * ret_val, * c_ret_val;
         builder.SetInsertPoint(bb);
 
         DPC<ScmCons>(node->body_list)->each([this, &arg_it, &ret_val](P_ScmObj e) {
             ret_val = codegen(e);
         });
-        builder.CreateRet(ret_val);
+        c_ret_val = builder.CreateBitCast(ret_val, t.scm_type_ptr);
+        builder.CreateRet(c_ret_val);
         verifyFunction(*func, &errs());
 
         builder.SetInsertPoint(saved_ip);
@@ -385,7 +389,25 @@ namespace llscm {
     }
 
     any_ptr ScmCodeGen::visit(ScmDefineVarSyntax * node) {
-        return AstVisitor::visit(node);
+        D(cerr << "VISITED ScmDefineVarSyntax!" << endl);
+        if (node->val->t == T_FUNC || node->val->t == T_REF) {
+            return codegen(node->val);
+        }
+
+        Value * expr = codegen(node->val);
+        PointerType * etype = dyn_cast<PointerType>(expr->getType());
+        assert(etype);
+
+        Value * gvar = new GlobalVariable(
+                *module, etype, false,
+                GlobalValue::InternalLinkage,
+                ConstantPointerNull::get(etype), ""
+        );
+
+        // Save expr to global var
+        builder.CreateStore(expr, gvar);
+        node->val->is_global_var = true;
+        return node->val->IR_val = gvar;
     }
 
     any_ptr ScmCodeGen::visit(ScmIfSyntax * node) {
