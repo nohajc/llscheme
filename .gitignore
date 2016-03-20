@@ -3,3 +3,6 @@ schemec
 .idea
 bin
 build
+test/lls_programs/*
+!test/lls_programs/*.*
+!test/lls_programs/Makefile
