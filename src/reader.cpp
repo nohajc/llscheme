@@ -136,7 +136,7 @@ namespace llscm {
 		}
 		// Read literal
 		do {
-			D(cerr << "DEBUG: " << c << endl);
+			//D(cerr << "DEBUG: " << c << endl);
 			tok.name += c;
 			is->get(c);
 			if (is->eof()) {

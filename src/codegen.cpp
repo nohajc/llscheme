@@ -284,11 +284,16 @@ namespace llscm {
         if (node->ref_obj->is_global_var) {
             return builder.CreateLoad(node->ref_obj->IR_val);
         }
-        /*if (!node->ref_obj->IR_val) {
-            cerr << "ref_obj->t = " << node->ref_obj->t << endl;
-        }*/
+        if (!node->ref_obj->IR_val && node->ref_obj->t == T_FUNC) {
+            // Reference to native function
+            assert(DPC<ScmFunc>(node->ref_obj)->body_list == nullptr);
+            return node->IR_val = codegen(node->ref_obj);
+        }
+        // In other cases we always have a reference to something
+        // for which the code was already generated.
+        // Therefore the missing IR_val is most likely a bug.
         assert(node->ref_obj->IR_val);
-        return node->ref_obj->IR_val;
+        return node->IR_val = node->ref_obj->IR_val;
     }
 
     // This must be called on quoted lists only!
@@ -419,6 +424,7 @@ namespace llscm {
     }
 
     any_ptr ScmCodeGen::visit(ScmIfSyntax * node) {
+        D(cerr << "VISITED ScmIfSyntax!" << endl);
         Value * cond = codegen(node->cond_expr);
         vector<Value*> indices(2, builder.getInt32(0));
         Value * cond_arg_addr = builder.CreateGEP(cond, indices);
@@ -452,7 +458,7 @@ namespace llscm {
         phi->addIncoming(then_ret, then_bb);
         phi->addIncoming(else_ret, else_bb);
 
-        return phi;
+        return node->IR_val = phi;
     }
 
     any_ptr ScmCodeGen::visit(ScmLetSyntax * node) {
@@ -472,7 +478,7 @@ namespace llscm {
             ret_val = codegen(e);
         });
 
-        return ret_val;
+        return node->IR_val = ret_val;
     }
 
     any_ptr ScmCodeGen::visit(ScmQuoteSyntax * node) {
