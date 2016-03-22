@@ -36,6 +36,7 @@ namespace llscm {
         IRBuilder<> builder;
         VisitableObj * ast;
         Function * entry_func;
+        GlobalVariable * g_exit_code;
 
         struct {
             StructType * scm_type;
@@ -87,7 +88,8 @@ namespace llscm {
         StructType * getScmStrType(Type * t);
 
         void initTypes();
-        void addMainFunc(); // Called when we want to compile a standalone app
+        void addMainFuncProlog(); // Called when we want to compile a standalone app
+        void addMainFuncEpilog();
         void addTestFunc();
         //void testAstVisit();
 

@@ -25,8 +25,9 @@ namespace llscm {
         //addTestFunc();
         entry_func = nullptr;
         // TODO: Take these methods out of the constructor
-        addMainFunc();
+        addMainFuncProlog();
         codegen(ast);
+        addMainFuncEpilog();
         verifyFunction(*entry_func, &errs());
     }
 
@@ -151,7 +152,7 @@ namespace llscm {
         assert(code == nullptr);
     }*/
 
-    void ScmCodeGen::addMainFunc() {
+    void ScmCodeGen::addMainFuncProlog() {
         vector<Type*> main_args_type = {
                 builder.getInt32Ty(),
                 PointerType::get(builder.getInt8PtrTy(0), 0)
@@ -180,17 +181,21 @@ namespace llscm {
         BasicBlock * bb = BasicBlock::Create(context, "entry", main_func);
         builder.SetInsertPoint(bb);
 
-        GlobalVariable * g_exit_code = new GlobalVariable(
+        g_exit_code = new GlobalVariable(
                 *module, builder.getInt32Ty(), false,
                 GlobalValue::ExternalLinkage,
                 builder.getInt32(0), "exit_code"
         );
 
+        entry_func = main_func;
+    }
+
+    void ScmCodeGen::addMainFuncEpilog() {
         LoadInst * exit_c = builder.CreateLoad(g_exit_code);
         builder.CreateRet(exit_c);
         builder.SetInsertPoint(exit_c);
-        entry_func = main_func;
     }
+
 
     any_ptr ScmCodeGen::visit(ScmProg * node) {
         D(cerr << "VISITED ScmProg!" << endl);
@@ -486,6 +491,5 @@ namespace llscm {
         D(cerr << "VISITED ScmQuoteSyntax!" << endl);
         return node->IR_val = codegen(node->data);
     }
-
 }
 
