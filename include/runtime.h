@@ -86,8 +86,17 @@ namespace llscm {
         };
 
         extern "C" {
-            scm_type_t * scm_print(scm_ptr_t obj);
+            scm_type_t * scm_display(scm_ptr_t obj);
             scm_type_t * scm_plus(int32_t argc, ...);
+            scm_type_t * scm_minus(int32_t argc, ...);
+            scm_type_t * scm_times(int32_t argc, ...);
+            scm_type_t * scm_div(int32_t argc, ...);
+            scm_type_t * scm_gt(scm_ptr_t a, scm_ptr_t b);
+            scm_type_t * scm_num_eq(scm_ptr_t a, scm_ptr_t b);
+            scm_type_t * scm_cons(scm_ptr_t car, scm_ptr_t cdr);
+            scm_type_t * scm_car(scm_ptr_t obj);
+            scm_type_t * scm_cdr(scm_ptr_t obj);
+            scm_type_t * scm_is_null(scm_ptr_t obj);
         }
     }
 }

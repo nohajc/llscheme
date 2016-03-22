@@ -110,6 +110,7 @@ namespace llscm {
 
 	const Token * Reader::nextToken() {
 		char c;
+		bool esc = false;
 		tok.name = "";
 
 		do {
@@ -149,8 +150,7 @@ namespace llscm {
 		return &tok;
 
 		read_string:
-		do {
-			tok.name += c;
+		while (true) {
 			is->get(c);
 			if (is->eof()) {
 				is->clear();
@@ -159,8 +159,44 @@ namespace llscm {
 				error("Reached EOF while parsing a string.");
 				return &tok;
 			}
-		} while (c != '\"');
-		tok.name += c;
+
+			if (!esc) {
+				if (c == '\\') {
+					esc = true;
+				}
+				else if (c == '\"') {
+					break;
+				}
+				else {
+					tok.name += c;
+				}
+			}
+			else {
+				// Escape sequences
+				switch (c) {
+					case 'n':
+						tok.name += '\n';
+						break;
+					case 't':
+						tok.name += '\t';
+						break;
+					case 'b':
+						tok.name += '\b';
+						break;
+					case 'r':
+						tok.name += '\r';
+						break;
+					case '\\':
+						tok.name += '\\';
+					case '\"':
+						tok.name += '\"';
+					default:
+						tok.name += '\\' + c;
+				}
+				esc = false;
+			}
+		};
+
 		tok.t = STR;
 		D(cerr << "STR:" << tok.name << " ");
 		return &tok;

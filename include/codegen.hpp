@@ -16,7 +16,7 @@ namespace llscm {
     using namespace llvm;
 
     struct RuntimeSymbol {
-        static const char *malloc;
+        //static const char *malloc;
         static const char *cons;
         static const char *car;
         static const char *cdr;
@@ -26,7 +26,8 @@ namespace llscm {
         static const char *times;
         static const char *div;
         static const char *gt;
-        static const char *print;
+        static const char *display;
+        static const char *num_eq;
     };
 
     class ScmCodeGen: public AstVisitor {

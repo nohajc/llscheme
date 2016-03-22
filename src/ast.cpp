@@ -88,11 +88,21 @@ namespace llscm {
 		return os;
 	}
 
-	ostream &ScmLit::printSrc(ostream &os) const {
+	ostream &ScmLit::printSrc(ostream & os) const {
 		os << val;
 		return os;
 	}
 
+	ostream &ScmStr::printSrc(ostream & os) const {
+		os << '\"' << val << '\"';
+		return os;
+	}
+
+	ostream &ScmStr::print(ostream & os, int tabs) const {
+		printTabs(os, tabs);
+		os << '\"' << val << '\"' << endl;
+		return os;
+	}
 
 	ostream &ScmCons::print(ostream & os, int tabs) const {
 		printTabs(os, tabs);
@@ -530,6 +540,9 @@ namespace llscm {
 
 	ScmGtFunc::ScmGtFunc() : Visitable(2, RuntimeSymbol::gt) {}
 
-	ScmPrintFunc::ScmPrintFunc() : Visitable(1, RuntimeSymbol::print) {}
+	ScmDisplayFunc::ScmDisplayFunc() : Visitable(1, RuntimeSymbol::display) {}
+
+	ScmNumEqFunc::ScmNumEqFunc() : Visitable(2, RuntimeSymbol::num_eq) {}
 }
+
 

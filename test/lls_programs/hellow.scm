@@ -1,1 +1,1 @@
-(print "Hello world!")
+(display "Hello world!\n")

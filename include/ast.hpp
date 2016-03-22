@@ -168,6 +168,8 @@ namespace llscm {
 	};
 
 	class ScmStr: public Visitable<ScmStr, ScmLit> {
+		virtual ostream & print(ostream & os, int tabs) const;
+		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmStr(const string & value): Visitable(T_STR, value) {}
 	};
@@ -301,9 +303,14 @@ namespace llscm {
 		ScmGtFunc();
 	};
 
-	class ScmPrintFunc: public Visitable<ScmPrintFunc, ScmFunc> {
+	class ScmNumEqFunc: public Visitable<ScmNumEqFunc, ScmFunc> {
 	public:
-		ScmPrintFunc();
+		ScmNumEqFunc();
+	};
+
+	class ScmDisplayFunc: public Visitable<ScmDisplayFunc, ScmFunc> {
+	public:
+		ScmDisplayFunc();
 	};
 
 	class ScmCall: public Visitable<ScmCall, ScmObj> {

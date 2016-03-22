@@ -16,9 +16,10 @@ namespace llscm {
         env->set("-", make_shared<ScmMinusFunc>());
         env->set("null?", make_shared<ScmNullFunc>());
         env->set(">", make_shared<ScmGtFunc>());
+        env->set("=", make_shared<ScmNumEqFunc>());
         env->set("*", make_shared<ScmTimesFunc>());
         env->set("/", make_shared<ScmDivFunc>());
-        env->set("print", make_shared<ScmPrintFunc>());
+        env->set("display", make_shared<ScmDisplayFunc>());
 
         return env;
     }
