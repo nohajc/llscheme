@@ -284,6 +284,10 @@ namespace llscm {
         if (node->ref_obj->is_global_var) {
             return builder.CreateLoad(node->ref_obj->IR_val);
         }
+        /*if (!node->ref_obj->IR_val) {
+            cerr << "ref_obj->t = " << node->ref_obj->t << endl;
+        }*/
+        assert(node->ref_obj->IR_val);
         return node->ref_obj->IR_val;
     }
 
@@ -346,7 +350,7 @@ namespace llscm {
         Value * ret_val, * c_ret_val;
         builder.SetInsertPoint(bb);
 
-        DPC<ScmCons>(node->body_list)->each([this, &arg_it, &ret_val](P_ScmObj e) {
+        DPC<ScmCons>(node->body_list)->each([this, &ret_val](P_ScmObj e) {
             ret_val = codegen(e);
         });
         c_ret_val = builder.CreateBitCast(ret_val, t.scm_type_ptr);
@@ -384,7 +388,7 @@ namespace llscm {
                 args.push_back(a);
             });
 
-            return builder.CreateCall(func, args, fn_obj->name);
+            return node->IR_val = builder.CreateCall(func, args, fn_obj->name);
         }
     }
 
@@ -398,6 +402,10 @@ namespace llscm {
         PointerType * etype = dyn_cast<PointerType>(expr->getType());
         assert(etype);
 
+        // TODO: We should not always create global variables.
+        // That's needed for top-level definitions only.
+        // So we need a flag which tells us whether
+        // the definition is top-level or not.
         Value * gvar = new GlobalVariable(
                 *module, etype, false,
                 GlobalValue::InternalLinkage,
@@ -411,11 +419,60 @@ namespace llscm {
     }
 
     any_ptr ScmCodeGen::visit(ScmIfSyntax * node) {
-        return AstVisitor::visit(node);
+        Value * cond = codegen(node->cond_expr);
+        vector<Value*> indices(2, builder.getInt32(0));
+        Value * cond_arg_addr = builder.CreateGEP(cond, indices);
+        Value * cond_tag = builder.CreateLoad(cond_arg_addr);
+        cond = builder.CreateICmpNE(cond_tag, builder.getInt32(FALSE));
+
+        Function * func = builder.GetInsertBlock()->getParent();
+
+        BasicBlock * then_bb = BasicBlock::Create(context, "then", func);
+        BasicBlock * else_bb = BasicBlock::Create(context, "else");
+        BasicBlock * merge_bb = BasicBlock::Create(context, "merge");
+
+        builder.CreateCondBr(cond, then_bb, else_bb);
+
+        builder.SetInsertPoint(then_bb);
+        Value * then_ret = codegen(node->then_expr);
+        then_ret = builder.CreateBitCast(then_ret, t.scm_type_ptr);
+        builder.CreateBr(merge_bb);
+        then_bb = builder.GetInsertBlock();
+
+        func->getBasicBlockList().push_back(else_bb);
+        builder.SetInsertPoint(else_bb);
+        Value * else_ret = codegen(node->else_expr);
+        else_ret = builder.CreateBitCast(else_ret, t.scm_type_ptr);
+        builder.CreateBr(merge_bb);
+        else_bb = builder.GetInsertBlock();
+
+        func->getBasicBlockList().push_back(merge_bb);
+        builder.SetInsertPoint(merge_bb);
+        PHINode * phi = builder.CreatePHI(t.scm_type_ptr, 2, "ifres");
+        phi->addIncoming(then_ret, then_bb);
+        phi->addIncoming(else_ret, else_bb);
+
+        return phi;
     }
 
     any_ptr ScmCodeGen::visit(ScmLetSyntax * node) {
-        return AstVisitor::visit(node);
+        D(cerr << "VISITED ScmLetSyntax!" << endl);
+        // Generate code for binding list expression evaluation
+        DPC<ScmCons>(node->bind_list)->each([this](P_ScmObj e) {
+            assert(e->t == T_CONS);
+            shared_ptr<ScmCons> kv = DPC<ScmCons>(e);
+            assert(kv->cdr->t == T_CONS);
+            P_ScmObj expr = DPC<ScmCons>(kv->cdr)->car;
+            codegen(expr);
+        });
+
+        Value * ret_val;
+
+        DPC<ScmCons>(node->body_list)->each([this, &ret_val](P_ScmObj e) {
+            ret_val = codegen(e);
+        });
+
+        return ret_val;
     }
 
     any_ptr ScmCodeGen::visit(ScmQuoteSyntax * node) {
