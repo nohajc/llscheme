@@ -187,13 +187,17 @@ namespace llscm {
                 builder.getInt32(0), "exit_code"
         );
 
+        /*LoadInst * exit_c = builder.CreateLoad(g_exit_code);
+        builder.CreateRet(exit_c);
+        builder.SetInsertPoint(exit_c);*/
+
         entry_func = main_func;
     }
 
     void ScmCodeGen::addMainFuncEpilog() {
         LoadInst * exit_c = builder.CreateLoad(g_exit_code);
         builder.CreateRet(exit_c);
-        builder.SetInsertPoint(exit_c);
+        //builder.SetInsertPoint(exit_c);
     }
 
 
@@ -328,7 +332,7 @@ namespace llscm {
         FunctionType * func_type;
         Function * func;
         bool varargs = false;
-        auto saved_ip = builder.GetInsertPoint();
+        auto saved_ip = builder.saveIP();
 
         if (node->argc_expected == ArgsAnyCount) {
             varargs = true;
@@ -368,7 +372,7 @@ namespace llscm {
         builder.CreateRet(c_ret_val);
         verifyFunction(*func, &errs());
 
-        builder.SetInsertPoint(saved_ip);
+        builder.restoreIP(saved_ip);
         return node->IR_val = func;
     }
 
