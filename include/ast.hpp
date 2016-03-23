@@ -57,6 +57,8 @@ namespace llscm {
 	typedef shared_ptr<ScmObj> P_ScmObj;
 	typedef shared_ptr<ScmEnv> P_ScmEnv;
 
+	// TODO: handle forward references!
+	// TODO: constant folding
 	class ScmObj: public enable_shared_from_this<ScmObj>, public Visitable<ScmObj> {
 	protected:
 		void printTabs(ostream & os, int tabs) const {

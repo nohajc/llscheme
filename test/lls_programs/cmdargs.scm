@@ -3,8 +3,8 @@
 (define (print-cmd-args idx num)
   (if (= num 0)
 	 null
-	 (let ()
-		(display (vector-ref argv idx))
+	 (let ((arg (vector-ref argv idx)))
+		(display arg)
 		(display "\n")
       (print-cmd-args (+ idx 1) (- num 1)))))
 

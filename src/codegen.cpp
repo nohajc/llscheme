@@ -188,7 +188,6 @@ namespace llscm {
         Value * ptr_argv = args++;
         int_argc->setName("argc");
         ptr_argv->setName("argv");
-        // TODO: wrap arguments in Scm compatible objects
 
         BasicBlock * bb = BasicBlock::Create(context, "entry", main_func);
         builder.SetInsertPoint(bb);
@@ -378,7 +377,7 @@ namespace llscm {
         func_type = FunctionType::get(t.scm_type_ptr, arg_types, varargs);
         // TODO: How to handle redefinitions?
         func = Function::Create(
-                func_type, // TODO:
+                func_type,
                 GlobalValue::ExternalLinkage,
                 node->name, module.get()
         );
