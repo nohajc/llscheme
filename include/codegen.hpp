@@ -28,6 +28,9 @@ namespace llscm {
         static const char *gt;
         static const char *display;
         static const char *num_eq;
+        static const char *cmd_args;
+        static const char *vec_len;
+        static const char *vec_ref;
     };
 
     class ScmCodeGen: public AstVisitor {
@@ -37,6 +40,7 @@ namespace llscm {
         VisitableObj * ast;
         Function * entry_func;
         GlobalVariable * g_exit_code;
+        GlobalVariable * g_argv;
 
         struct {
             StructType * scm_type;
@@ -46,14 +50,13 @@ namespace llscm {
             StructType * scm_sym;
             StructType * scm_cons;
             StructType * scm_func;
+            StructType * scm_vec;
             FunctionType * scm_fn_sig;
             PointerType * scm_type_ptr;
             Type * ti32;
         } t;
 
-        enum Tag {
-            FALSE, TRUE, NIL, INT, FLOAT, STR, SYM, CONS, FUNC
-        };
+#include "runtime/types.hpp"
 
         template<Tag tag, typename ...Args>
         Constant * getScmConstant(Args ...args) {

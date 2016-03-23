@@ -12,7 +12,6 @@
 #include "../include/parser.hpp"
 #include "../include/environment.hpp"
 #include "../include/codegen.hpp"
-#include "../include/compiler.hpp"
 
 using namespace std;
 using namespace llvm;

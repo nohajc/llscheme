@@ -1,11 +1,13 @@
 #ifndef LLSCHEME_RUNTIME_H
 #define LLSCHEME_RUNTIME_H
 
+#define SCM_NULL &(Constant::scm_null)
+#define SCM_TRUE &(Constant::scm_true)
+#define SCM_FALSE &(Constant::scm_false)
+
 namespace llscm {
     namespace runtime {
-        enum Tag { // Code duplication (codegen.hpp). TODO: fix
-            FALSE, TRUE, NIL, INT, FLOAT, STR, SYM, CONS, FUNC
-        };
+#include "runtime/types.hpp"
 
         struct scm_type_t {
             int32_t tag;
@@ -47,8 +49,16 @@ namespace llscm {
             scm_fnptr_t fnptr;
         };
 
+        struct scm_vec_t {
+            int32_t tag;
+            int32_t size;
+            scm_type_t * elems[1];
+        };
+
         struct Constant {
             static scm_type_t scm_null;
+            static scm_type_t scm_true;
+            static scm_type_t scm_false;
         };
 
         // Smart tagged union with convenient operator overloads
@@ -60,6 +70,7 @@ namespace llscm {
             scm_sym_t * asSym;
             scm_cons_t * asCons;
             scm_func_t * asFunc;
+            scm_vec_t * asVec;
 
             scm_type_t * operator->() {
                 return asType;
@@ -86,6 +97,11 @@ namespace llscm {
         };
 
         extern "C" {
+            extern int32_t exit_code;
+            extern scm_type_t * scm_argv;
+
+            scm_type_t * scm_get_arg_vector(int argc, char * argv[]);
+            scm_type_t * scm_cmd_args();
             scm_type_t * scm_display(scm_ptr_t obj);
             scm_type_t * scm_plus(int32_t argc, ...);
             scm_type_t * scm_minus(int32_t argc, ...);
@@ -97,6 +113,8 @@ namespace llscm {
             scm_type_t * scm_car(scm_ptr_t obj);
             scm_type_t * scm_cdr(scm_ptr_t obj);
             scm_type_t * scm_is_null(scm_ptr_t obj);
+            scm_type_t * scm_vector_length(scm_ptr_t obj);
+            scm_type_t * scm_vector_ref(scm_ptr_t obj, scm_ptr_t idx);
         }
     }
 }

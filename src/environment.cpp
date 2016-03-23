@@ -20,6 +20,9 @@ namespace llscm {
         env->set("*", make_shared<ScmTimesFunc>());
         env->set("/", make_shared<ScmDivFunc>());
         env->set("display", make_shared<ScmDisplayFunc>());
+        env->set("current-command-line-arguments", make_shared<ScmCmdArgsFunc>());
+        env->set("vector-length", make_shared<ScmVecLenFunc>());
+        env->set("vector-ref", make_shared<ScmVecRefFunc>());
 
         return env;
     }

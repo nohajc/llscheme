@@ -35,7 +35,8 @@ set(SOURCE_FILES
         include/codegen.hpp
         include/any_ptr.hpp
         include/ast_visitor.hpp
-        src/ast_visitor.cpp)
+        src/ast_visitor.cpp
+        include/runtime/types.hpp)
         #src/runtime.cpp include/runtime.h
         #src/compiler.cpp include/compiler.hpp)
 

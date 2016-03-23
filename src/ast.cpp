@@ -213,7 +213,7 @@ namespace llscm {
 		last_sym_name = DPC<ScmSym>(last_sym)->val;
 
 		while (sym && sym->t == T_REF) {
-			sym = DPC<ScmRef>(sym)->ref_obj;
+			sym = DPC<ScmRef>(sym)->refObj();
 		}
 		//cout << "BOUND TO: " << sym->t << endl;
 
@@ -277,10 +277,15 @@ namespace llscm {
 			// Bind all argument names to ScmArg - we need to tell them apart from unbound variables.
 			assert(arg_list->t == T_CONS);
 			DPC<ScmCons>(arg_list)->each([&new_env](P_ScmObj & e) {
-				new_env->set(e, make_shared<ScmArg>());
+				P_ScmObj arg = make_shared<ScmArg>();
+				new_env->set(e, arg);
 				// We want to have ScmRefs in the formal arg_list so that codegen
 				// could store the right LLVM Values to each ScmArg
-				e = e->CT_Eval(new_env);
+				//e = e->CT_Eval(new_env);
+				shared_ptr<ScmSym> argsym = DPC<ScmSym>(e);
+				assert(argsym);
+				// Create non-weak reference
+				e = make_shared<ScmRef>(argsym->val, arg, false);
 			});
 
 			// Eval function bodies in the function environment
@@ -319,7 +324,7 @@ namespace llscm {
 		// to the first case after fexpr->CT_Eval. We know for certain that Quote won't
 		// be a valid case as it always returns data.
 		if (fref) {
-			obj = fref->ref_obj;
+			obj = fref->refObj();
 		}
 		else {
 			obj = fexpr;
@@ -328,7 +333,7 @@ namespace llscm {
 		if (obj->t == T_FUNC) {
 			// Function is known at compilation time - we can hardcode its pointer
 			int32_t argc_expected = DPC<ScmFunc>(obj)->argc_expected;
-			int32_t argc_given = DPC<ScmCons>(arg_list)->length();
+			int32_t argc_given = arg_list->t == T_NULL ? 0 : DPC<ScmCons>(arg_list)->length();
 			if (argc_expected != ArgsAnyCount && argc_given != argc_expected) {
 				stringstream ss;
 				ss << "Function expects " << argc_expected << " arguments, " << argc_given << " given.";
@@ -363,7 +368,9 @@ namespace llscm {
 		os << "(";
 		fexpr->printSrc(os);
 		os << " ";
-		DPC<ScmCons>(arg_list)->printElems(os);
+		if (arg_list->t == T_CONS) {
+			DPC<ScmCons>(arg_list)->printElems(os);
+		}
 		os << ")";
 		return os;
 	}
@@ -403,6 +410,11 @@ namespace llscm {
 				DPC<ScmCons>(arg_list)->length(), fname,
 				move(arg_list), move(body_list)
 		);
+
+		// We need to create this binding before function body
+		// evaluation in order to have recursion working.
+		env->set(name, func);
+
 		P_ScmObj def_var = make_shared<ScmDefineVarSyntax>(name, func);
 		def_var = def_var->CT_Eval(env);
 		if (env->fail()) {
@@ -489,20 +501,22 @@ namespace llscm {
 	P_ScmObj ScmLetSyntax::CT_Eval(P_ScmEnv env) {
 		P_ScmEnv let_env = make_shared<ScmEnv>(env->prog, env);
 
-		assert(bind_list->t == T_CONS);
-		// Populates new environment according to bind_list.
-		DPC<ScmCons>(bind_list)->each([&let_env, &env](P_ScmObj e) {
-			assert(e->t == T_CONS);
-			shared_ptr<ScmCons> kv = DPC<ScmCons>(e);
-			P_ScmObj id = kv->car;
+		if (bind_list->t != T_NULL) {
+			assert(bind_list->t == T_CONS);
+			// Populates new environment according to bind_list.
+			DPC<ScmCons>(bind_list)->each([&let_env, &env](P_ScmObj e) {
+				assert(e->t == T_CONS);
+				shared_ptr<ScmCons> kv = DPC<ScmCons>(e);
+				P_ScmObj id = kv->car;
 
-			assert(kv->cdr->t == T_CONS);
-			P_ScmObj & expr = DPC<ScmCons>(kv->cdr)->car;
-			expr = expr->CT_Eval(env);
-			let_env->set(id, expr);
-		});
-		if (env->fail()) {
-			return nullptr;
+				assert(kv->cdr->t == T_CONS);
+				P_ScmObj &expr = DPC<ScmCons>(kv->cdr)->car;
+				expr = expr->CT_Eval(env);
+				let_env->set(id, expr);
+			});
+			if (env->fail()) {
+				return nullptr;
+			}
 		}
 		// Evals body_list in the new environment.
 		body_list = body_list->CT_Eval(let_env);
@@ -543,6 +557,10 @@ namespace llscm {
 	ScmDisplayFunc::ScmDisplayFunc() : Visitable(1, RuntimeSymbol::display) {}
 
 	ScmNumEqFunc::ScmNumEqFunc() : Visitable(2, RuntimeSymbol::num_eq) {}
+
+	ScmCmdArgsFunc::ScmCmdArgsFunc() : Visitable(0, RuntimeSymbol::cmd_args) {}
+
+	ScmVecLenFunc::ScmVecLenFunc() : Visitable(1, RuntimeSymbol::vec_len) {}
+
+	llscm::ScmVecRefFunc::ScmVecRefFunc() : Visitable(2, RuntimeSymbol::vec_ref) {}
 }
-
-

@@ -1,3 +1,4 @@
+#include <cassert>
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/Support/raw_ostream.h>
 #include "../include/codegen.hpp"
@@ -16,6 +17,9 @@ namespace llscm {
     const char * RuntimeSymbol::gt = "scm_gt";
     const char * RuntimeSymbol::display = "scm_display";
     const char * RuntimeSymbol::num_eq = "scm_num_eq";
+    const char * RuntimeSymbol::cmd_args = "scm_cmd_args";
+    const char * RuntimeSymbol::vec_len = "scm_vector_length";
+    const char * RuntimeSymbol::vec_ref = "scm_vector_ref";
 
     ScmCodeGen::ScmCodeGen(LLVMContext &ctxt, ScmProg * tree):
             context(ctxt), builder(ctxt), ast(tree) {
@@ -95,6 +99,14 @@ namespace llscm {
             t.scm_func = StructType::create(context, "scm_func");
             fields = { t.ti32, t.ti32, scm_fn_ptr };
             t.scm_func->setBody(fields, false);
+        }
+
+        // %scm_vec = type { i32, i32, [1 x %scm_type*] }
+        t.scm_vec = module->getTypeByName("scm_vec");
+        if (!t.scm_vec) {
+            t.scm_vec = StructType::create(context, "scm_vec");
+            fields = { t.ti32, t.ti32, ArrayType::get(t.scm_type_ptr, 1) };
+            t.scm_vec->setBody(fields, false);
         }
     }
 
@@ -186,6 +198,27 @@ namespace llscm {
                 GlobalValue::ExternalLinkage,
                 builder.getInt32(0), "exit_code"
         );
+
+        g_argv = new GlobalVariable(
+                *module, t.scm_type_ptr, false,
+                GlobalValue::ExternalLinkage,
+                ConstantPointerNull::get(t.scm_type_ptr), "scm_argv"
+        );
+
+        FunctionType * get_argv_func_type = FunctionType::get(
+                t.scm_type_ptr,
+                main_args_type,
+                false
+        );
+
+        Function * get_argv_func = Function::Create(
+                get_argv_func_type,
+                GlobalValue::ExternalLinkage,
+                "scm_get_arg_vector", module.get()
+        );
+
+        Value * arg_vec = builder.CreateCall(get_argv_func, { int_argc, ptr_argv });
+        builder.CreateStore(arg_vec, g_argv);
 
         /*LoadInst * exit_c = builder.CreateLoad(g_exit_code);
         builder.CreateRet(exit_c);
@@ -291,19 +324,20 @@ namespace llscm {
         D(cerr << "VISITED ScmRef!" << endl);
         // TODO: We have to translate different kinds of Refs.
         // Direct access to locals and globals, indirect to closure variables.
-        if (node->ref_obj->is_global_var) {
-            return builder.CreateLoad(node->ref_obj->IR_val);
+        P_ScmObj robj = node->refObj();
+        if (robj->is_global_var) {
+            return builder.CreateLoad(robj->IR_val);
         }
-        if (!node->ref_obj->IR_val && node->ref_obj->t == T_FUNC) {
+        if (!robj->IR_val && robj->t == T_FUNC) {
             // Reference to native function
-            assert(DPC<ScmFunc>(node->ref_obj)->body_list == nullptr);
-            return node->IR_val = codegen(node->ref_obj);
+            assert(DPC<ScmFunc>(robj)->body_list == nullptr);
+            return node->IR_val = codegen(robj);
         }
         // In other cases we always have a reference to something
         // for which the code was already generated.
         // Therefore the missing IR_val is most likely a bug.
-        assert(node->ref_obj->IR_val);
-        return node->IR_val = node->ref_obj->IR_val;
+        assert(robj->IR_val);
+        return node->IR_val = robj->IR_val;
     }
 
     // This must be called on quoted lists only!
@@ -349,15 +383,18 @@ namespace llscm {
                 node->name, module.get()
         );
 
+        // Save function declaration
+        node->IR_val = func;
+
         if (!node->arg_list) { // Return declaration only (in case of extern functions).
-            return node->IR_val = func;
+            return func;
         }
 
         auto arg_it = func->args().begin();
         DPC<ScmCons>(node->arg_list)->each([&arg_it](P_ScmObj e) {
             ScmRef * fn_arg = dynamic_cast<ScmRef*>(e.get());
             assert(fn_arg);
-            fn_arg->ref_obj->IR_val = arg_it;
+            fn_arg->refObj()->IR_val = arg_it;
             arg_it++;
         });
 
@@ -373,7 +410,7 @@ namespace llscm {
         verifyFunction(*func, &errs());
 
         builder.restoreIP(saved_ip);
-        return node->IR_val = func;
+        return func;
     }
 
     any_ptr ScmCodeGen::visit(ScmCall * node) {
@@ -386,22 +423,25 @@ namespace llscm {
             vector<Value*> args;
             ScmRef * fn_ref = dynamic_cast<ScmRef*>(node->fexpr.get());
             assert(fn_ref);
-            ScmFunc * fn_obj = dynamic_cast<ScmFunc*>(fn_ref->ref_obj.get());
+            ScmFunc * fn_obj = dynamic_cast<ScmFunc*>(fn_ref->refObj().get());
             assert(fn_obj);
             Function * func = dyn_cast<Function>(codegen(fn_obj));
 
-            ScmCons * arg_list = dynamic_cast<ScmCons*>(node->arg_list.get());
-            if (fn_obj->argc_expected == ArgsAnyCount) {
-                args.push_back(builder.getInt32((uint32_t)arg_list->length()));
-            }
-
-            arg_list->each([this, &args](P_ScmObj e) {
-                Value * a = codegen(e);
-                if (a->getType() != t.scm_type_ptr) {
-                    a = builder.CreateBitCast(a, t.scm_type_ptr);
+            if (node->arg_list->t != T_NULL) {
+                // At least one argument
+                ScmCons * arg_list = dynamic_cast<ScmCons*>(node->arg_list.get());
+                if (fn_obj->argc_expected == ArgsAnyCount) {
+                    args.push_back(builder.getInt32((uint32_t)arg_list->length()));
                 }
-                args.push_back(a);
-            });
+
+                arg_list->each([this, &args](P_ScmObj e) {
+                    Value * a = codegen(e);
+                    if (a->getType() != t.scm_type_ptr) {
+                        a = builder.CreateBitCast(a, t.scm_type_ptr);
+                    }
+                    args.push_back(a);
+                });
+            }
 
             return node->IR_val = builder.CreateCall(func, args, fn_obj->name);
         }
@@ -474,13 +514,15 @@ namespace llscm {
     any_ptr ScmCodeGen::visit(ScmLetSyntax * node) {
         D(cerr << "VISITED ScmLetSyntax!" << endl);
         // Generate code for binding list expression evaluation
-        DPC<ScmCons>(node->bind_list)->each([this](P_ScmObj e) {
-            assert(e->t == T_CONS);
-            shared_ptr<ScmCons> kv = DPC<ScmCons>(e);
-            assert(kv->cdr->t == T_CONS);
-            P_ScmObj expr = DPC<ScmCons>(kv->cdr)->car;
-            codegen(expr);
-        });
+        if (node->bind_list->t != T_NULL) {
+            DPC<ScmCons>(node->bind_list)->each([this](P_ScmObj e) {
+                assert(e->t == T_CONS);
+                shared_ptr<ScmCons> kv = DPC<ScmCons>(e);
+                assert(kv->cdr->t == T_CONS);
+                P_ScmObj expr = DPC<ScmCons>(kv->cdr)->car;
+                codegen(expr);
+            });
+        }
 
         Value * ret_val;
 

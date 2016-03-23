@@ -194,10 +194,19 @@ namespace llscm {
 		// of indirection specified - because there can be closures inside of closures).
 		// Each function would then have its own pointer to heap locals
 		// which could be passed to closure function as an implicit hidden argument.
-	public:
-		ScmRef(const string & name, P_ScmObj obj):
-				Visitable(T_REF, name), ref_obj(obj) {}
+		weak_ptr<ScmObj> ref_obj_weak;
 		P_ScmObj ref_obj;
+		bool is_weak;
+	public:
+		ScmRef(const string & name, P_ScmObj obj, bool weak = true):
+				Visitable(T_REF, name), ref_obj_weak(obj), is_weak(weak) {
+			if (!is_weak) {
+				ref_obj = obj;
+			}
+		}
+		P_ScmObj refObj() {
+			return ref_obj_weak.lock();
+		}
 	};
 
 	class ScmCons: public Visitable<ScmCons, ScmObj> {
@@ -313,6 +322,21 @@ namespace llscm {
 		ScmDisplayFunc();
 	};
 
+	class ScmCmdArgsFunc: public Visitable<ScmCmdArgsFunc, ScmFunc> {
+	public:
+		ScmCmdArgsFunc();
+	};
+
+	class ScmVecLenFunc: public Visitable<ScmVecLenFunc, ScmFunc> {
+	public:
+		ScmVecLenFunc();
+	};
+
+	class ScmVecRefFunc: public Visitable<ScmVecRefFunc, ScmFunc> {
+	public:
+		ScmVecRefFunc();
+	};
+
 	class ScmCall: public Visitable<ScmCall, ScmObj> {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;
@@ -326,9 +350,11 @@ namespace llscm {
 		bool indirect;
 	};
 
-	/* Classes derived from ScmInlineCall represent primitive functions
-	 * such as arithmetic operations for which we want to emit instructions
-	 * inline instead of an explicit function call.
+	/*
+	 * TODO: Delete this class. Instead we will have inlinable ScmFunc types.
+	 * Each derived ScmFunc class will be able to generate inline code
+	 * and the corresponding ScmCall will control whether it wants
+	 * the inline or the full version of the function code.
 	 */
 	class ScmInlineCall: public Visitable<ScmInlineCall, ScmCall> {
 	public:
