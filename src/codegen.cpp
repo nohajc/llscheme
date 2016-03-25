@@ -91,7 +91,7 @@ namespace llscm {
         }
 
         // %scm_func = type { i32, i32, %scm_type* (i32, ...)* }
-        // TODO: every function does not have to be varargs
+        // Every function won't be varargs. This is just the default.
         t.scm_fn_sig = FunctionType::get(t.scm_type_ptr, { t.ti32 }, true);
         scm_fn_ptr = PointerType::get(t.scm_fn_sig, 0);
         t.scm_func = module->getTypeByName("scm_func");
@@ -400,6 +400,8 @@ namespace llscm {
         BasicBlock * bb = BasicBlock::Create(context, "entry", func);
         Value * ret_val, * c_ret_val;
         builder.SetInsertPoint(bb);
+
+        // TODO: generate code for heap storage allocation
 
         DPC<ScmCons>(node->body_list)->each([this, &ret_val](P_ScmObj e) {
             ret_val = codegen(e);

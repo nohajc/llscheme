@@ -42,6 +42,12 @@ namespace llscm {
 		T_PROG
 	};
 
+	enum ScmLocType {
+		T_GLOB,
+		T_HEAP_LOC,
+		T_STACK_LOC
+	};
+
 	/*
 	 * This class hierarchy is used to generate AST.
 	 * It is created by parsing the source file.
@@ -69,6 +75,7 @@ namespace llscm {
 			t = type;
 			IR_val = nullptr;
 			is_global_var = false;
+			location = T_STACK_LOC;
 		}
 
 		virtual ostream & print(ostream & os, int tabs = 0) const {
@@ -87,7 +94,18 @@ namespace llscm {
 
 		ScmType t;
 		Value * IR_val;
-		bool is_global_var;
+
+		// Location type specifier.
+		// Possible types are: global, stack local, heap local.
+		// ScmRef code generation depends on the type.
+		ScmLocType location;
+
+		bool is_global_var; // TODO: remove
+
+		// Pointer to ScmFunc. We need it for heap locals
+		// in the codegen phase so that we can look up their index in the right
+		// table and using that, generate proper code for object access.
+		ScmFunc * defined_in_func;
 	};
 
 	class ScmProg: public Visitable<ScmProg, ScmObj> {
@@ -191,7 +209,7 @@ namespace llscm {
 	// for each occurence of every symbol. So, in the CT_Eval phase, we replace
 	// every ScmSym with ScmRef (except quoted symbols).
 	class ScmRef: public Visitable<ScmRef, ScmLit> {
-		// TODO: we need multiple reference types: refs to globals, locals and closure data,
+		// There can be refs to globals, locals and closure data,
 		// maybe even stack locals, heap locals and heap closure data (with the level
 		// of indirection specified - because there can be closures inside of closures).
 		// Each function would then have its own pointer to heap locals
@@ -199,9 +217,13 @@ namespace llscm {
 		weak_ptr<ScmObj> ref_obj_weak;
 		P_ScmObj ref_obj;
 		bool is_weak;
+		// Store levels of indirection needed for accessing the ref_obj
+		// obtained from ScmEnv::get. Non-zero value used for closure data,
+		// not used for locals or globals.
+		int num_of_levels_up;
 	public:
-		ScmRef(const string & name, P_ScmObj obj, bool weak = true):
-				Visitable(T_REF, name), ref_obj_weak(obj), is_weak(weak) {
+		ScmRef(const string & name, P_ScmObj obj, int levels = 0, bool weak = true):
+				Visitable(T_REF, name), ref_obj_weak(obj), num_of_levels_up(levels), is_weak(weak) {
 			if (!is_weak) {
 				ref_obj = obj;
 			}
@@ -262,11 +284,19 @@ namespace llscm {
 			argc_expected = argc;
 		}
 		virtual P_ScmObj CT_Eval(P_ScmEnv env);
+		void addHeapLocal(P_ScmObj obj) {
+			// Zero index is reserved for a pointer to the parent heap data
+			heap_local_idx[obj.get()] = (int)heap_local_idx.size() + 1;
+		}
 
 		string name;
 		int32_t argc_expected;
 		P_ScmObj arg_list;
 		P_ScmObj body_list;
+		// Store map of heap locals' indices (or vector of locals)
+		// that gets updated in the CT_Eval phase everytime we find
+		// a reference to captured variable.
+		map<ScmObj*, int> heap_local_idx;
 	};
 
 	class ScmConsFunc: public Visitable<ScmConsFunc, ScmFunc> {

@@ -27,6 +27,8 @@ namespace llscm {
         return env;
     }
 
+    int ScmEnv::GlobalLevel = -1;
+
     ScmEnv::ScmEnv(ScmProg & p, P_ScmEnv penv): prog(p), parent_env(penv) {
         if (!penv) {
             top_level_env = this;
@@ -37,22 +39,41 @@ namespace llscm {
         err_flag = false;
     }
 
-    P_ScmObj ScmEnv::get(P_ScmObj k, P_ScmEnv * def_env) {
+    P_ScmObj ScmEnv::get(P_ScmObj k, ScmLoc * loc) {
         ScmSym * sym = dynamic_cast<ScmSym*>(k.get());
-        return get(sym, def_env);
+        return get(sym, loc);
     }
 
-    P_ScmObj ScmEnv::get(ScmSym * sym, P_ScmEnv * def_env) {
+    P_ScmObj ScmEnv::get(ScmSym * sym, ScmLoc * loc) {
+        if (loc) {
+            ScmFunc * func = nullptr;
+            if (context && context->t == T_FUNC) {
+                func = DPC<ScmFunc>(context).get();
+            }
+
+            if (!*loc) {
+                *loc = make_shared<pair<int, ScmFunc*>>(0, func);
+            }
+            else {
+                (*loc)->first += 1;
+                (*loc)->second = func;
+            }
+
+            if (this == top_level_env) {
+                (*loc)->first = GlobalLevel;
+            }
+        }
+
         auto elem_it = binding.find(*sym);
         if (elem_it == binding.end()) {
             if (parent_env) {
-                return parent_env->get(sym);
+                return parent_env->get(sym, loc);
             }
             return nullptr;
         }
         // If valid pointer given in def_env, return
         // the environment where we've found the symbol binding.
-        if (def_env) *def_env = shared_from_this();
+        //if (def_env) *def_env = shared_from_this();
         return elem_it->second;
     }
 

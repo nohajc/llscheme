@@ -203,11 +203,24 @@ namespace llscm {
 		P_ScmObj sym = shared_from_this();
 		P_ScmObj last_sym;
 		string last_sym_name;
+		int num_of_levels_up = 0;
+		ScmFunc * def_func = nullptr;
+		ScmLoc location;
 
 		do {
+			location = nullptr;
 			//cout << "DEBUG: " << DPC<ScmSym>(sym)->val << endl;
 			last_sym = sym;
-			sym = env->get(last_sym);
+			sym = env->get(last_sym, &location);
+			if (num_of_levels_up != ScmEnv::GlobalLevel) {
+				if (location->first == ScmEnv::GlobalLevel) {
+					num_of_levels_up = location->first;
+				}
+				else {
+					num_of_levels_up += location->first;
+				}
+			}
+			def_func = location->second;
 		} while(sym && sym->t == T_SYM);
 
 		last_sym_name = DPC<ScmSym>(last_sym)->val;
@@ -222,7 +235,22 @@ namespace llscm {
 			return nullptr;
 		}
 
-		return make_shared<ScmRef>(last_sym_name, sym);
+		// Set type of sym (global, stack local or heap local),
+		// set defining func of the sym and add sym to the
+		// def_funcs's list of heap locals if necessary.
+		if (num_of_levels_up == ScmEnv::GlobalLevel) {
+			sym->location = T_GLOB;
+		}
+		else if (num_of_levels_up > 0) {
+			sym->location = T_HEAP_LOC;
+			def_func->addHeapLocal(sym);
+		}
+		else {
+			sym->location = T_STACK_LOC;
+		}
+		sym->defined_in_func = def_func;
+
+		return make_shared<ScmRef>(last_sym_name, sym, num_of_levels_up);
 	}
 
 	P_ScmObj ScmCons::CT_Eval(P_ScmEnv env) {
@@ -285,7 +313,7 @@ namespace llscm {
 				shared_ptr<ScmSym> argsym = DPC<ScmSym>(e);
 				assert(argsym);
 				// Create non-weak reference
-				e = make_shared<ScmRef>(argsym->val, arg, false);
+				e = make_shared<ScmRef>(argsym->val, arg, 0, false);
 			});
 
 			// Eval function bodies in the function environment
