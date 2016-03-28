@@ -61,6 +61,11 @@ namespace llscm {
             Type * ti32;
         } t;
 
+        struct {
+            Function * alloc_func;
+            Function * alloc_heap_storage;
+        } fn;
+
 #include "runtime/types.hpp"
 
         template<Tag tag, typename ...Args>
@@ -96,6 +101,7 @@ namespace llscm {
         StructType * getScmStrType(Type * t);
 
         void initTypes();
+        void initExternFuncs();
         void addMainFuncProlog(); // Called when we want to compile a standalone app
         void addMainFuncEpilog();
         //void addTestFunc();

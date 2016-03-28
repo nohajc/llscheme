@@ -30,8 +30,7 @@ namespace llscm {
             context(ctxt), builder(ctxt), ast(tree) {
         module = make_shared<Module>("scm_module", context);
         initTypes();
-        //testAstVisit();
-        //addTestFunc();
+        initExternFuncs();
         entry_func = nullptr;
         // TODO: Take these methods out of the constructor
         addMainFuncProlog();
@@ -179,6 +178,33 @@ namespace llscm {
         Value * code = codegen(ast);
         assert(code == nullptr);
     }*/
+
+    void ScmCodeGen::initExternFuncs() {
+        FunctionType * func_type = FunctionType::get(
+                t.scm_type_ptr,
+                { t.ti32, t.scm_fn_ptr, PointerType::get(t.scm_type_ptr, 0) },
+                false
+        );
+
+        fn.alloc_func = Function::Create(
+                func_type,
+                GlobalValue::ExternalLinkage,
+                RuntimeSymbol::alloc_func, module.get()
+        );
+
+        func_type = FunctionType::get(
+                PointerType::get(t.scm_type_ptr, 0),
+                { t.ti32 },
+                false
+        );
+
+        fn.alloc_heap_storage = Function::Create(
+                func_type,
+                GlobalValue::ExternalLinkage,
+                RuntimeSymbol::alloc_heap_storage, module.get()
+        );
+    }
+
 
     void ScmCodeGen::addMainFuncProlog() {
         vector<Type*> main_args_type = {
@@ -423,21 +449,10 @@ namespace llscm {
     }
 
     Value * ScmCodeGen::genAllocFunc(int32_t argc, Function * fnptr, Value * ctxptr) {
-        FunctionType * func_type = FunctionType::get(
-                t.scm_type_ptr,
-                { t.ti32, t.scm_fn_ptr, PointerType::get(t.scm_type_ptr, 0) },
-                false
-        );
-        Function * func = Function::Create(
-                func_type,
-                GlobalValue::ExternalLinkage,
-                RuntimeSymbol::alloc_func, module.get()
-        );
-
         assert(ctxptr);
 
         return builder.CreateCall(
-                func,
+                fn.alloc_func,
                 { builder.getInt32((uint32_t)argc),
                   builder.CreateBitCast(fnptr, t.scm_fn_ptr),
                   ctxptr }
@@ -448,19 +463,9 @@ namespace llscm {
         // size is the number of objects we need to
         // store on the heap for the current function
         // including the parent heap storage pointer
-        FunctionType * func_type = FunctionType::get(
-                PointerType::get(t.scm_type_ptr, 0),
-                { t.ti32 },
-                false
-        );
-        Function * func = Function::Create(
-                func_type,
-                GlobalValue::ExternalLinkage,
-                RuntimeSymbol::alloc_heap_storage, module.get()
-        );
 
         return builder.CreateCall(
-                func,
+                fn.alloc_heap_storage,
                 { builder.getInt32((uint32_t)size) },
                 "__heap_storage"
         );
