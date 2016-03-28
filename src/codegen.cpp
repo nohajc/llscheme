@@ -20,6 +20,11 @@ namespace llscm {
     const char * RuntimeSymbol::cmd_args = "scm_cmd_args";
     const char * RuntimeSymbol::vec_len = "scm_vector_length";
     const char * RuntimeSymbol::vec_ref = "scm_vector_ref";
+    const char * RuntimeSymbol::get_arg_vec = "scm_get_arg_vector";
+    const char * RuntimeSymbol::argv = "scm_argv";
+    const char * RuntimeSymbol::exit_code = "exit_code";
+    const char * RuntimeSymbol::alloc_heap_storage = "alloc_heap_storage";
+    const char * RuntimeSymbol::alloc_func = "alloc_func";
 
     ScmCodeGen::ScmCodeGen(LLVMContext &ctxt, ScmProg * tree):
             context(ctxt), builder(ctxt), ast(tree) {
@@ -39,7 +44,6 @@ namespace llscm {
         vector<Type*> fields;
         t.ti32 = builder.getInt32Ty();
         ArrayType * ti8arr = ArrayType::get(builder.getInt8Ty(), 1);
-        PointerType * scm_fn_ptr;
 
         // %scm_type = type { i32 }
         t.scm_type = module->getTypeByName("scm_type");
@@ -90,14 +94,14 @@ namespace llscm {
             t.scm_cons->setBody(fields, false);
         }
 
-        // %scm_func = type { i32, i32, %scm_type* (i32, ...)* }
+        // %scm_func = type { i32, i32, %scm_type* (i32, ...)*, %scm_type** }
         // Every function won't be varargs. This is just the default.
         t.scm_fn_sig = FunctionType::get(t.scm_type_ptr, { t.ti32 }, true);
-        scm_fn_ptr = PointerType::get(t.scm_fn_sig, 0);
+        t.scm_fn_ptr = PointerType::get(t.scm_fn_sig, 0);
         t.scm_func = module->getTypeByName("scm_func");
         if (!t.scm_func) {
             t.scm_func = StructType::create(context, "scm_func");
-            fields = { t.ti32, t.ti32, scm_fn_ptr };
+            fields = { t.ti32, t.ti32, t.scm_fn_ptr, PointerType::get(t.scm_type_ptr, 0) };
             t.scm_func->setBody(fields, false);
         }
 
@@ -134,12 +138,24 @@ namespace llscm {
         return ConstantStruct::get(t.scm_cons, fields);
     }
 
+    template<>
+    Constant * ScmCodeGen::initScmConstant<ScmCodeGen::FUNC>(vector<Constant*> & fields, int32_t && argc, Function *&& fnptr) {
+        D(cerr << "constant func" << endl);
+        fields.push_back(builder.getInt32((uint32_t)argc));
+        assert(fnptr);
+        Constant * c_fnptr = ConstantExpr::getCast(Instruction::BitCast, fnptr, t.scm_fn_ptr);
+        Constant * c_ctxptr = ConstantPointerNull::get(PointerType::get(t.scm_type_ptr, 0));
+        fields.push_back(c_fnptr);
+        fields.push_back(c_ctxptr);
+        return ConstantStruct::get(t.scm_func, fields);
+    }
+
     StructType *ScmCodeGen::getScmStrType(Type * strt) {
         vector<Type*> fields = { t.ti32, t.ti32, strt };
         return StructType::get(context, fields);
     }
 
-    void ScmCodeGen::addTestFunc() {
+    /*void ScmCodeGen::addTestFunc() {
         Function * func = Function::Create(
                 FunctionType::get(builder.getVoidTy(), {}, false),
                 GlobalValue::ExternalLinkage,
@@ -157,7 +173,7 @@ namespace llscm {
         builder.CreateAlloca(t.scm_cons);
         builder.CreateAlloca(t.scm_func);
         builder.CreateRetVoid();
-    }
+    }*/
 
     /*void ScmCodeGen::testAstVisit() {
         Value * code = codegen(ast);
@@ -195,13 +211,13 @@ namespace llscm {
         g_exit_code = new GlobalVariable(
                 *module, builder.getInt32Ty(), false,
                 GlobalValue::ExternalLinkage,
-                builder.getInt32(0), "exit_code"
+                builder.getInt32(0), RuntimeSymbol::exit_code
         );
 
         g_argv = new GlobalVariable(
                 *module, t.scm_type_ptr, false,
                 GlobalValue::ExternalLinkage,
-                ConstantPointerNull::get(t.scm_type_ptr), "scm_argv"
+                ConstantPointerNull::get(t.scm_type_ptr), RuntimeSymbol::argv
         );
 
         FunctionType * get_argv_func_type = FunctionType::get(
@@ -213,7 +229,7 @@ namespace llscm {
         Function * get_argv_func = Function::Create(
                 get_argv_func_type,
                 GlobalValue::ExternalLinkage,
-                "scm_get_arg_vector", module.get()
+                RuntimeSymbol::get_arg_vec, module.get()
         );
 
         Value * arg_vec = builder.CreateCall(get_argv_func, { int_argc, ptr_argv });
@@ -324,18 +340,58 @@ namespace llscm {
         // TODO: We have to translate different kinds of Refs.
         // Direct access to locals and globals, indirect to closure variables.
         P_ScmObj robj = node->refObj();
-        if (robj->is_global_var) {
+        if (robj->is_global_var) { // TODO: remove
             return builder.CreateLoad(robj->IR_val);
         }
+
+        if (robj->location == T_HEAP_LOC) {
+            D(cerr << "num_of_levels_up = " << node->num_of_levels_up << endl);
+            // Get function where the referenced object is defined
+            ScmFunc * def_func = robj->defined_in_func;
+            assert(def_func);
+            auto idx_it = def_func->heap_local_idx.find(robj.get());
+            assert(idx_it != def_func->heap_local_idx.end());
+
+            // Get context pointer of the current function
+            ScmFunc * curr_func = node->defined_in_func;
+            assert(curr_func);
+            Value * heap_st = curr_func->IR_context_ptr;
+            assert(heap_st);
+
+            int i = node->num_of_levels_up - 1;
+            while(i--) {
+                heap_st = genHeapLoad(heap_st, 0);
+                heap_st = builder.CreateBitCast(heap_st, PointerType::get(t.scm_type_ptr, 0));
+            }
+            D(cerr << "heap_st_idx = " << idx_it->second << endl);
+            return genHeapLoad(heap_st, idx_it->second);
+        }
+
         if (!robj->IR_val && robj->t == T_FUNC) {
             // Reference to native function
             assert(DPC<ScmFunc>(robj)->body_list == nullptr);
             return node->IR_val = codegen(robj);
         }
+
         // In other cases we always have a reference to something
         // for which the code was already generated.
         // Therefore the missing IR_val is most likely a bug.
         assert(robj->IR_val);
+
+        if (robj->t == T_FUNC) {
+            ScmFunc * fn_obj = DPC<ScmFunc>(robj).get();
+            assert(fn_obj);
+            Function * func = dyn_cast<Function>(codegen(robj));
+            assert(func);
+            if (fn_obj->has_closure) {
+                ScmFunc * curr_func = node->defined_in_func;
+                return genAllocFunc(fn_obj->argc_expected, func, curr_func->IR_heap_storage);
+            }
+            else {
+                return genConstFunc(fn_obj->argc_expected, func);
+            }
+        }
+
         return node->IR_val = robj->IR_val;
     }
 
@@ -357,6 +413,69 @@ namespace llscm {
         );
     }
 
+    Value * ScmCodeGen::genConstFunc(int32_t argc, Function * fnptr) {
+        Constant * c = getScmConstant<FUNC>(argc, fnptr);
+        return new GlobalVariable(
+                *module, t.scm_func, true,
+                GlobalValue::InternalLinkage,
+                c, ""
+        );
+    }
+
+    Value * ScmCodeGen::genAllocFunc(int32_t argc, Function * fnptr, Value * ctxptr) {
+        FunctionType * func_type = FunctionType::get(
+                t.scm_type_ptr,
+                { t.ti32, t.scm_fn_ptr, PointerType::get(t.scm_type_ptr, 0) },
+                false
+        );
+        Function * func = Function::Create(
+                func_type,
+                GlobalValue::ExternalLinkage,
+                RuntimeSymbol::alloc_func, module.get()
+        );
+
+        assert(ctxptr);
+
+        return builder.CreateCall(
+                func,
+                { builder.getInt32((uint32_t)argc),
+                  builder.CreateBitCast(fnptr, t.scm_fn_ptr),
+                  ctxptr }
+        );
+    }
+
+    Value * ScmCodeGen::genAllocHeapStorage(int32_t size) {
+        // size is the number of objects we need to
+        // store on the heap for the current function
+        // including the parent heap storage pointer
+        FunctionType * func_type = FunctionType::get(
+                PointerType::get(t.scm_type_ptr, 0),
+                { t.ti32 },
+                false
+        );
+        Function * func = Function::Create(
+                func_type,
+                GlobalValue::ExternalLinkage,
+                RuntimeSymbol::alloc_heap_storage, module.get()
+        );
+
+        return builder.CreateCall(
+                func,
+                { builder.getInt32((uint32_t)size) },
+                "__heap_storage"
+        );
+    }
+
+    void ScmCodeGen::genHeapStore(Value * hs, Value * obj, int32_t idx) {
+        Value * hs_idx = builder.CreateGEP(hs, builder.getInt32((uint32_t)idx));
+        builder.CreateStore(builder.CreateBitCast(obj, t.scm_type_ptr), hs_idx);
+    }
+
+    Value * ScmCodeGen::genHeapLoad(Value * hs, int32_t idx) {
+        Value * hs_idx = builder.CreateGEP(hs, builder.getInt32((uint32_t)idx));
+        return builder.CreateLoad(hs_idx);
+    }
+
     any_ptr ScmCodeGen::visit(ScmFunc * node) {
         D(cerr << "VISITED ScmFunc!" << endl);
         if (node->IR_val) return node->IR_val;
@@ -367,11 +486,18 @@ namespace llscm {
         bool varargs = false;
         auto saved_ip = builder.saveIP();
 
+        //Value * context_ptr = nullptr;
+        Value * heap_storage = nullptr;
+        auto & heap_local_idx = node->heap_local_idx;
+
         if (node->argc_expected == ArgsAnyCount) {
             varargs = true;
             arg_types.push_back(t.ti32);
         }
         else {
+            if (node->has_closure) {
+                arg_types.push_back(PointerType::get(t.scm_type_ptr, 0));
+            }
             arg_types.insert(arg_types.end(), (uint32_t)node->argc_expected, t.scm_type_ptr);
         }
         func_type = FunctionType::get(t.scm_type_ptr, arg_types, varargs);
@@ -385,23 +511,54 @@ namespace llscm {
         // Save function declaration
         node->IR_val = func;
 
-        if (!node->arg_list) { // Return declaration only (in case of extern functions).
+        if (!node->arg_list) {
+            // Return declaration only (in case of extern functions).
             return func;
         }
-
-        auto arg_it = func->args().begin();
-        DPC<ScmCons>(node->arg_list)->each([&arg_it](P_ScmObj e) {
-            ScmRef * fn_arg = dynamic_cast<ScmRef*>(e.get());
-            assert(fn_arg);
-            fn_arg->refObj()->IR_val = arg_it;
-            arg_it++;
-        });
 
         BasicBlock * bb = BasicBlock::Create(context, "entry", func);
         Value * ret_val, * c_ret_val;
         builder.SetInsertPoint(bb);
 
-        // TODO: generate code for heap storage allocation
+        // Generate code for heap storage allocation
+        if (node->passing_closure || heap_local_idx.size() > 0) {
+            heap_storage = node->IR_heap_storage =
+                    genAllocHeapStorage((int32_t)heap_local_idx.size() + 1);
+        }
+
+        auto arg_it = func->args().begin();
+
+        if (node->has_closure) {
+            // First argument is the context pointer
+            node->IR_context_ptr = arg_it++;
+            if (node->passing_closure) {
+                // Store context pointer to the heap storage at 0th index.
+                genHeapStore(heap_storage, node->IR_context_ptr, 0);
+            }
+        }
+
+        if (node->argc_expected) {
+            DPC<ScmCons>(node->arg_list)->each(
+                [this, &arg_it, &heap_local_idx, &heap_storage](P_ScmObj e) {
+                    ScmRef *fn_arg_ref = dynamic_cast<ScmRef *>(e.get());
+                    assert(fn_arg_ref);
+                    P_ScmObj fn_arg = fn_arg_ref->refObj();
+                    fn_arg->IR_val = arg_it;
+
+                    // Examine argument location type and copy
+                    // the argument to heap storage if necessary.
+                    if (fn_arg->location == T_HEAP_LOC) {
+                        auto idx_it = heap_local_idx.find(fn_arg.get());
+                        assert(idx_it != heap_local_idx.end());
+
+                        int32_t idx = idx_it->second;
+                        genHeapStore(heap_storage, fn_arg->IR_val, idx);
+                    }
+
+                    arg_it++;
+                }
+            );
+        }
 
         DPC<ScmCons>(node->body_list)->each([this, &ret_val](P_ScmObj e) {
             ret_val = codegen(e);
@@ -417,7 +574,8 @@ namespace llscm {
     any_ptr ScmCodeGen::visit(ScmCall * node) {
         D(cerr << "VISITED ScmCall!" << endl);
         if (node->indirect) {
-            // TODO: emit code for several runtime checks of the function pointer
+            // TODO: Implement indirect call of scm_func object (that includes passing
+            // closure context pointer). Runtime type check of the called object is needed.
             return AstVisitor::visit(node);
         }
         else {
@@ -470,7 +628,7 @@ namespace llscm {
 
         // Save expr to global var
         builder.CreateStore(expr, gvar);
-        node->val->is_global_var = true;
+        node->val->is_global_var = true; // TODO: remove
         return node->val->IR_val = gvar;
     }
 
@@ -538,5 +696,6 @@ namespace llscm {
         D(cerr << "VISITED ScmQuoteSyntax!" << endl);
         return node->IR_val = codegen(node->data);
     }
+
 }
 

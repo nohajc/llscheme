@@ -14,13 +14,14 @@ namespace llscm {
 
     class ScmEnv: public enable_shared_from_this<ScmEnv> {
         bool err_flag;
-        shared_ptr<ScmEnv> parent_env;
         ScmEnv * top_level_env;
         unordered_map<ScmSym, P_ScmObj> binding;
         unordered_map<string, uint32_t> uniq_id;
     public:
         static int GlobalLevel;
         ScmProg & prog;
+        list<P_ScmObj>::iterator prog_begin;
+        shared_ptr<ScmEnv> parent_env;
         P_ScmObj context; // Function using this environment or nullptr
 
         ScmEnv(ScmProg & p, P_ScmEnv penv = nullptr);

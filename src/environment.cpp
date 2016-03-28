@@ -37,6 +37,7 @@ namespace llscm {
             top_level_env = penv->top_level_env;
         }
         err_flag = false;
+        prog_begin = prog.begin();
     }
 
     P_ScmObj ScmEnv::get(P_ScmObj k, ScmLoc * loc) {
@@ -108,7 +109,7 @@ namespace llscm {
             ss << name << kv->second;
         }
         else {
-            uniq_id[name] = 0;
+            top_level_env->uniq_id[name] = 0;
             ss << name << 0;
         }
         return ss.str();

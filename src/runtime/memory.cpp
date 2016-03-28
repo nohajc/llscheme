@@ -49,6 +49,19 @@ namespace llscm {
             return obj;
         }
 
+        scm_type_t ** alloc_heap_storage(int32_t size) {
+            return (scm_type_t**)GC_MALLOC(size * sizeof(scm_type_t*));
+        }
+
+        scm_type_t * alloc_func(int32_t argc, scm_fnptr_t fnptr, scm_type_t ** ctxptr) {
+            scm_ptr_t obj = GC_MALLOC(sizeof(scm_func_t));
+            obj->tag = FUNC;
+            obj.asFunc->argc = argc;
+            obj.asFunc->fnptr = fnptr;
+            obj.asFunc->ctxptr = ctxptr;
+
+            return obj;
+        }
 
     }
 }

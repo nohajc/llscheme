@@ -112,8 +112,11 @@ namespace llscm {
 		list<P_ScmObj> form_lst;
 	public:
 		ScmProg(): Visitable(T_PROG) {}
-		void push_front(P_ScmObj o) {
+		/*void push_front(P_ScmObj o) {
 			form_lst.push_front(o);
+		}*/
+		list<P_ScmObj>::iterator insert(list<P_ScmObj>::iterator pos, const P_ScmObj & o) {
+			return form_lst.insert(pos, o);
 		}
 		void push_back(P_ScmObj o) {
 			form_lst.push_back(o);
@@ -217,11 +220,12 @@ namespace llscm {
 		weak_ptr<ScmObj> ref_obj_weak;
 		P_ScmObj ref_obj;
 		bool is_weak;
+	public:
 		// Store levels of indirection needed for accessing the ref_obj
 		// obtained from ScmEnv::get. Non-zero value used for closure data,
 		// not used for locals or globals.
 		int num_of_levels_up;
-	public:
+
 		ScmRef(const string & name, P_ScmObj obj, int levels = 0, bool weak = true):
 				Visitable(T_REF, name), ref_obj_weak(obj), num_of_levels_up(levels), is_weak(weak) {
 			if (!is_weak) {
@@ -282,6 +286,10 @@ namespace llscm {
 		ScmFunc(int32_t argc, const string & fname, P_ScmObj args = nullptr, P_ScmObj bodies = nullptr):
 				Visitable(T_FUNC), name(fname), arg_list(move(args)), body_list(move(bodies)) {
 			argc_expected = argc;
+			has_closure = false;
+			passing_closure = false;
+			IR_heap_storage = nullptr;
+			IR_context_ptr = nullptr;
 		}
 		virtual P_ScmObj CT_Eval(P_ScmEnv env);
 		void addHeapLocal(P_ScmObj obj) {
@@ -296,7 +304,15 @@ namespace llscm {
 		// Store map of heap locals' indices (or vector of locals)
 		// that gets updated in the CT_Eval phase everytime we find
 		// a reference to captured variable.
-		map<ScmObj*, int> heap_local_idx;
+		map<ScmObj*, int32_t> heap_local_idx;
+		// Functions with closure have a different calling convention:
+		// First hidden argument is the context pointer.
+		bool has_closure;
+		// Function which takes context pointer and has to make it
+		// available to another closure function defined inside it.
+		bool passing_closure;
+		Value * IR_heap_storage;
+		Value * IR_context_ptr;
 	};
 
 	class ScmConsFunc: public Visitable<ScmConsFunc, ScmFunc> {

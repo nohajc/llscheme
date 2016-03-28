@@ -244,13 +244,37 @@ namespace llscm {
 		else if (num_of_levels_up > 0) {
 			sym->location = T_HEAP_LOC;
 			def_func->addHeapLocal(sym);
+
+			ScmFunc * curr_func = DPC<ScmFunc>(env->context).get();
+			assert(curr_func);
+
+			// The current function is accessing an object
+			// from different non-global environment.
+			// We must set the corresponding flag:
+			curr_func->has_closure = true;
+
+			shared_ptr<ScmEnv> p_env = env->parent_env;
+			while (p_env) {
+				shared_ptr<ScmFunc> p_func = DPC<ScmFunc>(p_env->context);
+				assert(p_func);
+				if (p_func.get() == def_func) break;
+
+				p_func->has_closure = true;
+				p_func->passing_closure = true;
+				p_env = p_env->parent_env;
+			}
 		}
 		else {
 			sym->location = T_STACK_LOC;
 		}
 		sym->defined_in_func = def_func;
 
-		return make_shared<ScmRef>(last_sym_name, sym, num_of_levels_up);
+		P_ScmObj ref = make_shared<ScmRef>(last_sym_name, sym, num_of_levels_up);
+		if (env->context) {
+			ref->defined_in_func = DPC<ScmFunc>(env->context).get();
+		}
+
+		return ref;
 	}
 
 	P_ScmObj ScmCons::CT_Eval(P_ScmEnv env) {
@@ -303,18 +327,19 @@ namespace llscm {
 			new_env->context = shared_from_this();
 
 			// Bind all argument names to ScmArg - we need to tell them apart from unbound variables.
-			assert(arg_list->t == T_CONS);
-			DPC<ScmCons>(arg_list)->each([&new_env](P_ScmObj & e) {
-				P_ScmObj arg = make_shared<ScmArg>();
-				new_env->set(e, arg);
-				// We want to have ScmRefs in the formal arg_list so that codegen
-				// could store the right LLVM Values to each ScmArg
-				//e = e->CT_Eval(new_env);
-				shared_ptr<ScmSym> argsym = DPC<ScmSym>(e);
-				assert(argsym);
-				// Create non-weak reference
-				e = make_shared<ScmRef>(argsym->val, arg, 0, false);
-			});
+			if (arg_list->t == T_CONS) {
+				DPC<ScmCons>(arg_list)->each([&new_env](P_ScmObj &e) {
+					P_ScmObj arg = make_shared<ScmArg>();
+					new_env->set(e, arg);
+					// We want to have ScmRefs in the formal arg_list so that codegen
+					// could store the right LLVM Values to each ScmArg
+					//e = e->CT_Eval(new_env);
+					shared_ptr<ScmSym> argsym = DPC<ScmSym>(e);
+					assert(argsym);
+					// Create non-weak reference
+					e = make_shared<ScmRef>(argsym->val, arg, 0, false);
+				});
+			}
 
 			// Eval function bodies in the function environment
 			assert(body_list->t == T_CONS);
@@ -371,7 +396,7 @@ namespace llscm {
 
 			indirect = false;
 		}
-		else if (obj->t == T_EXPR && !DPC<ScmQuoteSyntax>(obj)) {
+		else if ((obj->t == T_EXPR || obj->t == T_ARG) && !DPC<ScmQuoteSyntax>(obj)) {
 			// TODO: this could be optimized further...
 			// Maybe we could traverse the expression recursively and determine
 			// whether it returns ScmFunc. That way we could eliminate more invalid
@@ -433,9 +458,11 @@ namespace llscm {
 		// Converts to ScmDefineVarSyntax with ScmFunc.
 		// Then calls CT_Eval on the new object and return it.
 		const string & fname = DPC<ScmSym>(name)->val;
+		ScmCons * c_arg_list = DPC<ScmCons>(arg_list).get();
+		int32_t argc = c_arg_list ? c_arg_list->length() : 0;
 
 		P_ScmObj func = make_shared<ScmFunc>(
-				DPC<ScmCons>(arg_list)->length(), fname,
+				argc, fname,
 				move(arg_list), move(body_list)
 		);
 
@@ -468,10 +495,12 @@ namespace llscm {
 		// Creates a new symbol (name) for the anonymous function.
 		string fname = env->getUniqID("lambda");
 		P_ScmObj fsym = make_shared<ScmSym>(fname);
+		ScmCons * c_arg_list = DPC<ScmCons>(arg_list).get();
+		int32_t argc = c_arg_list ? c_arg_list->length() : 0;
 
 		// Converts this object to ScmDefineVarSyntax.
 		P_ScmObj func = make_shared<ScmFunc>(
-				DPC<ScmCons>(arg_list)->length(), fname,
+				argc, fname,
 				move(arg_list), move(body_list)
 		);
 		P_ScmObj def_var = make_shared<ScmDefineVarSyntax>(fsym, func);
@@ -480,11 +509,15 @@ namespace llscm {
 		if (env->fail()) {
 			return nullptr;
 		}
-		env->prog.push_front(def_var);
+		env->prog.insert(env->prog_begin, def_var);
 
 		// We've moved the inplace lambda definition to a separate node
 		// at the start of ScmProg and now we just return the unique symbol bound to it.
-		return make_shared<ScmRef>(fname, func);
+		P_ScmObj ref = make_shared<ScmRef>(fname, func);
+		if (env->context) {
+			ref->defined_in_func = DPC<ScmFunc>(env->context).get();
+		}
+		return ref;
 	}
 
 	ostream &ScmLambdaSyntax::printSrc(ostream &os) const {

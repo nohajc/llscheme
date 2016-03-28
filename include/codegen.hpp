@@ -16,7 +16,6 @@ namespace llscm {
     using namespace llvm;
 
     struct RuntimeSymbol {
-        //static const char *malloc;
         static const char *cons;
         static const char *car;
         static const char *cdr;
@@ -31,6 +30,11 @@ namespace llscm {
         static const char *cmd_args;
         static const char *vec_len;
         static const char *vec_ref;
+        static const char *get_arg_vec;
+        static const char *argv;
+        static const char *exit_code;
+        static const char *alloc_heap_storage;
+        static const char *alloc_func;
     };
 
     class ScmCodeGen: public AstVisitor {
@@ -52,6 +56,7 @@ namespace llscm {
             StructType * scm_func;
             StructType * scm_vec;
             FunctionType * scm_fn_sig;
+            PointerType * scm_fn_ptr;
             PointerType * scm_type_ptr;
             Type * ti32;
         } t;
@@ -93,7 +98,14 @@ namespace llscm {
         void initTypes();
         void addMainFuncProlog(); // Called when we want to compile a standalone app
         void addMainFuncEpilog();
-        void addTestFunc();
+        //void addTestFunc();
+
+        Value * genAllocHeapStorage(int32_t size);
+        void genHeapStore(Value * hs, Value * obj, int32_t idx);
+        Value * genHeapLoad(Value * hs, int32_t idx);
+
+        Value * genAllocFunc(int32_t argc, Function * fnptr, Value * ctxptr);
+        Value * genConstFunc(int32_t argc, Function * fnptr);
         //void testAstVisit();
 
         /*

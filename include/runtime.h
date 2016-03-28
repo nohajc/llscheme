@@ -47,6 +47,7 @@ namespace llscm {
             int32_t tag;
             int32_t argc;
             scm_fnptr_t fnptr;
+            scm_type_t ** ctxptr;
         };
 
         struct scm_vec_t {
