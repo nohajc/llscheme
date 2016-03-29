@@ -27,7 +27,7 @@ namespace llscm {
         return env;
     }
 
-    int ScmEnv::GlobalLevel = -1;
+    int ScmEnv::GlobalLevel = -2;
 
     ScmEnv::ScmEnv(ScmProg & p, P_ScmEnv penv): prog(p), parent_env(penv) {
         if (!penv) {
@@ -38,6 +38,7 @@ namespace llscm {
         }
         err_flag = false;
         prog_begin = prog.begin();
+        context = nullptr;
     }
 
     P_ScmObj ScmEnv::get(P_ScmObj k, ScmLoc * loc) {
@@ -53,9 +54,10 @@ namespace llscm {
             }
 
             if (!*loc) {
-                *loc = make_shared<pair<int, ScmFunc*>>(0, func);
+                *loc = make_shared<pair<int, ScmFunc*>>(-1, func);
             }
-            else {
+
+            if (func) {
                 (*loc)->first += 1;
                 (*loc)->second = func;
             }

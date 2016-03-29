@@ -93,9 +93,9 @@ namespace llscm {
             t.scm_cons->setBody(fields, false);
         }
 
-        // %scm_func = type { i32, i32, %scm_type* (i32, ...)*, %scm_type** }
+        // %scm_func = type { i32, i32, %scm_type* (%scm_type*, ...)*, %scm_type** }
         // Every function won't be varargs. This is just the default.
-        t.scm_fn_sig = FunctionType::get(t.scm_type_ptr, { t.ti32 }, true);
+        t.scm_fn_sig = FunctionType::get(t.scm_type_ptr, { t.scm_type_ptr }, true);
         t.scm_fn_ptr = PointerType::get(t.scm_fn_sig, 0);
         t.scm_func = module->getTypeByName("scm_func");
         if (!t.scm_func) {
@@ -497,14 +497,22 @@ namespace llscm {
 
         if (node->argc_expected == ArgsAnyCount) {
             varargs = true;
-            arg_types.push_back(t.ti32);
+            arg_types.push_back(t.scm_type_ptr);
+            // TODO: What about closure functions with variable arguments?
+            // Of course, so far the parser doesn't support scheme functions
+            // with varargs. But when it does, we need to take care of this.
         }
         else {
+            arg_types.insert(arg_types.end(), (uint32_t)node->argc_expected, t.scm_type_ptr);
+            // Changed the convention to pass context pointer as the last argument.
+            // Then we can used it for varargs calls as an argument end mark instead of
+            // passing the i32 with argc. That way all the function types will be compatible
+            // with this new default type: %scm_type* (%scm_type*, ...)*.
             if (node->has_closure) {
                 arg_types.push_back(PointerType::get(t.scm_type_ptr, 0));
             }
-            arg_types.insert(arg_types.end(), (uint32_t)node->argc_expected, t.scm_type_ptr);
         }
+
         func_type = FunctionType::get(t.scm_type_ptr, arg_types, varargs);
         // TODO: How to handle redefinitions?
         func = Function::Create(
@@ -533,15 +541,6 @@ namespace llscm {
 
         auto arg_it = func->args().begin();
 
-        if (node->has_closure) {
-            // First argument is the context pointer
-            node->IR_context_ptr = arg_it++;
-            if (node->passing_closure) {
-                // Store context pointer to the heap storage at 0th index.
-                genHeapStore(heap_storage, node->IR_context_ptr, 0);
-            }
-        }
-
         if (node->argc_expected) {
             DPC<ScmCons>(node->arg_list)->each(
                 [this, &arg_it, &heap_local_idx, &heap_storage](P_ScmObj e) {
@@ -565,6 +564,18 @@ namespace llscm {
             );
         }
 
+        if (node->has_closure) {
+            // Last argument is the context pointer
+            node->IR_context_ptr = arg_it++;
+            if (node->passing_closure) {
+                // Store context pointer to the heap storage at 0th index.
+                genHeapStore(heap_storage, node->IR_context_ptr, 0);
+            }
+        }
+        else {
+            node->IR_context_ptr = nullptr;
+        }
+
         DPC<ScmCons>(node->body_list)->each([this, &ret_val](P_ScmObj e) {
             ret_val = codegen(e);
         });
@@ -581,22 +592,33 @@ namespace llscm {
         if (node->indirect) {
             // TODO: Implement indirect call of scm_func object (that includes passing
             // closure context pointer). Runtime type check of the called object is needed.
+            ScmRef * fn_ref = DPC<ScmRef>(node->fexpr).get();
+            assert(fn_ref);
+            // In the most general case, obj can be any expression which gives
+            // us a scm_func pointer after runtime evaluation.
+            Value * obj = codegen(fn_ref);
+            // We must therefore generate a code that will check the type of the referenced object,
+            // then it will check the expected and given number of arguments and finally
+            // it will call the function poiner or throw a runtime error.
+
             return AstVisitor::visit(node);
         }
         else {
             vector<Value*> args;
-            ScmRef * fn_ref = dynamic_cast<ScmRef*>(node->fexpr.get());
+            ScmRef * fn_ref = DPC<ScmRef>(node->fexpr).get();
             assert(fn_ref);
-            ScmFunc * fn_obj = dynamic_cast<ScmFunc*>(fn_ref->refObj().get());
+            ScmFunc * fn_obj = DPC<ScmFunc>(fn_ref->refObj()).get();
             assert(fn_obj);
+            // We don't call codegen on the ref. That would yield scm_func struct.
+            // Instead we get the raw function pointer from the referenced object.
             Function * func = dyn_cast<Function>(codegen(fn_obj));
 
             if (node->arg_list->t != T_NULL) {
                 // At least one argument
-                ScmCons * arg_list = dynamic_cast<ScmCons*>(node->arg_list.get());
-                if (fn_obj->argc_expected == ArgsAnyCount) {
+                ScmCons * arg_list = DPC<ScmCons>(node->arg_list).get();
+                /*if (fn_obj->argc_expected == ArgsAnyCount) {
                     args.push_back(builder.getInt32((uint32_t)arg_list->length()));
-                }
+                }*/
 
                 arg_list->each([this, &args](P_ScmObj e) {
                     Value * a = codegen(e);
@@ -605,6 +627,22 @@ namespace llscm {
                     }
                     args.push_back(a);
                 });
+            }
+
+            if (fn_obj->has_closure) {
+                // We must also count with the case of direct closure function call.
+                // There's no need to allocate scm_func object, we're not passing
+                // it around. We just take the heap storage of current function.
+                // It must be the current function. Closure with any other context
+                // would have to be defined elsewhere and passed as a scm_func struct
+                // which would then lead to an indirect call.
+                args.push_back(fn_ref->defined_in_func->IR_heap_storage);
+            }
+
+            if (fn_obj->argc_expected == ArgsAnyCount) {
+                args.push_back(ConstantPointerNull::get(
+                        PointerType::get(t.scm_type_ptr, 0)
+                ));
             }
 
             return node->IR_val = builder.CreateCall(func, args, fn_obj->name);

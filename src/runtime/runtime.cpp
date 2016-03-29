@@ -45,16 +45,15 @@ namespace llscm {
             return SCM_NULL;
         }
 
-        scm_type_t * scm_plus(int32_t argc, ...) {
+        scm_type_t * scm_plus(scm_type_t * arg0, ...) {
             va_list ap;
             int64_t sum = 0;
             double fsum = 0;
             bool is_int = true;
-            scm_ptr_t obj;
+            scm_ptr_t obj = arg0;
 
-            va_start(ap, argc);
-            for (int i = 0; i < argc; i++) {
-                obj = va_arg(ap, scm_type_t*);
+            va_start(ap, arg0);
+            while (obj.asType != nullptr) {
                 if (is_int) {
                     if (obj->tag == INT) {
                         sum += obj.asInt->value;
@@ -78,6 +77,7 @@ namespace llscm {
                         INVALID_ARG_TYPE();
                     }
                 }
+                obj = va_arg(ap, scm_type_t*);
             }
             va_end(ap);
 
@@ -89,31 +89,22 @@ namespace llscm {
             return alloc_float(fsum);
         }
 
-        scm_type_t * scm_minus(int32_t argc, ...) {
+        scm_type_t * scm_minus(scm_type_t * arg0, ...) {
             va_list ap;
             int64_t diff = 0;
             double fdiff = 0;
             bool is_int = true;
-            scm_ptr_t obj;
+            scm_ptr_t obj = arg0;
 
-            if (argc == 0) {
+            if (arg0 == nullptr) { // Zero arguments
+                // TODO: is it safe to return from the function before
+                // consuming all arguments and calling va_end?
                 WRONG_ARG_NUM();
             }
 
-            va_start(ap, argc);
+            va_start(ap, arg0);
 
-            if (argc == 1) {
-                obj = va_arg(ap, scm_type_t*);
-                if (obj->tag == INT) {
-                    return alloc_int(-obj.asInt->value);
-                }
-                if (obj->tag == FLOAT) {
-                    return alloc_float(-obj.asFloat->value);
-                }
-                INVALID_ARG_TYPE();
-            }
-
-            obj = va_arg(ap, scm_type_t*);
+            //obj = va_arg(ap, scm_type_t*);
             if (obj->tag == INT) {
                 diff = obj.asInt->value;
             }
@@ -125,8 +116,15 @@ namespace llscm {
                 INVALID_ARG_TYPE();
             }
 
-            for (int i = 1; i < argc; i++) {
-                obj = va_arg(ap, scm_type_t*);
+            obj = va_arg(ap, scm_type_t*);
+            if (obj.asType == nullptr) { // One argument
+                if (is_int) {
+                    return alloc_int(-diff);
+                }
+                return alloc_float(-fdiff);
+            }
+
+            while (obj.asType != nullptr) {
                 if (is_int) {
                     if (obj->tag == INT) {
                         diff -= obj.asInt->value;
@@ -150,6 +148,7 @@ namespace llscm {
                         INVALID_ARG_TYPE();
                     }
                 }
+                obj = va_arg(ap, scm_type_t*);
             }
 
             va_end(ap);
@@ -159,11 +158,11 @@ namespace llscm {
             return alloc_float(fdiff);
         }
 
-        scm_type_t * scm_times(int32_t argc, ...) {
+        scm_type_t * scm_times(scm_type_t * arg0, ...) {
             return nullptr;
         }
 
-        scm_type_t * scm_div(int32_t argc, ...) {
+        scm_type_t * scm_div(scm_type_t * arg0, ...) {
             return nullptr;
         }
 

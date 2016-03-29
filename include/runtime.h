@@ -41,7 +41,7 @@ namespace llscm {
             scm_type_t * cdr;
         };
 
-        typedef scm_type_t * (*scm_fnptr_t)(int32_t argc, ...);
+        typedef scm_type_t * (*scm_fnptr_t)(scm_type_t * arg0, ...);
 
         struct scm_func_t {
             int32_t tag;
@@ -104,10 +104,10 @@ namespace llscm {
             scm_type_t * scm_get_arg_vector(int argc, char * argv[]);
             scm_type_t * scm_cmd_args();
             scm_type_t * scm_display(scm_ptr_t obj);
-            scm_type_t * scm_plus(int32_t argc, ...);
-            scm_type_t * scm_minus(int32_t argc, ...);
-            scm_type_t * scm_times(int32_t argc, ...);
-            scm_type_t * scm_div(int32_t argc, ...);
+            scm_type_t * scm_plus(scm_type_t * arg0, ...);
+            scm_type_t * scm_minus(scm_type_t * arg0, ...);
+            scm_type_t * scm_times(scm_type_t * arg0, ...);
+            scm_type_t * scm_div(scm_type_t * arg0, ...);
             scm_type_t * scm_gt(scm_ptr_t a, scm_ptr_t b);
             scm_type_t * scm_num_eq(scm_ptr_t a, scm_ptr_t b);
             scm_type_t * scm_cons(scm_ptr_t car, scm_ptr_t cdr);

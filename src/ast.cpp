@@ -242,6 +242,9 @@ namespace llscm {
 			sym->location = T_GLOB;
 		}
 		else if (num_of_levels_up > 0) {
+			D(cerr << "Closure data ref: ");
+			D(cerr << sym->t);
+			D(cerr << ", number of levels: " << num_of_levels_up << endl);
 			sym->location = T_HEAP_LOC;
 			def_func->addHeapLocal(sym);
 
