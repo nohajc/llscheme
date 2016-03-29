@@ -716,6 +716,7 @@ namespace llscm {
     any_ptr ScmCodeGen::visit(ScmLetSyntax * node) {
         D(cerr << "VISITED ScmLetSyntax!" << endl);
         // Generate code for binding list expression evaluation
+        // TODO: Store heap locals
         if (node->bind_list->t != T_NULL) {
             DPC<ScmCons>(node->bind_list)->each([this](P_ScmObj e) {
                 assert(e->t == T_CONS);
