@@ -37,6 +37,7 @@ namespace llscm {
         // (in case of reference to captured object).
         P_ScmObj get(P_ScmObj k, ScmLoc * loc = nullptr);
         P_ScmObj get(ScmSym * sym, ScmLoc * loc = nullptr);
+        ScmFunc * defInFunc();
         bool set(P_ScmObj k, P_ScmObj obj);
         bool set(const string & k, P_ScmObj obj);
         void error(const string & msg);

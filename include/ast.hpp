@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <list>
 #include <llvm/ADT/STLExtras.h>
 #include "llvm/IR/IRBuilder.h"
@@ -304,7 +305,7 @@ namespace llscm {
 		// Store map of heap locals' indices (or vector of locals)
 		// that gets updated in the CT_Eval phase everytime we find
 		// a reference to captured variable.
-		map<ScmObj*, int32_t> heap_local_idx;
+		unordered_map<ScmObj*, int32_t> heap_local_idx;
 		// Functions with closure have a different calling convention:
 		// First hidden argument is the context pointer.
 		bool has_closure;

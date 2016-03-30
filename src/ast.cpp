@@ -228,7 +228,8 @@ namespace llscm {
 		while (sym && sym->t == T_REF) {
 			sym = DPC<ScmRef>(sym)->refObj();
 		}
-		//cout << "BOUND TO: " << sym->t << endl;
+		//D(cerr << "BOUND TO: " << sym->t << endl);
+		//D(cerr << "LEVELS: " << num_of_levels_up << endl);
 
 		if (!sym) {
 			env->error(last_sym_name + " is not defined.");
@@ -243,9 +244,10 @@ namespace llscm {
 		}
 		else if (num_of_levels_up > 0) {
 			D(cerr << "Closure data ref: ");
-			D(cerr << sym->t);
+			D(cerr << sym.get());
 			D(cerr << ", number of levels: " << num_of_levels_up << endl);
 			sym->location = T_HEAP_LOC;
+			assert(def_func);
 			def_func->addHeapLocal(sym);
 
 			ScmFunc * curr_func = DPC<ScmFunc>(env->context).get();
@@ -259,11 +261,12 @@ namespace llscm {
 			shared_ptr<ScmEnv> p_env = env->parent_env;
 			while (p_env) {
 				shared_ptr<ScmFunc> p_func = DPC<ScmFunc>(p_env->context);
-				assert(p_func);
-				if (p_func.get() == def_func) break;
+				if (p_func) {
+					if (p_func.get() == def_func) break;
 
-				p_func->has_closure = true;
-				p_func->passing_closure = true;
+					p_func->has_closure = true;
+					p_func->passing_closure = true;
+				}
 				p_env = p_env->parent_env;
 			}
 		}
@@ -273,9 +276,7 @@ namespace llscm {
 		sym->defined_in_func = def_func;
 
 		P_ScmObj ref = make_shared<ScmRef>(last_sym_name, sym, num_of_levels_up);
-		if (env->context) {
-			ref->defined_in_func = DPC<ScmFunc>(env->context).get();
-		}
+		ref->defined_in_func = env->defInFunc();
 
 		return ref;
 	}
@@ -436,6 +437,8 @@ namespace llscm {
 		// TODO: handle lambda inside define
 		//P_ScmObj lambda = DPC<ScmLambdaSyntax>(val);
 
+		defined_in_func = DPC<ScmFunc>(env->context).get();
+
 		val = val->CT_Eval(env);
 		if (env->fail()) {
 			return nullptr;
@@ -564,6 +567,8 @@ namespace llscm {
 
 	P_ScmObj ScmLetSyntax::CT_Eval(P_ScmEnv env) {
 		P_ScmEnv let_env = make_shared<ScmEnv>(env->prog, env);
+
+		defined_in_func = DPC<ScmFunc>(env->context).get();
 
 		if (bind_list->t != T_NULL) {
 			assert(bind_list->t == T_CONS);

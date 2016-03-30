@@ -1,6 +1,7 @@
 #include <sstream>
 #include <llvm/ADT/STLExtras.h>
 #include "../include/environment.hpp"
+#include "../include/debug.hpp"
 
 namespace llscm {
     using namespace std;
@@ -47,8 +48,10 @@ namespace llscm {
     }
 
     P_ScmObj ScmEnv::get(ScmSym * sym, ScmLoc * loc) {
+        bool find_func = false;
+        ScmFunc * func = nullptr;
         if (loc) {
-            ScmFunc * func = nullptr;
+            find_func = true;
             if (context && context->t == T_FUNC) {
                 func = DPC<ScmFunc>(context).get();
             }
@@ -64,6 +67,7 @@ namespace llscm {
 
             if (this == top_level_env) {
                 (*loc)->first = GlobalLevel;
+                find_func = false;
             }
         }
 
@@ -73,6 +77,24 @@ namespace llscm {
                 return parent_env->get(sym, loc);
             }
             return nullptr;
+        }
+
+        if (!func && find_func && *loc) {
+            // We're inside a let block
+            D(cerr << "FIND_FUNC" << endl);
+            ScmEnv * p_env = this;
+            while (p_env) {
+                if (p_env == top_level_env) {
+                    (*loc)->first = GlobalLevel;
+                    break;
+                }
+                if (p_env->context && p_env->context->t == T_FUNC) {
+                    (*loc)->first += 1;
+                    (*loc)->second = DPC<ScmFunc>(p_env->context).get();;
+                    break;
+                }
+                p_env = p_env->parent_env.get();
+            }
         }
         // If valid pointer given in def_env, return
         // the environment where we've found the symbol binding.
@@ -116,4 +138,19 @@ namespace llscm {
         }
         return ss.str();
     }
+
+    ScmFunc * ScmEnv::defInFunc() {
+        ScmFunc * func = nullptr;
+        ScmEnv * p_env = this;
+        while (p_env) {
+            if (p_env->context && p_env->context->t == T_FUNC) {
+                func = DPC<ScmFunc>(p_env->context).get();;
+                break;
+            }
+            p_env = p_env->parent_env.get();
+        }
+        return func;
+    }
+
+
 }

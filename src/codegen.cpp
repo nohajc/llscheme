@@ -366,9 +366,8 @@ namespace llscm {
         // TODO: We have to translate different kinds of Refs.
         // Direct access to locals and globals, indirect to closure variables.
         P_ScmObj robj = node->refObj();
-        if (robj->is_global_var) { // TODO: remove
-            return builder.CreateLoad(robj->IR_val);
-        }
+
+        //D(cerr << "location: " << robj->location << endl);
 
         if (robj->location == T_HEAP_LOC) {
             D(cerr << "num_of_levels_up = " << node->num_of_levels_up << endl);
@@ -416,6 +415,10 @@ namespace llscm {
             else {
                 return genConstFunc(fn_obj->argc_expected, func);
             }
+        }
+
+        if (robj->location == T_GLOB) {
+            return builder.CreateLoad(robj->IR_val);
         }
 
         return node->IR_val = robj->IR_val;
@@ -636,6 +639,8 @@ namespace llscm {
                 // It must be the current function. Closure with any other context
                 // would have to be defined elsewhere and passed as a scm_func struct
                 // which would then lead to an indirect call.
+                assert(fn_ref->defined_in_func);
+                D(cerr << fn_ref->defined_in_func << endl);
                 args.push_back(fn_ref->defined_in_func->IR_heap_storage);
             }
 
@@ -659,20 +664,33 @@ namespace llscm {
         PointerType * etype = dyn_cast<PointerType>(expr->getType());
         assert(etype);
 
-        // TODO: We should not always create global variables.
+        // We should not always create global variables.
         // That's needed for top-level definitions only.
-        // So we need a flag which tells us whether
-        // the definition is top-level or not.
-        Value * gvar = new GlobalVariable(
-                *module, etype, false,
-                GlobalValue::InternalLinkage,
-                ConstantPointerNull::get(etype), ""
-        );
 
-        // Save expr to global var
-        builder.CreateStore(expr, gvar);
-        node->val->is_global_var = true; // TODO: remove
-        return node->val->IR_val = gvar;
+        if (node->val->location == T_GLOB) {
+            Value * gvar = new GlobalVariable(
+                    *module, etype, false,
+                    GlobalValue::InternalLinkage,
+                    ConstantPointerNull::get(etype), ""
+            );
+
+            // Save expr to global var
+            builder.CreateStore(expr, gvar);
+            node->val->IR_val = gvar;
+        }
+        else if (node->val->location == T_HEAP_LOC) {
+            // Save expr to heap storage
+            ScmFunc * curr_func = node->defined_in_func;
+            assert(curr_func);
+
+            auto idx_it = curr_func->heap_local_idx.find(node->val.get());
+            assert(idx_it != curr_func->heap_local_idx.end());
+
+            int32_t idx = idx_it->second;
+            genHeapStore(curr_func->IR_heap_storage, node->val->IR_val, idx);
+        }
+
+        return node->val->IR_val;
     }
 
     any_ptr ScmCodeGen::visit(ScmIfSyntax * node) {
@@ -716,14 +734,41 @@ namespace llscm {
     any_ptr ScmCodeGen::visit(ScmLetSyntax * node) {
         D(cerr << "VISITED ScmLetSyntax!" << endl);
         // Generate code for binding list expression evaluation
-        // TODO: Store heap locals
+
         if (node->bind_list->t != T_NULL) {
-            DPC<ScmCons>(node->bind_list)->each([this](P_ScmObj e) {
+            DPC<ScmCons>(node->bind_list)->each([this, node](P_ScmObj e) {
                 assert(e->t == T_CONS);
                 shared_ptr<ScmCons> kv = DPC<ScmCons>(e);
                 assert(kv->cdr->t == T_CONS);
-                P_ScmObj expr = DPC<ScmCons>(kv->cdr)->car;
-                codegen(expr);
+                P_ScmObj & expr = DPC<ScmCons>(kv->cdr)->car;
+                Value * expr_val = codegen(expr);
+                PointerType * etype = dyn_cast<PointerType>(expr_val->getType());
+
+                if (expr->location == T_GLOB) {
+                    Value * gvar = new GlobalVariable(
+                            *module, etype, false,
+                            GlobalValue::InternalLinkage,
+                            ConstantPointerNull::get(etype), ""
+                    );
+
+                    // Save expr to global var
+                    builder.CreateStore(expr_val, gvar);
+                    expr->IR_val = gvar;
+                }
+                else if (expr->location == T_HEAP_LOC) {
+                    // Save expr to heap storage
+                    ScmFunc * curr_func = node->defined_in_func;
+                    assert(curr_func);
+
+                    auto idx_it = curr_func->heap_local_idx.find(expr.get());
+                    assert(idx_it != curr_func->heap_local_idx.end());
+
+                    int32_t idx = idx_it->second;
+                    genHeapStore(curr_func->IR_heap_storage, expr_val, idx);
+                }
+
+                // In case of top level let expressions the bound variables are all
+                // actually global.
             });
         }
 
