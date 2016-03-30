@@ -400,7 +400,7 @@ namespace llscm {
 
 			indirect = false;
 		}
-		else if ((obj->t == T_EXPR || obj->t == T_ARG) && !DPC<ScmQuoteSyntax>(obj)) {
+		else if ((obj->t == T_EXPR || obj->t == T_ARG || obj->t == T_CALL) && !DPC<ScmQuoteSyntax>(obj)) {
 			// TODO: this could be optimized further...
 			// Maybe we could traverse the expression recursively and determine
 			// whether it returns ScmFunc. That way we could eliminate more invalid

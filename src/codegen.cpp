@@ -363,7 +363,7 @@ namespace llscm {
 
     any_ptr ScmCodeGen::visit(ScmRef * node) {
         D(cerr << "VISITED ScmRef!" << endl);
-        // TODO: We have to translate different kinds of Refs.
+        // We have to translate different kinds of Refs.
         // Direct access to locals and globals, indirect to closure variables.
         P_ScmObj robj = node->refObj();
 
@@ -595,11 +595,9 @@ namespace llscm {
         if (node->indirect) {
             // TODO: Implement indirect call of scm_func object (that includes passing
             // closure context pointer). Runtime type check of the called object is needed.
-            ScmRef * fn_ref = DPC<ScmRef>(node->fexpr).get();
-            assert(fn_ref);
             // In the most general case, obj can be any expression which gives
             // us a scm_func pointer after runtime evaluation.
-            Value * obj = codegen(fn_ref);
+            Value * obj = codegen(node->fexpr);
             // We must therefore generate a code that will check the type of the referenced object,
             // then it will check the expected and given number of arguments and finally
             // it will call the function poiner or throw a runtime error.
