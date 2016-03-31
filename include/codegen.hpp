@@ -112,6 +112,7 @@ namespace llscm {
 
         Value * genAllocFunc(int32_t argc, Function * fnptr, Value * ctxptr);
         Value * genConstFunc(int32_t argc, Function * fnptr);
+        vector<Value*> genArgValues(const ScmCall * node);
         //void testAstVisit();
         template<typename F1, typename F2, typename F3>
         Value * genIfElse(F1 cond_expr, F2 then_expr, F3 else_expr) {
@@ -126,21 +127,19 @@ namespace llscm {
 
             builder.SetInsertPoint(then_bb);
             Value * then_val = then_expr();
-            then_val = builder.CreateBitCast(then_val, t.scm_type_ptr);
             builder.CreateBr(merge_bb);
             then_bb = builder.GetInsertBlock();
 
             func->getBasicBlockList().push_back(else_bb);
             builder.SetInsertPoint(else_bb);
             Value * else_val = else_expr();
-            else_val = builder.CreateBitCast(else_val, t.scm_type_ptr);
             builder.CreateBr(merge_bb);
             else_bb = builder.GetInsertBlock();
 
             func->getBasicBlockList().push_back(merge_bb);
 
             builder.SetInsertPoint(merge_bb);
-            PHINode * phi = builder.CreatePHI(t.scm_type_ptr, 2, "ifres");
+            PHINode * phi = builder.CreatePHI(then_val->getType(), 2, "ifres");
             phi->addIncoming(then_val, then_bb);
             phi->addIncoming(else_val, else_bb);
 

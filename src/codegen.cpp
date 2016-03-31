@@ -590,6 +590,26 @@ namespace llscm {
         return func;
     }
 
+    vector<Value*> ScmCodeGen::genArgValues(const ScmCall * node) {
+        vector<Value*> args;
+        if (node->arg_list->t != T_NULL) {
+            // At least one argument
+            ScmCons * arg_list = DPC<ScmCons>(node->arg_list).get();
+            /*if (fn_obj->argc_expected == ArgsAnyCount) {
+                args.push_back(builder.getInt32((uint32_t)arg_list->length()));
+            }*/
+
+            arg_list->each([this, &args](P_ScmObj e) {
+                Value * a = codegen(e);
+                if (a->getType() != t.scm_type_ptr) {
+                    a = builder.CreateBitCast(a, t.scm_type_ptr);
+                }
+                args.push_back(a);
+            });
+        }
+        return args;
+    }
+
     any_ptr ScmCodeGen::visit(ScmCall * node) {
         D(cerr << "VISITED ScmCall!" << endl);
         if (node->indirect) {
@@ -603,48 +623,78 @@ namespace llscm {
             // then it will check the expected and given number of arguments and finally
             // it will call the function poiner or throw a runtime error.
 
-            Value * ret = genIfElse(
-                    [this, obj, node, ir_false] () {
-                        vector<Value*> tag_indices(2, builder.getInt32(0));
-                        Value * tag = builder.CreateGEP(obj, tag_indices);
-                        assert(tag->getType() == t.ti32);
+            // TODO: This is only for testing. REMOVE!
+            obj = builder.CreateBitCast(obj, PointerType::get(t.scm_func, 0));
 
-                        return genIfElse(
+            Value * ret = genIfElse(
+                    [this, &obj, node, ir_false] () {
+                        D(cerr << "loading tag" << endl);
+                        vector<Value*> tag_indices(2, builder.getInt32(0));
+                        Value * tag = builder.CreateLoad(
+                                t.ti32, builder.CreateGEP(obj, tag_indices)
+                        );
+                        //assert(tag->getType() == t.ti32);
+
+                        /*return genIfElse(
                                 // If the given object is FUNC
                                 [this, tag] () { return builder.CreateICmpEQ(tag, builder.getInt32(FUNC)); },
                                 // And if FUNC's argc equals this call's argc
-                                [this, obj, node] () {
+                                [this, &obj, node] () {
+                                    //D(obj->getType()->dump());
+                                    //D(PointerType::get(t.scm_func, 0)->dump());
+                                    obj = builder.CreateBitCast(obj, PointerType::get(t.scm_func, 0));
+                                    D(cerr << "loading argc" << endl);
                                     vector<Value*> argc_indices = {
                                             builder.getInt32(0),
                                             builder.getInt32(1)
                                     };
-                                    Value * argc = builder.CreateGEP(obj, argc_indices);
+                                    Value * argc = builder.CreateLoad(
+                                            t.ti32, builder.CreateGEP(obj, argc_indices)
+                                    );
                                     assert(argc->getType() == t.ti32);
                                     return builder.CreateICmpEQ(argc, builder.getInt32((uint32_t)node->argc));
                                 },
                                 [this, ir_false] () { return ir_false; }
-                        );
+                        );*/
+                        return builder.getInt1(true);
                     },
-                    [this, obj, ir_false] () {
+                    [this, &obj, node] () {
+                        D(cerr << "prepare to emit indirect call" << endl);
                         // Emit the indirect call
                         vector<Value*> fnptr_indices = {
                                 builder.getInt32(0),
                                 builder.getInt32(2)
                         };
+                        vector<Value*> ctxptr_indices = {
+                                builder.getInt32(0),
+                                builder.getInt32(3)
+                        };
 
-                        Value * fnptr = builder.CreateGEP(obj, fnptr_indices);
-                        return ir_false; // TODO: codegen arguments, retrieve ctxptr, create call
+                        D(cerr << "loading fnptr" << endl);
+                        Value * fnptr = builder.CreateLoad(
+                                t.scm_fn_ptr, builder.CreateGEP(obj, fnptr_indices)
+                        );
+
+                        D(cerr << "loading ctxptr" << endl);
+                        Value * ctxptr = builder.CreateLoad(
+                                PointerType::get(t.scm_type_ptr, 0),
+                                builder.CreateGEP(obj, ctxptr_indices)
+                        );
+
+                        vector<Value*> args = genArgValues(node);
+                        args.push_back(ctxptr); // This is null for non-closure functions
+
+                        return builder.CreateCall(t.scm_fn_sig, fnptr, args);
                     },
-                    [this, ir_false] () {
-                        // Emit invalid func runtime error
-                        return ir_false;
+                    [this] () {
+                        // TODO: Emit invalid func runtime error
+                        return ConstantPointerNull::get(t.scm_type_ptr);
                     }
             );
 
-            return ret;
+            return node->IR_val = ret;
         }
         else {
-            vector<Value*> args;
             ScmRef * fn_ref = DPC<ScmRef>(node->fexpr).get();
             assert(fn_ref);
             ScmFunc * fn_obj = DPC<ScmFunc>(fn_ref->refObj()).get();
@@ -653,21 +703,7 @@ namespace llscm {
             // Instead we get the raw function pointer from the referenced object.
             Function * func = dyn_cast<Function>(codegen(fn_obj));
 
-            if (node->arg_list->t != T_NULL) {
-                // At least one argument
-                ScmCons * arg_list = DPC<ScmCons>(node->arg_list).get();
-                /*if (fn_obj->argc_expected == ArgsAnyCount) {
-                    args.push_back(builder.getInt32((uint32_t)arg_list->length()));
-                }*/
-
-                arg_list->each([this, &args](P_ScmObj e) {
-                    Value * a = codegen(e);
-                    if (a->getType() != t.scm_type_ptr) {
-                        a = builder.CreateBitCast(a, t.scm_type_ptr);
-                    }
-                    args.push_back(a);
-                });
-            }
+            vector<Value*> args = genArgValues(node);
 
             if (fn_obj->has_closure) {
                 // We must also count with the case of direct closure function call.

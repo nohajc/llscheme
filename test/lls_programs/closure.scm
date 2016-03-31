@@ -18,7 +18,15 @@
   (noclos)
   (newline))
 
+(define (clos3 a b)
+  (lambda (c)
+	 (lambda (x)
+		(+ a b c x))))
+
 (foo (+ 2 3))
 (newline)
 (bar)
+(newline)
+
+(display (((clos3 1 2) 3) 4))
 (newline)
