@@ -376,6 +376,9 @@ namespace llscm {
 		}
 		fref = DPC<ScmRef>(fexpr);
 
+		int32_t argc_given = arg_list->t == T_NULL ? 0 : DPC<ScmCons>(arg_list)->length();
+		argc = argc_given;
+
 		// After evaluation of fexpr, it can either be ScmSym bound to ScmFunc
 		// or some ScmExpr (Quote, If, Let). It cannot be Lambda because that is reduced
 		// to the first case after fexpr->CT_Eval. We know for certain that Quote won't
@@ -390,7 +393,7 @@ namespace llscm {
 		if (obj->t == T_FUNC) {
 			// Function is known at compilation time - we can hardcode its pointer
 			int32_t argc_expected = DPC<ScmFunc>(obj)->argc_expected;
-			int32_t argc_given = arg_list->t == T_NULL ? 0 : DPC<ScmCons>(arg_list)->length();
+
 			if (argc_expected != ArgsAnyCount && argc_given != argc_expected) {
 				stringstream ss;
 				ss << "Function expects " << argc_expected << " arguments, " << argc_given << " given.";

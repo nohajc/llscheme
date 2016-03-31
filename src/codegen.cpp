@@ -593,6 +593,7 @@ namespace llscm {
     any_ptr ScmCodeGen::visit(ScmCall * node) {
         D(cerr << "VISITED ScmCall!" << endl);
         if (node->indirect) {
+            Value * ir_false = builder.getInt1(false);
             // TODO: Implement indirect call of scm_func object (that includes passing
             // closure context pointer). Runtime type check of the called object is needed.
             // In the most general case, obj can be any expression which gives
@@ -602,7 +603,45 @@ namespace llscm {
             // then it will check the expected and given number of arguments and finally
             // it will call the function poiner or throw a runtime error.
 
-            return AstVisitor::visit(node);
+            Value * ret = genIfElse(
+                    [this, obj, node, ir_false] () {
+                        vector<Value*> tag_indices(2, builder.getInt32(0));
+                        Value * tag = builder.CreateGEP(obj, tag_indices);
+                        assert(tag->getType() == t.ti32);
+
+                        return genIfElse(
+                                // If the given object is FUNC
+                                [this, tag] () { return builder.CreateICmpEQ(tag, builder.getInt32(FUNC)); },
+                                // And if FUNC's argc equals this call's argc
+                                [this, obj, node] () {
+                                    vector<Value*> argc_indices = {
+                                            builder.getInt32(0),
+                                            builder.getInt32(1)
+                                    };
+                                    Value * argc = builder.CreateGEP(obj, argc_indices);
+                                    assert(argc->getType() == t.ti32);
+                                    return builder.CreateICmpEQ(argc, builder.getInt32((uint32_t)node->argc));
+                                },
+                                [this, ir_false] () { return ir_false; }
+                        );
+                    },
+                    [this, obj, ir_false] () {
+                        // Emit the indirect call
+                        vector<Value*> fnptr_indices = {
+                                builder.getInt32(0),
+                                builder.getInt32(2)
+                        };
+
+                        Value * fnptr = builder.CreateGEP(obj, fnptr_indices);
+                        return ir_false; // TODO: codegen arguments, retrieve ctxptr, create call
+                    },
+                    [this, ir_false] () {
+                        // Emit invalid func runtime error
+                        return ir_false;
+                    }
+            );
+
+            return ret;
         }
         else {
             vector<Value*> args;

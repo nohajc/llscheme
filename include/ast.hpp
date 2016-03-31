@@ -391,11 +391,14 @@ namespace llscm {
 		virtual ostream & printSrc(ostream & os) const;
 	public:
 		ScmCall(P_ScmObj f, P_ScmObj args): // Unresolved call
-				Visitable(T_CALL), fexpr(move(f)), arg_list(move(args)) {}
+				Visitable(T_CALL), fexpr(move(f)), arg_list(move(args)) {
+			argc = -1;
+		}
 		virtual P_ScmObj CT_Eval(P_ScmEnv env);
 
 		P_ScmObj fexpr; // Expression returning a function object
 		P_ScmObj arg_list;
+		int32_t argc;
 		bool indirect;
 	};
 
