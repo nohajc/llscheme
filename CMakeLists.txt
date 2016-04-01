@@ -50,7 +50,13 @@ set(TEST_FILES
 add_executable(schemec ${SOURCE_FILES} ${EXEC_FILES})
 add_executable(unit_tests ${SOURCE_FILES} ${TEST_FILES})
 
-add_library(llscmrt STATIC src/runtime/runtime.cpp include/runtime.h include/runtime/memory.h src/runtime/memory.cpp)
+set(RUNTIME_FILES
+        include/runtime/types.hpp
+        src/runtime/runtime.cpp include/runtime.h
+        include/runtime/memory.h src/runtime/memory.cpp
+        include/runtime/error.h src/runtime/error.cpp)
+
+add_library(llscmrt STATIC ${RUNTIME_FILES})
 
 llvm_map_components_to_libnames(llvm_libs support core irreader bitwriter)
 

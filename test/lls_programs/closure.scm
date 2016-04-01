@@ -30,3 +30,5 @@
 
 (display (((clos3 1 2) 3) 4))
 (newline)
+
+((clos3 7 8) 9 0)

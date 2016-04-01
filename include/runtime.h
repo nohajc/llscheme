@@ -1,13 +1,15 @@
 #ifndef LLSCHEME_RUNTIME_H
 #define LLSCHEME_RUNTIME_H
 
+#include "runtime/types.hpp"
+
 #define SCM_NULL &(Constant::scm_null)
 #define SCM_TRUE &(Constant::scm_true)
 #define SCM_FALSE &(Constant::scm_false)
 
 namespace llscm {
     namespace runtime {
-#include "runtime/types.hpp"
+
 
         struct scm_type_t {
             int32_t tag;

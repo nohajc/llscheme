@@ -1,5 +1,5 @@
-#ifndef LLSCHEME_TYPES_HPP
-#define LLSCHEME_TYPES_HPP
+#ifndef LLSCHEME_AST_HPP
+#define LLSCHEME_AST_HPP
 
 #include <cstdint>
 #include <cassert>
@@ -503,4 +503,4 @@ namespace std {
 	};
 }
 
-#endif //LLSCHEME_TYPES_HPP
+#endif //LLSCHEME_AST_HPP

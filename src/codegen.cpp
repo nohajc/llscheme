@@ -25,6 +25,8 @@ namespace llscm {
     const char * RuntimeSymbol::exit_code = "exit_code";
     const char * RuntimeSymbol::alloc_heap_storage = "alloc_heap_storage";
     const char * RuntimeSymbol::alloc_func = "alloc_func";
+    const char * RuntimeSymbol::error_not_a_func = "error_not_a_function";
+    const char * RuntimeSymbol::error_wrong_arg_num = "error_wrong_arg_num";
 
     ScmCodeGen::ScmCodeGen(LLVMContext &ctxt, ScmProg * tree):
             context(ctxt), builder(ctxt), ast(tree) {
@@ -114,21 +116,21 @@ namespace llscm {
     }
 
     template<>
-    Constant * ScmCodeGen::initScmConstant<ScmCodeGen::INT>(vector<Constant*> & fields, int64_t && val) {
+    Constant * ScmCodeGen::initScmConstant<S_INT>(vector<Constant*> & fields, int64_t && val) {
         D(cerr << "constant int" << endl);
         fields.push_back(builder.getInt64((uint64_t)val));
         return ConstantStruct::get(t.scm_int, fields);
     }
 
     template<>
-    Constant * ScmCodeGen::initScmConstant<ScmCodeGen::FLOAT>(vector<Constant*> & fields, double && val) {
+    Constant * ScmCodeGen::initScmConstant<S_FLOAT>(vector<Constant*> & fields, double && val) {
         D(cerr << "constant float" << endl);
         fields.push_back(ConstantFP::get(context, APFloat(val)));
         return ConstantStruct::get(t.scm_float, fields);
     }
 
     template<>
-    Constant * ScmCodeGen::initScmConstant<ScmCodeGen::CONS>(vector<Constant*> & fields, Constant *&& car, Constant *&& cdr) {
+    Constant * ScmCodeGen::initScmConstant<S_CONS>(vector<Constant*> & fields, Constant *&& car, Constant *&& cdr) {
         D(cerr << "constant cons" << endl);
         Constant * c_car = ConstantExpr::getCast(Instruction::BitCast, car, t.scm_type_ptr);
         Constant * c_cdr = ConstantExpr::getCast(Instruction::BitCast, cdr, t.scm_type_ptr);
@@ -138,7 +140,7 @@ namespace llscm {
     }
 
     template<>
-    Constant * ScmCodeGen::initScmConstant<ScmCodeGen::FUNC>(vector<Constant*> & fields, int32_t && argc, Function *&& fnptr) {
+    Constant * ScmCodeGen::initScmConstant<S_FUNC>(vector<Constant*> & fields, int32_t && argc, Function *&& fnptr) {
         D(cerr << "constant func" << endl);
         fields.push_back(builder.getInt32((uint32_t)argc));
         assert(fnptr);
@@ -202,6 +204,30 @@ namespace llscm {
                 func_type,
                 GlobalValue::ExternalLinkage,
                 RuntimeSymbol::alloc_heap_storage, module.get()
+        );
+
+        func_type = FunctionType::get(
+                builder.getVoidTy(),
+                { t.scm_type_ptr },
+                false
+        );
+
+        fn.error_not_a_func = Function::Create(
+                func_type,
+                GlobalValue::ExternalLinkage,
+                RuntimeSymbol::error_not_a_func, module.get()
+        );
+
+        func_type = FunctionType::get(
+                builder.getVoidTy(),
+                { PointerType::get(t.scm_func, 0), t.ti32 },
+                false
+        );
+
+        fn.error_wrong_arg_num = Function::Create(
+                func_type,
+                GlobalValue::ExternalLinkage,
+                RuntimeSymbol::error_wrong_arg_num, module.get()
         );
     }
 
@@ -287,7 +313,7 @@ namespace llscm {
 
     any_ptr ScmCodeGen::visit(ScmInt * node) {
         D(cerr << "VISITED ScmInt!" << endl);
-        Constant * c = getScmConstant<INT>(node->val);
+        Constant * c = getScmConstant<S_INT>(node->val);
         return node->IR_val = new GlobalVariable(
                 *module, t.scm_int, true,
                 GlobalValue::InternalLinkage,
@@ -297,7 +323,7 @@ namespace llscm {
 
     any_ptr ScmCodeGen::visit(ScmFloat * node) {
         D(cerr << "VISITED ScmFloat!" << endl);
-        Constant * c = getScmConstant<FLOAT>(node->val);
+        Constant * c = getScmConstant<S_FLOAT>(node->val);
         return node->IR_val = new GlobalVariable(
                 *module, t.scm_float, true,
                 GlobalValue::InternalLinkage,
@@ -307,7 +333,7 @@ namespace llscm {
 
     any_ptr ScmCodeGen::visit(ScmTrue * node) {
         D(cerr << "VISITED ScmTrue!" << endl);
-        Constant * c = getScmConstant<TRUE>();
+        Constant * c = getScmConstant<S_TRUE>();
         return node->IR_val = new GlobalVariable(
                 *module, t.scm_type, true,
                 GlobalValue::InternalLinkage,
@@ -317,7 +343,7 @@ namespace llscm {
 
     any_ptr ScmCodeGen::visit(ScmFalse * node) {
         D(cerr << "VISITED ScmFalse!" << endl);
-        Constant * c = getScmConstant<FALSE>();
+        Constant * c = getScmConstant<S_FALSE>();
         return node->IR_val = new GlobalVariable(
                 *module, t.scm_type, true,
                 GlobalValue::InternalLinkage,
@@ -327,7 +353,7 @@ namespace llscm {
 
     any_ptr ScmCodeGen::visit(ScmNull * node) {
         D(cerr << "VISITED ScmNull!" << endl);
-        Constant * c = getScmConstant<NIL>();
+        Constant * c = getScmConstant<S_NIL>();
         return node->IR_val = new GlobalVariable(
                 *module, t.scm_type, true,
                 GlobalValue::InternalLinkage,
@@ -339,7 +365,7 @@ namespace llscm {
         D(cerr << "VISITED ScmStr!" << endl);
         // Each string has a different type according to its length.
         // That type must match with the global variable type.
-        Constant * c = getScmConstant<STR>(node->val);
+        Constant * c = getScmConstant<S_STR>(node->val);
         Type * str_type = c->getAggregateElement(2)->getType();
         return node->IR_val = new GlobalVariable(
                 *module, getScmStrType(str_type), true,
@@ -352,7 +378,7 @@ namespace llscm {
         D(cerr << "VISITED ScmSym!" << endl);
         // Each string has a different type according to its length.
         // That type must match with the global variable type.
-        Constant * c = getScmConstant<SYM>(node->val);
+        Constant * c = getScmConstant<S_SYM>(node->val);
         Type * str_type = c->getAggregateElement(2)->getType();
         return node->IR_val = new GlobalVariable(
                 *module, getScmStrType(str_type), true,
@@ -434,7 +460,7 @@ namespace llscm {
         assert(car);
         assert(cdr);
 
-        Constant * c = getScmConstant<CONS>(car, cdr);
+        Constant * c = getScmConstant<S_CONS>(car, cdr);
         return node->IR_val = new GlobalVariable(
                 *module, t.scm_cons, true,
                 GlobalValue::InternalLinkage,
@@ -443,7 +469,7 @@ namespace llscm {
     }
 
     Value * ScmCodeGen::genConstFunc(int32_t argc, Function * fnptr) {
-        Constant * c = getScmConstant<FUNC>(argc, fnptr);
+        Constant * c = getScmConstant<S_FUNC>(argc, fnptr);
         return new GlobalVariable(
                 *module, t.scm_func, true,
                 GlobalValue::InternalLinkage,
@@ -614,7 +640,7 @@ namespace llscm {
         D(cerr << "VISITED ScmCall!" << endl);
         if (node->indirect) {
             Value * ir_false = builder.getInt1(false);
-            // TODO: Implement indirect call of scm_func object (that includes passing
+            // Indirect call of scm_func object (that includes passing
             // closure context pointer). Runtime type check of the called object is needed.
             // In the most general case, obj can be any expression which gives
             // us a scm_func pointer after runtime evaluation.
@@ -626,7 +652,7 @@ namespace llscm {
             Value * func = builder.CreateBitCast(obj, PointerType::get(t.scm_func, 0));
 
             Value * ret = genIfElse(
-                    [this, obj, func, node, ir_false] () {
+                    /*[this, obj, func, node, ir_false] () {
                         D(cerr << "loading tag" << endl);
                         vector<Value*> tag_indices(2, builder.getInt32(0));
                         Value * tag = builder.CreateLoad(
@@ -653,37 +679,68 @@ namespace llscm {
                                 [this, ir_false] () { return ir_false; }
                         );
                         //return builder.getInt1(true);
-                    },
-                    [this, func, node] () {
-                        D(cerr << "prepare to emit indirect call" << endl);
-                        // Emit the indirect call
-                        vector<Value*> fnptr_indices = {
-                                builder.getInt32(0),
-                                builder.getInt32(2)
-                        };
-                        vector<Value*> ctxptr_indices = {
-                                builder.getInt32(0),
-                                builder.getInt32(3)
-                        };
-
-                        D(cerr << "loading fnptr" << endl);
-                        Value * fnptr = builder.CreateLoad(
-                                t.scm_fn_ptr, builder.CreateGEP(func, fnptr_indices)
+                    }*/
+                    [this, obj] () {
+                        D(cerr << "loading tag" << endl);
+                        vector<Value*> tag_indices(2, builder.getInt32(0));
+                        Value * tag = builder.CreateLoad(
+                                t.ti32, builder.CreateGEP(obj, tag_indices)
                         );
 
-                        D(cerr << "loading ctxptr" << endl);
-                        Value * ctxptr = builder.CreateLoad(
-                                PointerType::get(t.scm_type_ptr, 0),
-                                builder.CreateGEP(func, ctxptr_indices)
+                        return builder.CreateICmpEQ(tag, builder.getInt32(S_FUNC));
+                    },
+                    [this, func, node] () { // obj is FUNC
+                        vector<Value*> argc_indices = {
+                                builder.getInt32(0),
+                                builder.getInt32(1)
+                        };
+                        Value * argc = builder.CreateLoad(
+                                t.ti32, builder.CreateGEP(func, argc_indices)
                         );
 
-                        vector<Value*> args = genArgValues(node);
-                        args.push_back(ctxptr); // This is null for non-closure functions
+                        Value * argc_given = builder.getInt32((uint32_t)node->argc);
 
-                        return builder.CreateCall(t.scm_fn_sig, fnptr, args);
+                        return genIfElse(
+                                [this, func, node, argc, argc_given] () {
+                                    D(cerr << "loading argc" << endl);
+                                    return builder.CreateICmpEQ(argc, argc_given);
+                                },
+                                [this, func, node] () { // FUNC has the right number of arguments
+                                    D(cerr << "prepare to emit indirect call" << endl);
+                                    // Emit the indirect call
+                                    vector<Value *> fnptr_indices = {
+                                            builder.getInt32(0),
+                                            builder.getInt32(2)
+                                    };
+                                    vector<Value *> ctxptr_indices = {
+                                            builder.getInt32(0),
+                                            builder.getInt32(3)
+                                    };
+
+                                    D(cerr << "loading fnptr" << endl);
+                                    Value *fnptr = builder.CreateLoad(
+                                            t.scm_fn_ptr, builder.CreateGEP(func, fnptr_indices)
+                                    );
+
+                                    D(cerr << "loading ctxptr" << endl);
+                                    Value *ctxptr = builder.CreateLoad(
+                                            PointerType::get(t.scm_type_ptr, 0),
+                                            builder.CreateGEP(func, ctxptr_indices)
+                                    );
+
+                                    vector<Value *> args = genArgValues(node);
+                                    args.push_back(ctxptr); // This is null for non-closure functions
+
+                                    return builder.CreateCall(t.scm_fn_sig, fnptr, args);
+                                },
+                                [this, func, argc, argc_given] { // Error: wrong number of arguments
+                                    builder.CreateCall(fn.error_wrong_arg_num, { func, argc_given });
+                                    return ConstantPointerNull::get(t.scm_type_ptr);
+                                }
+                        );
                     },
-                    [this] () {
-                        // TODO: Emit invalid func runtime error
+                    [this, obj] () { // Error: obj is not FUNC
+                        builder.CreateCall(fn.error_not_a_func, { obj });
                         return ConstantPointerNull::get(t.scm_type_ptr);
                     }
             );
@@ -768,7 +825,7 @@ namespace llscm {
         vector<Value*> indices(2, builder.getInt32(0));
         Value * cond_arg_addr = builder.CreateGEP(cond, indices);
         Value * cond_tag = builder.CreateLoad(cond_arg_addr);
-        cond = builder.CreateICmpNE(cond_tag, builder.getInt32(FALSE));
+        cond = builder.CreateICmpNE(cond_tag, builder.getInt32(S_FALSE));
 
         Function * func = builder.GetInsertBlock()->getParent();
 

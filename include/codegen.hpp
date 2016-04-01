@@ -10,6 +10,7 @@
 #include "ast_visitor.hpp"
 #include "ast.hpp"
 #include "debug.hpp"
+#include "runtime/types.hpp"
 
 namespace llscm {
     using namespace std;
@@ -35,6 +36,8 @@ namespace llscm {
         static const char *exit_code;
         static const char *alloc_heap_storage;
         static const char *alloc_func;
+        static const char *error_not_a_func;
+        static const char *error_wrong_arg_num;
     };
 
     class ScmCodeGen: public AstVisitor {
@@ -64,9 +67,9 @@ namespace llscm {
         struct {
             Function * alloc_func;
             Function * alloc_heap_storage;
+            Function * error_not_a_func;
+            Function * error_wrong_arg_num;
         } fn;
-
-#include "runtime/types.hpp"
 
         template<Tag tag, typename ...Args>
         Constant * getScmConstant(Args ...args) {

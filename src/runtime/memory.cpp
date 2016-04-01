@@ -6,14 +6,14 @@ namespace llscm {
     namespace runtime {
         scm_type_t * alloc_int(int64_t value) {
             scm_ptr_t obj = GC_MALLOC(sizeof(scm_int_t));
-            obj->tag = INT;
+            obj->tag = S_INT;
             obj.asInt->value = value;
             return obj;
         }
 
         scm_type_t * alloc_float(double value) {
             scm_ptr_t obj = GC_MALLOC(sizeof(scm_float_t));
-            obj->tag = FLOAT;
+            obj->tag = S_FLOAT;
             obj.asFloat->value = value;
             return obj;
         }
@@ -25,7 +25,7 @@ namespace llscm {
             }
 
             scm_ptr_t obj = GC_MALLOC(vec_alloc_size);
-            obj->tag = VEC;
+            obj->tag = S_VEC;
             obj.asVec->size = size;
             for (int i = 0; i < size; i++) {
                 obj.asVec->elems[i] = SCM_NULL;
@@ -42,7 +42,7 @@ namespace llscm {
             }
 
             scm_ptr_t obj = GC_MALLOC(str_alloc_size);
-            obj->tag = STR;
+            obj->tag = S_STR;
             obj.asStr->len = (int32_t)len;
             strcpy(obj.asStr->str, str);
 
@@ -55,7 +55,7 @@ namespace llscm {
 
         scm_type_t * alloc_func(int32_t argc, scm_fnptr_t fnptr, scm_type_t ** ctxptr) {
             scm_ptr_t obj = GC_MALLOC(sizeof(scm_func_t));
-            obj->tag = FUNC;
+            obj->tag = S_FUNC;
             obj.asFunc->argc = argc;
             obj.asFunc->fnptr = fnptr;
             obj.asFunc->ctxptr = ctxptr;
