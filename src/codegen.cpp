@@ -418,16 +418,17 @@ namespace llscm {
             return genHeapLoad(heap_st, idx_it->second);
         }
 
-        if (!robj->IR_val && robj->t == T_FUNC) {
-            // Reference to native function
+        /*if (!robj->IR_val && robj->t == T_FUNC) {
+            // First reference to native function
             assert(DPC<ScmFunc>(robj)->body_list == nullptr);
-            return node->IR_val = codegen(robj);
+            // We must initialize its IR_val
+            codegen(robj);
         }
 
         // In other cases we always have a reference to something
         // for which the code was already generated.
         // Therefore the missing IR_val is most likely a bug.
-        assert(robj->IR_val);
+        assert(robj->IR_val);*/
 
         if (robj->t == T_FUNC) {
             ScmFunc * fn_obj = DPC<ScmFunc>(robj).get();
@@ -639,7 +640,6 @@ namespace llscm {
     any_ptr ScmCodeGen::visit(ScmCall * node) {
         D(cerr << "VISITED ScmCall!" << endl);
         if (node->indirect) {
-            Value * ir_false = builder.getInt1(false);
             // Indirect call of scm_func object (that includes passing
             // closure context pointer). Runtime type check of the called object is needed.
             // In the most general case, obj can be any expression which gives
@@ -648,39 +648,10 @@ namespace llscm {
             // We must therefore generate a code that will check the type of the referenced object,
             // then it will check the expected and given number of arguments and finally
             // it will call the function poiner or throw a runtime error.
-
             Value * func = builder.CreateBitCast(obj, PointerType::get(t.scm_func, 0));
 
             Value * ret = genIfElse(
-                    /*[this, obj, func, node, ir_false] () {
-                        D(cerr << "loading tag" << endl);
-                        vector<Value*> tag_indices(2, builder.getInt32(0));
-                        Value * tag = builder.CreateLoad(
-                                t.ti32, builder.CreateGEP(obj, tag_indices)
-                        );
-                        //assert(tag->getType() == t.ti32);
-
-                        return genIfElse(
-                                // If the given object is FUNC
-                                [this, tag] () { return builder.CreateICmpEQ(tag, builder.getInt32(FUNC)); },
-                                // And if FUNC's argc equals this call's argc
-                                [this, func, node] () {
-                                    D(cerr << "loading argc" << endl);
-                                    vector<Value*> argc_indices = {
-                                            builder.getInt32(0),
-                                            builder.getInt32(1)
-                                    };
-                                    Value * argc = builder.CreateLoad(
-                                            t.ti32, builder.CreateGEP(func, argc_indices)
-                                    );
-                                    assert(argc->getType() == t.ti32);
-                                    return builder.CreateICmpEQ(argc, builder.getInt32((uint32_t)node->argc));
-                                },
-                                [this, ir_false] () { return ir_false; }
-                        );
-                        //return builder.getInt1(true);
-                    }*/
-                    [this, obj] () {
+                    [this, obj] () { // IF the object tag equals S_FUNC
                         D(cerr << "loading tag" << endl);
                         vector<Value*> tag_indices(2, builder.getInt32(0));
                         Value * tag = builder.CreateLoad(
@@ -700,10 +671,13 @@ namespace llscm {
 
                         Value * argc_given = builder.getInt32((uint32_t)node->argc);
 
-                        return genIfElse(
+                        return genIfElse( // IF the func's number of args equals args_given or ArgsAnyCount
                                 [this, func, node, argc, argc_given] () {
                                     D(cerr << "loading argc" << endl);
-                                    return builder.CreateICmpEQ(argc, argc_given);
+                                    return builder.CreateOr(
+                                            builder.CreateICmpEQ(argc, argc_given),
+                                            builder.CreateICmpEQ(argc, builder.getInt32((uint32_t)ArgsAnyCount))
+                                    );
                                 },
                                 [this, func, node] () { // FUNC has the right number of arguments
                                     D(cerr << "prepare to emit indirect call" << endl);
@@ -733,13 +707,13 @@ namespace llscm {
 
                                     return builder.CreateCall(t.scm_fn_sig, fnptr, args);
                                 },
-                                [this, func, argc, argc_given] { // Error: wrong number of arguments
+                                [this, func, argc, argc_given] { // ELSE Error: wrong number of arguments
                                     builder.CreateCall(fn.error_wrong_arg_num, { func, argc_given });
                                     return ConstantPointerNull::get(t.scm_type_ptr);
                                 }
                         );
                     },
-                    [this, obj] () { // Error: obj is not FUNC
+                    [this, obj] () { // ELSE Error: obj is not FUNC
                         builder.CreateCall(fn.error_not_a_func, { obj });
                         return ConstantPointerNull::get(t.scm_type_ptr);
                     }

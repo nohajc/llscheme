@@ -31,4 +31,12 @@
 (display (((clos3 1 2) 3) 4))
 (newline)
 
-((clos3 7 8) 9 0)
+(define (simple-apply fn a b)
+  (fn a b))
+
+(display (simple-apply + 7 2))
+(newline)
+(display (simple-apply - 8 3))
+(newline)
+
+((clos3 1 2) 3 4)
