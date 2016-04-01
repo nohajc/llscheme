@@ -623,11 +623,10 @@ namespace llscm {
             // then it will check the expected and given number of arguments and finally
             // it will call the function poiner or throw a runtime error.
 
-            // TODO: This is only for testing. REMOVE!
-            obj = builder.CreateBitCast(obj, PointerType::get(t.scm_func, 0));
+            Value * func = builder.CreateBitCast(obj, PointerType::get(t.scm_func, 0));
 
             Value * ret = genIfElse(
-                    [this, &obj, node, ir_false] () {
+                    [this, obj, func, node, ir_false] () {
                         D(cerr << "loading tag" << endl);
                         vector<Value*> tag_indices(2, builder.getInt32(0));
                         Value * tag = builder.CreateLoad(
@@ -635,30 +634,27 @@ namespace llscm {
                         );
                         //assert(tag->getType() == t.ti32);
 
-                        /*return genIfElse(
+                        return genIfElse(
                                 // If the given object is FUNC
                                 [this, tag] () { return builder.CreateICmpEQ(tag, builder.getInt32(FUNC)); },
                                 // And if FUNC's argc equals this call's argc
-                                [this, &obj, node] () {
-                                    //D(obj->getType()->dump());
-                                    //D(PointerType::get(t.scm_func, 0)->dump());
-                                    obj = builder.CreateBitCast(obj, PointerType::get(t.scm_func, 0));
+                                [this, func, node] () {
                                     D(cerr << "loading argc" << endl);
                                     vector<Value*> argc_indices = {
                                             builder.getInt32(0),
                                             builder.getInt32(1)
                                     };
                                     Value * argc = builder.CreateLoad(
-                                            t.ti32, builder.CreateGEP(obj, argc_indices)
+                                            t.ti32, builder.CreateGEP(func, argc_indices)
                                     );
                                     assert(argc->getType() == t.ti32);
                                     return builder.CreateICmpEQ(argc, builder.getInt32((uint32_t)node->argc));
                                 },
                                 [this, ir_false] () { return ir_false; }
-                        );*/
-                        return builder.getInt1(true);
+                        );
+                        //return builder.getInt1(true);
                     },
-                    [this, &obj, node] () {
+                    [this, func, node] () {
                         D(cerr << "prepare to emit indirect call" << endl);
                         // Emit the indirect call
                         vector<Value*> fnptr_indices = {
@@ -672,13 +668,13 @@ namespace llscm {
 
                         D(cerr << "loading fnptr" << endl);
                         Value * fnptr = builder.CreateLoad(
-                                t.scm_fn_ptr, builder.CreateGEP(obj, fnptr_indices)
+                                t.scm_fn_ptr, builder.CreateGEP(func, fnptr_indices)
                         );
 
                         D(cerr << "loading ctxptr" << endl);
                         Value * ctxptr = builder.CreateLoad(
                                 PointerType::get(t.scm_type_ptr, 0),
-                                builder.CreateGEP(obj, ctxptr_indices)
+                                builder.CreateGEP(func, ctxptr_indices)
                         );
 
                         vector<Value*> args = genArgValues(node);
