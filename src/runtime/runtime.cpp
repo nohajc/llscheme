@@ -1,12 +1,9 @@
 #include <cstdlib>
 #include <cstdio>
-#include <cstring>
-#include <cstdint>
 #include <cmath>
 #include <cinttypes>
 #include "../../include/runtime.h"
-#include "../../include/runtime/memory.h"
-#include "../../include/runtime/error.h"
+#include "../../include/runtime/internal.hpp"
 
 #define EPSILON 10E-9
 
@@ -15,6 +12,49 @@ namespace llscm {
         scm_type_t Constant::scm_null = { S_NIL };
         scm_type_t Constant::scm_true = { S_TRUE };
         scm_type_t Constant::scm_false = { S_FALSE };
+
+#define SCM_VARARGS_WRAPPER(func) \
+        scm_type_t * func(scm_type_t * arg0, ...) { \
+            va_list ap; \
+            va_start(ap, arg0); \
+\
+            scm_type_t * res = internal_##func( \
+                    [&arg0] () { return arg0; }, \
+                    [&ap] () { return va_arg(ap, scm_type_t*); } \
+            ); \
+\
+            va_end(ap); \
+            return res; \
+        }
+
+#define SCM_ARGLIST_WRAPPER(func) \
+        scm_type_t * argl_##func(scm_type_t ** arg_list) { \
+            int32_t idx = 1; \
+            return internal_##func( \
+                [arg_list] () { return arg_list[0]; }, \
+                [arg_list, &idx] () { return arg_list[idx++]; } \
+            ); \
+        }
+
+        SCM_VARARGS_WRAPPER(scm_plus);
+        SCM_ARGLIST_WRAPPER(scm_plus);
+
+        SCM_VARARGS_WRAPPER(scm_minus);
+        SCM_ARGLIST_WRAPPER(scm_minus);
+
+        SCM_VARARGS_WRAPPER(scm_times);
+        SCM_ARGLIST_WRAPPER(scm_times);
+
+        SCM_VARARGS_WRAPPER(scm_div);
+        SCM_ARGLIST_WRAPPER(scm_div);
+
+        /*scm_type_t * scm_times(scm_type_t * arg0, ...) {
+            return nullptr;
+        }
+
+        scm_type_t * scm_div(scm_type_t * arg0, ...) {
+            return nullptr;
+        }*/
 
         scm_type_t * scm_display(scm_ptr_t obj) {
             switch (obj->tag) {
@@ -38,126 +78,18 @@ namespace llscm {
             return SCM_NULL;
         }
 
-        scm_type_t * scm_plus(scm_type_t * arg0, ...) {
+        /*scm_type_t * scm_minus(scm_type_t * arg0, ...) {
             va_list ap;
-            int64_t sum = 0;
-            double fsum = 0;
-            bool is_int = true;
-            scm_ptr_t obj = arg0;
-
-            va_start(ap, arg0);
-            while (obj.asType != nullptr) {
-                if (is_int) {
-                    if (obj->tag == S_INT) {
-                        sum += obj.asInt->value;
-                    }
-                    else if (obj->tag == S_FLOAT) {
-                        fsum = sum + obj.asFloat->value;
-                        is_int = false;
-                    }
-                    else {
-                        INVALID_ARG_TYPE();
-                    }
-                }
-                else {
-                    if (obj->tag == S_INT) {
-                        fsum += obj.asInt->value;
-                    }
-                    else if (obj->tag == S_FLOAT) {
-                        fsum += obj.asFloat->value;
-                    }
-                    else {
-                        INVALID_ARG_TYPE();
-                    }
-                }
-                obj = va_arg(ap, scm_type_t*);
-            }
-            va_end(ap);
-
-            // TODO: implement exceptions
-
-            if (is_int) {
-                return alloc_int(sum);
-            }
-            return alloc_float(fsum);
-        }
-
-        scm_type_t * scm_minus(scm_type_t * arg0, ...) {
-            va_list ap;
-            int64_t diff = 0;
-            double fdiff = 0;
-            bool is_int = true;
-            scm_ptr_t obj = arg0;
-
-            if (arg0 == nullptr) { // Zero arguments
-                // TODO: is it safe to return from the function before
-                // consuming all arguments and calling va_end?
-                WRONG_ARG_NUM();
-            }
-
             va_start(ap, arg0);
 
-            //obj = va_arg(ap, scm_type_t*);
-            if (obj->tag == S_INT) {
-                diff = obj.asInt->value;
-            }
-            else if (obj->tag == S_FLOAT) {
-                fdiff = obj.asFloat->value;
-                is_int = false;
-            }
-            else {
-                INVALID_ARG_TYPE();
-            }
-
-            obj = va_arg(ap, scm_type_t*);
-            if (obj.asType == nullptr) { // One argument
-                if (is_int) {
-                    return alloc_int(-diff);
-                }
-                return alloc_float(-fdiff);
-            }
-
-            while (obj.asType != nullptr) {
-                if (is_int) {
-                    if (obj->tag == S_INT) {
-                        diff -= obj.asInt->value;
-                    }
-                    else if (obj->tag == S_FLOAT) {
-                        fdiff = diff - obj.asFloat->value;
-                        is_int = false;
-                    }
-                    else {
-                        INVALID_ARG_TYPE();
-                    }
-                }
-                else {
-                    if (obj->tag == S_INT) {
-                        fdiff -= obj.asInt->value;
-                    }
-                    else if (obj->tag == S_FLOAT) {
-                        fdiff -= obj.asFloat->value;
-                    }
-                    else {
-                        INVALID_ARG_TYPE();
-                    }
-                }
-                obj = va_arg(ap, scm_type_t*);
-            }
+            scm_type_t * res = internal_scm_minus(
+                    [&arg0] () { return arg0; },
+                    [&ap] () { return va_arg(ap, scm_type_t*); }
+            );
 
             va_end(ap);
-            if (is_int) {
-                return alloc_int(diff);
-            }
-            return alloc_float(fdiff);
-        }
-
-        scm_type_t * scm_times(scm_type_t * arg0, ...) {
-            return nullptr;
-        }
-
-        scm_type_t * scm_div(scm_type_t * arg0, ...) {
-            return nullptr;
-        }
+            return res;
+        }*/
 
         scm_type_t * scm_gt(scm_ptr_t a, scm_ptr_t b) {
             return nullptr;
