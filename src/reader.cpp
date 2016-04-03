@@ -130,7 +130,7 @@ namespace llscm {
 			return nullptr;
 		}
 
-		if (c == ';') {
+		while (c == ';') {
 			// Skip comment
 			do {
 				is->get(c);

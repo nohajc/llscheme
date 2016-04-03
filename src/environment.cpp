@@ -24,6 +24,8 @@ namespace llscm {
         env->set("current-command-line-arguments", make_shared<ScmCmdArgsFunc>());
         env->set("vector-length", make_shared<ScmVecLenFunc>());
         env->set("vector-ref", make_shared<ScmVecRefFunc>());
+        env->set("apply", make_shared<ScmApplyFunc>());
+        env->set("length", make_shared<ScmLengthFunc>());
 
         return env;
     }

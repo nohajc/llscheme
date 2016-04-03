@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+#include <cassert>
 #include "../runtime.h"
 #include "../runtime/memory.h"
 #include "../runtime/error.h"
@@ -146,6 +147,17 @@ namespace llscm {
         inline scm_type_t * internal_scm_div(F1 first_arg, F2 next_arg) {
             return SCM_NULL;
         };
+
+        template<typename F>
+        void list_foreach(scm_ptr_t list, F func) {
+            scm_ptr_t cell = list;
+            while(cell->tag != S_NIL) {
+                assert(cell->tag == S_CONS);
+
+                func(cell);
+                cell = cell.asCons->cdr;
+            }
+        }
     }
 }
 

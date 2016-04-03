@@ -138,6 +138,13 @@ namespace llscm {
             DECL_WITH_WRAPPER(scm_times, scm_type_t * arg0, ...);
             //scm_type_t * scm_div(scm_type_t * arg0, ...);
             DECL_WITH_WRAPPER(scm_div, scm_type_t * arg0, ...);
+
+            // Note: length does not have to be a native function
+            // we can define it in scheme like this:
+            // (define (length a) (if (null? a) 0 (+ 1 (length (cdr a)))))
+            DECL_WITH_WRAPPER(scm_length, scm_ptr_t list);
+
+            DECL_WITH_WRAPPER(scm_apply, scm_ptr_t func, scm_ptr_t list);
         }
     }
 }

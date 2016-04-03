@@ -66,6 +66,9 @@ namespace llscm {
 
 	// TODO: handle forward references!
 	// TODO: constant folding
+
+	// TODO: introduce special syntax construct "require"
+	// which will import functions from other (compiled?) scheme modules.
 	class ScmObj: public enable_shared_from_this<ScmObj>, public Visitable<ScmObj> {
 	protected:
 		void printTabs(ostream & os, int tabs) const {
@@ -318,6 +321,9 @@ namespace llscm {
 		Function * IR_wrapper_fn_ptr;
 	};
 
+	// Derived function classes for specialized code generation
+	// of the function's bodies. We need this to support inlining.
+	// TODO: inlining
 	class ScmConsFunc: public Visitable<ScmConsFunc, ScmFunc> {
 	public:
 		ScmConsFunc();
@@ -386,6 +392,16 @@ namespace llscm {
 	class ScmVecRefFunc: public Visitable<ScmVecRefFunc, ScmFunc> {
 	public:
 		ScmVecRefFunc();
+	};
+
+	class ScmApplyFunc: public Visitable<ScmApplyFunc, ScmFunc> {
+	public:
+		ScmApplyFunc();
+	};
+
+	class ScmLengthFunc: public Visitable<ScmLengthFunc, ScmFunc> {
+	public:
+		ScmLengthFunc();
 	};
 
 	class ScmCall: public Visitable<ScmCall, ScmObj> {

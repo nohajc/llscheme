@@ -634,5 +634,10 @@ namespace llscm {
 
 	ScmVecLenFunc::ScmVecLenFunc() : Visitable(1, RuntimeSymbol::vec_len) {}
 
-	llscm::ScmVecRefFunc::ScmVecRefFunc() : Visitable(2, RuntimeSymbol::vec_ref) {}
+	ScmVecRefFunc::ScmVecRefFunc() : Visitable(2, RuntimeSymbol::vec_ref) {}
+
+	ScmApplyFunc::ScmApplyFunc() : Visitable(2, RuntimeSymbol::apply) {}
+
+	ScmLengthFunc::ScmLengthFunc() : Visitable(1, RuntimeSymbol::length){}
+
 }

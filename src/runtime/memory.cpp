@@ -27,6 +27,7 @@ namespace llscm {
             scm_ptr_t obj = GC_MALLOC(vec_alloc_size);
             obj->tag = S_VEC;
             obj.asVec->size = size;
+
             for (int i = 0; i < size; i++) {
                 obj.asVec->elems[i] = SCM_NULL;
             }
@@ -64,6 +65,16 @@ namespace llscm {
 
             return obj;
         }
+
+        scm_type_t * alloc_cons(scm_type_t * car, scm_type_t * cdr) {
+            scm_ptr_t obj = GC_MALLOC(sizeof(scm_cons_t));
+            obj->tag = S_CONS;
+            obj.asCons->car = car;
+            obj.asCons->cdr = cdr;
+
+            return obj;
+        }
+
 
     }
 }

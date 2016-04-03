@@ -38,6 +38,8 @@ namespace llscm {
         static const char *alloc_func;
         static const char *error_not_a_func;
         static const char *error_wrong_arg_num;
+        static const char *apply;
+        static const char *length;
     };
 
     class ScmCodeGen: public AstVisitor {

@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cmath>
 #include <cinttypes>
+#include <vector>
 #include "../../include/runtime.h"
 #include "../../include/runtime/internal.hpp"
 
@@ -81,6 +82,26 @@ namespace llscm {
                 case S_FLOAT:
                     printf("%g", obj.asFloat->value);
                     break;
+                case S_TRUE:
+                    printf("#t");
+                    break;
+                case S_FALSE:
+                    printf("#f");
+                    break;
+                case S_NIL:
+                    printf("()");
+                    break;
+                case S_CONS: {
+                    printf("(");
+                    list_foreach(obj.asCons, [] (scm_ptr_t elem) {
+                        scm_display(elem.asCons->car);
+                        if (elem.asCons->cdr->tag == S_CONS) {
+                            printf(" ");
+                        }
+                    });
+                    printf(")");
+                    break;
+                }
                 default:
                     INVALID_ARG_TYPE();
             }
@@ -91,6 +112,7 @@ namespace llscm {
 
         //scm_type_t * scm_gt(scm_ptr_t a, scm_ptr_t b) {
         DEF_WITH_WRAPPER(scm_gt, scm_ptr_t a, scm_ptr_t b) {
+            // TODO: implement
             return nullptr;
         }
 
@@ -117,19 +139,28 @@ namespace llscm {
         }
 
         DEF_WITH_WRAPPER(scm_cons, scm_ptr_t car, scm_ptr_t cdr) {
-            return nullptr;
+            return alloc_cons(car, cdr);
         }
 
         DEF_WITH_WRAPPER(scm_car, scm_ptr_t obj) {
-            return nullptr;
+            if (obj->tag != S_CONS) {
+                INVALID_ARG_TYPE();
+            }
+
+            return obj.asCons->car;
         }
 
         DEF_WITH_WRAPPER(scm_cdr, scm_ptr_t obj) {
-            return nullptr;
+            if (obj->tag != S_CONS) {
+                INVALID_ARG_TYPE();
+            }
+
+            return obj.asCons->cdr;
         }
 
         DEF_WITH_WRAPPER(scm_is_null, scm_ptr_t obj) {
-            return nullptr;
+            // TODO: make sure SCM_NULL is a singleton so we can compare pointers only
+            return obj->tag == S_NIL ? SCM_TRUE : SCM_FALSE;
         }
 
         // Used only internally - no need for a wrapper
@@ -166,6 +197,58 @@ namespace llscm {
             return scm_argv;
         }
 
+        DEF_WITH_WRAPPER(scm_length, scm_ptr_t list) {
+            if (list->tag == S_NIL) {
+                return alloc_int(0);
+            }
+
+            if (list->tag != S_CONS) {
+                INVALID_ARG_TYPE();
+            }
+
+            int64_t len = 0;
+            list_foreach(list, [&len](scm_ptr_t elem) {
+                len++;
+            });
+
+            return alloc_int(len);
+        }
+
+        DEF_WITH_WRAPPER(scm_apply, scm_ptr_t func, scm_ptr_t list) {
+            if (func->tag != S_FUNC) {
+                INVALID_ARG_TYPE();
+            }
+
+            bool args_any_count = func.asFunc->argc == -1;
+
+            if (list->tag == S_NIL && (func.asFunc->argc == 0 || args_any_count)) {
+                // Call a function without arguments
+                // with an optional context pointer (or null).
+                // Extra argument is fine because we use
+                // the C calling convention. That means the caller
+                // cleans up arguments from stack.
+                return func.asFunc->fnptr((scm_type_t*)func.asFunc->ctxptr);
+            }
+
+            if (list->tag != S_CONS) {
+                INVALID_ARG_TYPE();
+            }
+
+            int64_t argc = 0;
+            std::vector<scm_type_t*> arg_vec;
+
+            list_foreach(list, [&arg_vec, &argc](scm_ptr_t elem) {
+                arg_vec.push_back(elem.asCons->car);
+                argc++;
+            });
+
+            if (!args_any_count && argc != func.asFunc->argc) {
+                error_wrong_arg_num(func.asFunc, argc);
+            }
+            arg_vec.push_back((scm_type_t*)func.asFunc->ctxptr);
+
+            return func.asFunc->wrfnptr(&arg_vec[0]);
+        }
     }
 }
 

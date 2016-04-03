@@ -27,6 +27,8 @@ namespace llscm {
     const char * RuntimeSymbol::alloc_func = "alloc_func";
     const char * RuntimeSymbol::error_not_a_func = "error_not_a_function";
     const char * RuntimeSymbol::error_wrong_arg_num = "error_wrong_arg_num";
+    const char * RuntimeSymbol::apply = "scm_apply";
+    const char * RuntimeSymbol::length = "scm_length";
 
     ScmCodeGen::ScmCodeGen(LLVMContext &ctxt, ScmProg * tree):
             context(ctxt), builder(ctxt), ast(tree) {
@@ -532,6 +534,7 @@ namespace llscm {
     }
 
     void ScmCodeGen::declFuncWrapper(ScmFunc * node) {
+        // TODO: We don't need to generate wrappers for functions which take no arguments
         Function * func = Function::Create(
                 t.scm_wrfn_sig,
                 GlobalValue::ExternalLinkage,
