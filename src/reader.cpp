@@ -6,7 +6,7 @@
 namespace llscm {
 	const char * KwrdNames[] = {
 		"(", ")", "#t", "#f", "null",
-		"define", "lambda", "quote", "if", "let",
+		"define", "lambda", "quote", "if", "let", "\'",
 		nullptr
 	};
 
@@ -155,6 +155,11 @@ namespace llscm {
 				tok.name = ")";
 				tok.t = KWRD;
 				tok.kw = KW_RPAR;
+				return &tok;
+			case '\'':
+				tok.name = "\'";
+				tok.t = KWRD;
+				tok.kw = KW_QUCHAR;
 				return &tok;
 			case '\"':
 				goto read_string;

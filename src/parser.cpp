@@ -56,7 +56,7 @@ namespace llscm {
 	/*
 	 * form = "(" def ")" | expr
 	 * def = "define" sym expr ...
-	 * expr = atom | "(" callsyn ")"
+	 * expr = atom | "(" callsyn ")" | "'" data
 	 */
 	P_ScmObj Parser::NT_Form() {
 		const Token * tok = reader->currToken();
@@ -87,6 +87,15 @@ namespace llscm {
 			}
 			return obj;
 		}
+
+		if (tok->t == KWRD && tok->kw == KW_QUCHAR) {
+			// Quote, short form
+			reader->nextToken();
+			obj = NT_Data();
+			if (fail()) return nullptr;
+			return make_unique<ScmQuoteSyntax>(move(obj));
+		}
+
 		// Anything other than "(" must be an atom
 		return NT_Atom(false);
 	}
@@ -135,7 +144,6 @@ namespace llscm {
 					if (fail()) return nullptr;
 					reader->nextToken();
 					return make_unique<ScmQuoteSyntax>(move(expr));
-					break;
 				case KW_IF:
 					tok = reader->nextToken();
 					if (!tok || (tok->t == KWRD && tok->kw == KW_RPAR)) {
@@ -263,7 +271,7 @@ namespace llscm {
 	}
 
 	/*
-	 * expr = atom | ( "(" callsyn ")" )
+	 * expr = atom | ( "(" callsyn ")" ) | "'" data
 	 */
 	P_ScmObj Parser::NT_Expr() {
 		const Token * tok = reader->currToken();
@@ -287,6 +295,15 @@ namespace llscm {
 			return obj;
 		}
 		D(cerr << tok->name << endl);
+
+		if (tok->t == KWRD && tok->kw == KW_QUCHAR) {
+			// Quote, short form
+			reader->nextToken();
+			obj = NT_Data();
+			if (fail()) return nullptr;
+			return make_unique<ScmQuoteSyntax>(move(obj));
+		}
+
 		return NT_Atom(false);
 	}
 

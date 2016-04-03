@@ -24,5 +24,5 @@
   (display "\n"))
 
 ; Test the functions
-(define lst (quote (1 2 3 4 5)))
+(define lst '(1 2 3 4 5))
 (displayln (map (lambda (x) (+ x x)) lst))
