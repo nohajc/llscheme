@@ -42,22 +42,32 @@ namespace llscm {
 
         // Template functions cannot have C linkage, so we need to save
         // pointers to their instantiated variants.
-#define SCM_ARGLIST_WRAPPER(func) Argc<arity(func)>::argl_wrapper<decltype(func), &func>
+#define SCM_ARGLIST_WRAPPER(func) \
+        scm_type_t * argl_##func(scm_type_t ** arg_list) { \
+            return Argc<arity(func)>::argl_wrapper<decltype(func), &func>(arg_list); \
+        }
 
-        void * fn_table[] = {
-                (void*)SCM_ARGLIST_WRAPPER(scm_display),
+#define DEF_WITH_WRAPPER(func, ...) \
+        SCM_ARGLIST_WRAPPER(func); \
+        scm_type_t * func(__VA_ARGS__) \
+
+        /*void * fn_table[] = {
+                //(void*)SCM_ARGLIST_WRAPPER(scm_display),
                 (void*)SCM_ARGLIST_WRAPPER(scm_gt),
                 (void*)SCM_ARGLIST_WRAPPER(scm_num_eq),
                 (void*)SCM_ARGLIST_WRAPPER(scm_cons),
                 (void*)SCM_ARGLIST_WRAPPER(scm_car)
-        };
+        };*/
 
         SCM_VA_WRAPPERS(scm_plus);
         SCM_VA_WRAPPERS(scm_minus);
         SCM_VA_WRAPPERS(scm_times);
         SCM_VA_WRAPPERS(scm_div);
 
-        scm_type_t * scm_display(scm_ptr_t obj) {
+        // DEF_WITH_WRAPPER expands to:
+        // auto argl_scm_display = SCM_ARGLIST_WRAPPER(scm_display);
+        // scm_type_t * scm_display(scm_ptr_t obj) {
+        DEF_WITH_WRAPPER(scm_display, scm_ptr_t obj) {
             switch (obj->tag) {
                 case S_STR:
                     printf("%s", obj.asStr->str);
@@ -79,11 +89,12 @@ namespace llscm {
             return SCM_NULL;
         }
 
-        scm_type_t * scm_gt(scm_ptr_t a, scm_ptr_t b) {
+        //scm_type_t * scm_gt(scm_ptr_t a, scm_ptr_t b) {
+        DEF_WITH_WRAPPER(scm_gt, scm_ptr_t a, scm_ptr_t b) {
             return nullptr;
         }
 
-        scm_type_t * scm_num_eq(scm_ptr_t a, scm_ptr_t b) {
+        DEF_WITH_WRAPPER(scm_num_eq, scm_ptr_t a, scm_ptr_t b) {
             if (a->tag == S_INT) {
                 if (b->tag == S_INT) {
                     return a.asInt->value == b.asInt->value ? SCM_TRUE : SCM_FALSE;
@@ -105,22 +116,23 @@ namespace llscm {
             return SCM_NULL;
         }
 
-        scm_type_t * scm_cons(scm_ptr_t car, scm_ptr_t cdr) {
+        DEF_WITH_WRAPPER(scm_cons, scm_ptr_t car, scm_ptr_t cdr) {
             return nullptr;
         }
 
-        scm_type_t * scm_car(scm_ptr_t obj) {
+        DEF_WITH_WRAPPER(scm_car, scm_ptr_t obj) {
             return nullptr;
         }
 
-        scm_type_t * scm_cdr(scm_ptr_t obj) {
+        DEF_WITH_WRAPPER(scm_cdr, scm_ptr_t obj) {
             return nullptr;
         }
 
-        scm_type_t * scm_is_null(scm_ptr_t obj) {
+        DEF_WITH_WRAPPER(scm_is_null, scm_ptr_t obj) {
             return nullptr;
         }
 
+        // Used only internally - no need for a wrapper
         scm_type_t * scm_get_arg_vector(int argc, char * argv[]) {
             scm_ptr_t obj = alloc_vec(argc - 1);
             for (int i = 1; i < argc; i++) {
@@ -129,7 +141,7 @@ namespace llscm {
             return obj;
         }
 
-        scm_type_t * scm_vector_length(scm_ptr_t obj) {
+        DEF_WITH_WRAPPER(scm_vector_length, scm_ptr_t obj) {
             if (obj->tag != S_VEC) {
                 INVALID_ARG_TYPE();
             }
@@ -138,7 +150,7 @@ namespace llscm {
             return len;
         }
 
-        scm_type_t * scm_vector_ref(scm_ptr_t obj, scm_ptr_t idx) {
+        DEF_WITH_WRAPPER(scm_vector_ref, scm_ptr_t obj, scm_ptr_t idx) {
             if (obj->tag != S_VEC) {
                 INVALID_ARG_TYPE();
             }
@@ -150,7 +162,7 @@ namespace llscm {
             return obj.asVec->elems[idx.asInt->value];
         }
 
-        scm_type_t * scm_cmd_args() {
+        DEF_WITH_WRAPPER(scm_cmd_args) {
             return scm_argv;
         }
 

@@ -95,14 +95,23 @@ namespace llscm {
             t.scm_cons->setBody(fields, false);
         }
 
-        // %scm_func = type { i32, i32, %scm_type* (%scm_type*, ...)*, %scm_type** }
+        // %scm_func = type { i32, i32, %scm_type* (%scm_type*, ...)*, %scm_type* (%scm_type**)*, %scm_type** }
         // Every function won't be varargs. This is just the default.
         t.scm_fn_sig = FunctionType::get(t.scm_type_ptr, { t.scm_type_ptr }, true);
         t.scm_fn_ptr = PointerType::get(t.scm_fn_sig, 0);
+        // For each function, we provide a wrapper that is used when the number of arguments
+        // passed to it is unknown at compile time (in case of scheme's apply function for example).
+        // The wrapper always takes a pointer to array of the actual arguments.
+        t.scm_wrfn_sig = FunctionType::get(
+                t.scm_type_ptr, { PointerType::get(t.scm_type_ptr, 0) }, false
+        );
+        t.scm_wrfn_ptr = PointerType::get(t.scm_wrfn_sig, 0);
+
+        // The scm_func structure therefore contains two function pointers.
         t.scm_func = module->getTypeByName("scm_func");
         if (!t.scm_func) {
             t.scm_func = StructType::create(context, "scm_func");
-            fields = { t.ti32, t.ti32, t.scm_fn_ptr, PointerType::get(t.scm_type_ptr, 0) };
+            fields = { t.ti32, t.ti32, t.scm_fn_ptr, t.scm_wrfn_ptr, PointerType::get(t.scm_type_ptr, 0) };
             t.scm_func->setBody(fields, false);
         }
 
@@ -140,13 +149,15 @@ namespace llscm {
     }
 
     template<>
-    Constant * ScmCodeGen::initScmConstant<S_FUNC>(vector<Constant*> & fields, int32_t && argc, Function *&& fnptr) {
+    Constant * ScmCodeGen::initScmConstant<S_FUNC>(vector<Constant*> & fields, int32_t && argc,
+                                                   Function *&& fnptr, Function *&& wrfnptr) {
         D(cerr << "constant func" << endl);
         fields.push_back(builder.getInt32((uint32_t)argc));
         assert(fnptr);
         Constant * c_fnptr = ConstantExpr::getCast(Instruction::BitCast, fnptr, t.scm_fn_ptr);
         Constant * c_ctxptr = ConstantPointerNull::get(PointerType::get(t.scm_type_ptr, 0));
         fields.push_back(c_fnptr);
+        fields.push_back(wrfnptr);
         fields.push_back(c_ctxptr);
         return ConstantStruct::get(t.scm_func, fields);
     }
@@ -184,7 +195,8 @@ namespace llscm {
     void ScmCodeGen::initExternFuncs() {
         FunctionType * func_type = FunctionType::get(
                 t.scm_type_ptr,
-                { t.ti32, t.scm_fn_ptr, PointerType::get(t.scm_type_ptr, 0) },
+                { t.ti32, t.scm_fn_ptr, t.scm_wrfn_ptr,
+                  PointerType::get(t.scm_type_ptr, 0) },
                 false
         );
 
@@ -433,14 +445,20 @@ namespace llscm {
         if (robj->t == T_FUNC) {
             ScmFunc * fn_obj = DPC<ScmFunc>(robj).get();
             assert(fn_obj);
+
             Function * func = dyn_cast<Function>(codegen(robj));
             assert(func);
+
+            assert(fn_obj->IR_wrapper_fn_ptr);
+
             if (fn_obj->has_closure) {
                 ScmFunc * curr_func = node->defined_in_func;
-                return genAllocFunc(fn_obj->argc_expected, func, curr_func->IR_heap_storage);
+
+                return genAllocFunc(fn_obj->argc_expected, func,
+                                    fn_obj->IR_wrapper_fn_ptr, curr_func->IR_heap_storage);
             }
             else {
-                return genConstFunc(fn_obj->argc_expected, func);
+                return genConstFunc(fn_obj->argc_expected, func, fn_obj->IR_wrapper_fn_ptr);
             }
         }
 
@@ -469,8 +487,8 @@ namespace llscm {
         );
     }
 
-    Value * ScmCodeGen::genConstFunc(int32_t argc, Function * fnptr) {
-        Constant * c = getScmConstant<S_FUNC>(argc, fnptr);
+    Value * ScmCodeGen::genConstFunc(int32_t argc, Function * fnptr, Function * wrfnptr) {
+        Constant * c = getScmConstant<S_FUNC>(argc, fnptr, wrfnptr);
         return new GlobalVariable(
                 *module, t.scm_func, true,
                 GlobalValue::InternalLinkage,
@@ -478,13 +496,15 @@ namespace llscm {
         );
     }
 
-    Value * ScmCodeGen::genAllocFunc(int32_t argc, Function * fnptr, Value * ctxptr) {
+    Value * ScmCodeGen::genAllocFunc(int32_t argc, Function * fnptr,
+                                     Function * wrfnptr, Value * ctxptr) {
         assert(ctxptr);
 
         return builder.CreateCall(
                 fn.alloc_func,
                 { builder.getInt32((uint32_t)argc),
                   builder.CreateBitCast(fnptr, t.scm_fn_ptr),
+                  wrfnptr,
                   ctxptr }
         );
     }
@@ -511,6 +531,49 @@ namespace llscm {
         return builder.CreateLoad(hs_idx);
     }
 
+    void ScmCodeGen::declFuncWrapper(ScmFunc * node) {
+        Function * func = Function::Create(
+                t.scm_wrfn_sig,
+                GlobalValue::ExternalLinkage,
+                "argl_" + node->name, module.get()
+        );
+
+        node->IR_wrapper_fn_ptr = func;
+    }
+
+    void ScmCodeGen::defFuncWrapper(ScmFunc * node, Function * func) {
+        auto saved_ip = builder.saveIP();
+
+        Function * fn_wrapper = node->IR_wrapper_fn_ptr;
+        BasicBlock * bb = BasicBlock::Create(context, "entry", fn_wrapper);
+        builder.SetInsertPoint(bb);
+        Value * arg_list = fn_wrapper->args().begin();
+        vector<Value *> args;
+        int i = 0;
+
+        if (node->argc_expected) {
+            for (; i < node->argc_expected; i++) {
+                Value * arg_idx = builder.CreateGEP(
+                        arg_list, builder.getInt32((uint32_t)i)
+                );
+                Value * arg_val = builder.CreateLoad(arg_idx);
+                args.push_back(arg_val);
+            }
+        }
+
+        if (node->has_closure) {
+            // Also pass the context pointer
+            Value * arg_idx = builder.CreateGEP(
+                    arg_list, builder.getInt32((uint32_t)i)
+            );
+            Value * arg_val = builder.CreateLoad(arg_idx);
+            arg_val = builder.CreateBitCast(arg_val, PointerType::get(t.scm_type_ptr, 0));
+            args.push_back(arg_val);
+        }
+        builder.CreateRet(builder.CreateCall(func, args));
+        builder.restoreIP(saved_ip);
+    }
+
     any_ptr ScmCodeGen::visit(ScmFunc * node) {
         D(cerr << "VISITED ScmFunc!" << endl);
         if (node->IR_val) return node->IR_val;
@@ -521,7 +584,6 @@ namespace llscm {
         bool varargs = false;
         auto saved_ip = builder.saveIP();
 
-        //Value * context_ptr = nullptr;
         Value * heap_storage = nullptr;
         auto & heap_local_idx = node->heap_local_idx;
 
@@ -553,6 +615,8 @@ namespace llscm {
 
         // Save function declaration
         node->IR_val = func;
+
+        declFuncWrapper(node);
 
         if (!node->arg_list) {
             // Return declaration only (in case of extern functions).
@@ -614,6 +678,8 @@ namespace llscm {
         verifyFunction(*func, &errs());
 
         builder.restoreIP(saved_ip);
+
+        defFuncWrapper(node, func);
         return func;
     }
 
@@ -688,7 +754,7 @@ namespace llscm {
                                     };
                                     vector<Value *> ctxptr_indices = {
                                             builder.getInt32(0),
-                                            builder.getInt32(3)
+                                            builder.getInt32(4)
                                     };
 
                                     D(cerr << "loading fnptr" << endl);
@@ -703,6 +769,9 @@ namespace llscm {
                                     );
 
                                     vector<Value *> args = genArgValues(node);
+                                    // We have to cast ctxptr to scm_type*
+                                    // in case we pass it as the first argument.
+                                    ctxptr = builder.CreateBitCast(ctxptr, t.scm_type_ptr);
                                     args.push_back(ctxptr); // This is null for non-closure functions
 
                                     return builder.CreateCall(t.scm_fn_sig, fnptr, args);

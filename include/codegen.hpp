@@ -59,7 +59,9 @@ namespace llscm {
             StructType * scm_func;
             StructType * scm_vec;
             FunctionType * scm_fn_sig;
+            FunctionType * scm_wrfn_sig;
             PointerType * scm_fn_ptr;
+            PointerType * scm_wrfn_ptr;
             PointerType * scm_type_ptr;
             Type * ti32;
         } t;
@@ -113,8 +115,9 @@ namespace llscm {
         void genHeapStore(Value * hs, Value * obj, int32_t idx);
         Value * genHeapLoad(Value * hs, int32_t idx);
 
-        Value * genAllocFunc(int32_t argc, Function * fnptr, Value * ctxptr);
-        Value * genConstFunc(int32_t argc, Function * fnptr);
+        Value * genAllocFunc(int32_t argc, Function * fnptr,
+                             Function * wrfnptr, Value * ctxptr);
+        Value * genConstFunc(int32_t argc, Function * fnptr, Function * wrfnptr);
         vector<Value*> genArgValues(const ScmCall * node);
         //void testAstVisit();
         template<typename F1, typename F2, typename F3>
@@ -149,27 +152,8 @@ namespace llscm {
             return phi;
         }
 
-        /*
-            class ScmProg;
-            class ScmObj;
-            class ScmInt;
-            class ScmFloat;
-            class ScmTrue;
-            class ScmFalse;
-            class ScmNull;
-            class ScmStr;
-            class ScmSym;
-            class ScmRef;
-            class ScmCons;
-            class ScmFunc;
-            class ScmCall;
-            class ScmDefineVarSyntax;
-            class ScmDefineFuncSyntax; // NOT PRESENT IN AST AFTER CT_Eval
-            class ScmLambdaSyntax; // NOT PRESENT IN AST AFTER CT_Eval
-            class ScmQuoteSyntax;
-            class ScmIfSyntax;
-            class ScmLetSyntax;
-        */
+        void declFuncWrapper(ScmFunc * node);
+        void defFuncWrapper(ScmFunc * node, Function * func);
 
         virtual any_ptr visit(ScmProg * node);
         virtual any_ptr visit(ScmInt * node);

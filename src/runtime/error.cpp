@@ -12,6 +12,7 @@ namespace llscm {
             RUNTIME_ERROR("Cannot call object of type %s, expected %s.\n", TagName[obj->tag], TagName[S_FUNC]);
         }
 
+        // TODO: Store function name in the scm_func object
         void error_wrong_arg_num(scm_func_t * func, int32_t argc) {
             RUNTIME_ERROR("Called function expects %d arguments, %d given.\n", func->argc, argc);
         }

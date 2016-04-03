@@ -19,16 +19,16 @@
   (newline))
 
 (define (clos3 a b)
-  (lambda (c)
+  (lambda ()
 	 (lambda (x)
-		(+ a b c x))))
+		(+ a b x))))
 
 (foo (+ 2 3))
 (newline)
 (bar)
 (newline)
 
-(display (((clos3 1 2) 3) 4))
+(display (((clos3 1 2)) 4))
 (newline)
 
 (define (simple-apply fn a b)
@@ -39,4 +39,4 @@
 (display (simple-apply - 8 3))
 (newline)
 
-((clos3 1 2) 3 4)
+;(display (((clos3 1 2) 3) 4))

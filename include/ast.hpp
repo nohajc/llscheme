@@ -291,6 +291,7 @@ namespace llscm {
 			passing_closure = false;
 			IR_heap_storage = nullptr;
 			IR_context_ptr = nullptr;
+			IR_wrapper_fn_ptr = nullptr;
 		}
 		virtual P_ScmObj CT_Eval(P_ScmEnv env);
 		void addHeapLocal(P_ScmObj obj) {
@@ -314,6 +315,7 @@ namespace llscm {
 		bool passing_closure;
 		Value * IR_heap_storage;
 		Value * IR_context_ptr;
+		Function * IR_wrapper_fn_ptr;
 	};
 
 	class ScmConsFunc: public Visitable<ScmConsFunc, ScmFunc> {

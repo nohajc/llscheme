@@ -54,7 +54,7 @@ set(RUNTIME_FILES
         include/runtime/types.hpp
         src/runtime/runtime.cpp include/runtime.h
         include/runtime/memory.h src/runtime/memory.cpp
-        include/runtime/error.h src/runtime/error.cpp include/runtime/internal.hpp include/runtime/macros.hpp)
+        include/runtime/error.h src/runtime/error.cpp include/runtime/internal.hpp include/runtime/meta.hpp)
 
 add_library(llscmrt STATIC ${RUNTIME_FILES})
 

@@ -12,7 +12,8 @@ namespace llscm {
             scm_type_t * alloc_float(double value);
             scm_type_t * alloc_vec(int32_t size);
             scm_type_t * alloc_str(const char * str);
-            scm_type_t * alloc_func(int32_t argc, scm_fnptr_t fnptr, scm_type_t ** ctxptr);
+            scm_type_t * alloc_func(int32_t argc, scm_fnptr_t fnptr,
+                                    al_wrapper_t wrfnptr, scm_type_t ** ctxptr);
             scm_type_t ** alloc_heap_storage(int32_t size);
         }
     }

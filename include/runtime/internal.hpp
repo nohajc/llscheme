@@ -3,12 +3,33 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <string>
 #include "../runtime.h"
 #include "../runtime/memory.h"
 #include "../runtime/error.h"
+#include "../runtime/meta.hpp"
 
 namespace llscm {
     namespace runtime {
+        template<typename>
+        struct Arguments;
+
+        template<int... idx>
+        struct Arguments<RangeElems<idx...>> {
+            template<typename T, T * func>
+            inline static scm_type_t * argl_wrapper(scm_type_t ** arg_list) {
+                // Number of arguments will be checked by the caller who
+                // has the complete scm_func object.
+                return func(arg_list[idx]...);
+            };
+        };
+
+        template<int E>
+        struct Arguments<Range<E>>: Arguments<typename Range<E>::type> {};
+
+        template<int C>
+        struct Argc: Arguments<Range<C>> {};
+
         template<typename F1, typename F2>
         inline scm_type_t * internal_scm_plus(F1 first_arg, F2 next_arg) {
             int64_t sum = 0;

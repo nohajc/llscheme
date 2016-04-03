@@ -1,9 +1,7 @@
 #ifndef LLSCHEME_RUNTIME_H
 #define LLSCHEME_RUNTIME_H
 
-#include <functional>
 #include "runtime/types.hpp"
-#include "runtime/macros.hpp"
 
 #define SCM_NULL &(Constant::scm_null)
 #define SCM_TRUE &(Constant::scm_true)
@@ -46,11 +44,13 @@ namespace llscm {
         };
 
         typedef scm_type_t * (*scm_fnptr_t)(scm_type_t * arg0, ...);
+        typedef scm_type_t * (*al_wrapper_t)(scm_type_t **);
 
         struct scm_func_t {
             int32_t tag;
             int32_t argc;
             scm_fnptr_t fnptr;
+            al_wrapper_t wrfnptr;
             scm_type_t ** ctxptr;
         };
 
@@ -101,53 +101,43 @@ namespace llscm {
             }
         };
 
-        template<typename>
-        struct Arguments;
-
-        template<int... idx>
-        struct Arguments<RangeElems<idx...>> {
-            template<typename T, T * func>
-            static scm_type_t * argl_wrapper(scm_type_t ** arg_list) {
-                return func(arg_list[idx]...);
-            };
-        };
-
-        template<int E>
-        struct Arguments<Range<E>>: Arguments<typename Range<E>::type> {};
-
-        template<int C>
-        struct Argc: Arguments<Range<C>> {};
+#define DECL_WITH_WRAPPER(func, ...) \
+        scm_type_t * func(__VA_ARGS__); \
+        scm_type_t * argl_##func(scm_type_t ** arg_list)
 
         extern "C" {
             extern int32_t exit_code;
             extern scm_type_t * scm_argv;
 
             scm_type_t * scm_get_arg_vector(int argc, char * argv[]);
-            scm_type_t * scm_cmd_args();
-            scm_type_t * scm_display(scm_ptr_t obj);
-
-            scm_type_t * scm_plus(scm_type_t * arg0, ...);
-            scm_type_t * argl_scm_plus(scm_type_t ** arg_list);
-
-            scm_type_t * scm_minus(scm_type_t * arg0, ...);
-            scm_type_t * argl_scm_minus(scm_type_t ** arg_list);
-
-            scm_type_t * scm_times(scm_type_t * arg0, ...);
-            scm_type_t * argl_scm_times(scm_type_t ** arg_list);
-
-            scm_type_t * scm_div(scm_type_t * arg0, ...);
-            scm_type_t * argl_scm_div(scm_type_t ** arg_list);
-
-            scm_type_t * scm_gt(scm_ptr_t a, scm_ptr_t b);
-            scm_type_t * scm_num_eq(scm_ptr_t a, scm_ptr_t b);
-            scm_type_t * scm_cons(scm_ptr_t car, scm_ptr_t cdr);
-            scm_type_t * scm_car(scm_ptr_t obj);
-            scm_type_t * scm_cdr(scm_ptr_t obj);
-            scm_type_t * scm_is_null(scm_ptr_t obj);
-            scm_type_t * scm_vector_length(scm_ptr_t obj);
-            scm_type_t * scm_vector_ref(scm_ptr_t obj, scm_ptr_t idx);
-
-            extern void * fn_table[];
+            //scm_type_t * scm_cmd_args();
+            DECL_WITH_WRAPPER(scm_cmd_args);
+            // scm_type_t * scm_display(scm_ptr_t obj);
+            DECL_WITH_WRAPPER(scm_display, scm_ptr_t obj);
+            //scm_type_t * scm_gt(scm_ptr_t a, scm_ptr_t b);
+            DECL_WITH_WRAPPER(scm_gt, scm_ptr_t a, scm_ptr_t b);
+            //scm_type_t * scm_num_eq(scm_ptr_t a, scm_ptr_t b);
+            DECL_WITH_WRAPPER(scm_num_eq, scm_ptr_t a, scm_ptr_t b);
+            //scm_type_t * scm_cons(scm_ptr_t car, scm_ptr_t cdr);
+            DECL_WITH_WRAPPER(scm_cons, scm_ptr_t car, scm_ptr_t cdr);
+            //scm_type_t * scm_car(scm_ptr_t obj);
+            DECL_WITH_WRAPPER(scm_car, scm_ptr_t obj);
+            //scm_type_t * scm_cdr(scm_ptr_t obj);
+            DECL_WITH_WRAPPER(scm_cdr, scm_ptr_t obj);
+            //scm_type_t * scm_is_null(scm_ptr_t obj);
+            DECL_WITH_WRAPPER(scm_is_null, scm_ptr_t obj);
+            //scm_type_t * scm_vector_length(scm_ptr_t obj);
+            DECL_WITH_WRAPPER(scm_vector_length, scm_ptr_t obj);
+            //scm_type_t * scm_vector_ref(scm_ptr_t obj, scm_ptr_t idx);
+            DECL_WITH_WRAPPER(scm_vector_ref, scm_ptr_t obj, scm_ptr_t idx);
+            //scm_type_t * scm_plus(scm_type_t * arg0, ...);
+            DECL_WITH_WRAPPER(scm_plus, scm_type_t * arg0, ...);
+            //scm_type_t * scm_minus(scm_type_t * arg0, ...);
+            DECL_WITH_WRAPPER(scm_minus, scm_type_t * arg0, ...);
+            //scm_type_t * scm_times(scm_type_t * arg0, ...);
+            DECL_WITH_WRAPPER(scm_times, scm_type_t * arg0, ...);
+            //scm_type_t * scm_div(scm_type_t * arg0, ...);
+            DECL_WITH_WRAPPER(scm_div, scm_type_t * arg0, ...);
         }
     }
 }
