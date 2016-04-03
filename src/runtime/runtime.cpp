@@ -27,7 +27,7 @@ namespace llscm {
             return res; \
         }
 
-#define SCM_ARGLIST_WRAPPER(func) \
+#define SCM_VARGLIST_WRAPPER(func) \
         scm_type_t * argl_##func(scm_type_t ** arg_list) { \
             int32_t idx = 1; \
             return internal_##func( \
@@ -36,25 +36,26 @@ namespace llscm {
             ); \
         }
 
-        SCM_VARARGS_WRAPPER(scm_plus);
-        SCM_ARGLIST_WRAPPER(scm_plus);
+#define SCM_VA_WRAPPERS(func) \
+        SCM_VARARGS_WRAPPER(func) \
+        SCM_VARGLIST_WRAPPER(func)
 
-        SCM_VARARGS_WRAPPER(scm_minus);
-        SCM_ARGLIST_WRAPPER(scm_minus);
+        // Template functions cannot have C linkage, so we need to save
+        // pointers to their instantiated variants.
+#define SCM_ARGLIST_WRAPPER(func) Argc<arity(func)>::argl_wrapper<decltype(func), &func>
 
-        SCM_VARARGS_WRAPPER(scm_times);
-        SCM_ARGLIST_WRAPPER(scm_times);
+        void * fn_table[] = {
+                (void*)SCM_ARGLIST_WRAPPER(scm_display),
+                (void*)SCM_ARGLIST_WRAPPER(scm_gt),
+                (void*)SCM_ARGLIST_WRAPPER(scm_num_eq),
+                (void*)SCM_ARGLIST_WRAPPER(scm_cons),
+                (void*)SCM_ARGLIST_WRAPPER(scm_car)
+        };
 
-        SCM_VARARGS_WRAPPER(scm_div);
-        SCM_ARGLIST_WRAPPER(scm_div);
-
-        /*scm_type_t * scm_times(scm_type_t * arg0, ...) {
-            return nullptr;
-        }
-
-        scm_type_t * scm_div(scm_type_t * arg0, ...) {
-            return nullptr;
-        }*/
+        SCM_VA_WRAPPERS(scm_plus);
+        SCM_VA_WRAPPERS(scm_minus);
+        SCM_VA_WRAPPERS(scm_times);
+        SCM_VA_WRAPPERS(scm_div);
 
         scm_type_t * scm_display(scm_ptr_t obj) {
             switch (obj->tag) {
@@ -77,19 +78,6 @@ namespace llscm {
 
             return SCM_NULL;
         }
-
-        /*scm_type_t * scm_minus(scm_type_t * arg0, ...) {
-            va_list ap;
-            va_start(ap, arg0);
-
-            scm_type_t * res = internal_scm_minus(
-                    [&arg0] () { return arg0; },
-                    [&ap] () { return va_arg(ap, scm_type_t*); }
-            );
-
-            va_end(ap);
-            return res;
-        }*/
 
         scm_type_t * scm_gt(scm_ptr_t a, scm_ptr_t b) {
             return nullptr;

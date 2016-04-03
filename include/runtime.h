@@ -1,7 +1,9 @@
 #ifndef LLSCHEME_RUNTIME_H
 #define LLSCHEME_RUNTIME_H
 
+#include <functional>
 #include "runtime/types.hpp"
+#include "runtime/macros.hpp"
 
 #define SCM_NULL &(Constant::scm_null)
 #define SCM_TRUE &(Constant::scm_true)
@@ -99,6 +101,23 @@ namespace llscm {
             }
         };
 
+        template<typename>
+        struct Arguments;
+
+        template<int... idx>
+        struct Arguments<RangeElems<idx...>> {
+            template<typename T, T * func>
+            static scm_type_t * argl_wrapper(scm_type_t ** arg_list) {
+                return func(arg_list[idx]...);
+            };
+        };
+
+        template<int E>
+        struct Arguments<Range<E>>: Arguments<typename Range<E>::type> {};
+
+        template<int C>
+        struct Argc: Arguments<Range<C>> {};
+
         extern "C" {
             extern int32_t exit_code;
             extern scm_type_t * scm_argv;
@@ -127,6 +146,8 @@ namespace llscm {
             scm_type_t * scm_is_null(scm_ptr_t obj);
             scm_type_t * scm_vector_length(scm_ptr_t obj);
             scm_type_t * scm_vector_ref(scm_ptr_t obj, scm_ptr_t idx);
+
+            extern void * fn_table[];
         }
     }
 }

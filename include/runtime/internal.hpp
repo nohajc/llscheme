@@ -63,8 +63,6 @@ namespace llscm {
                 WRONG_ARG_NUM();
             }
 
-
-
             //obj = va_arg(ap, scm_type_t*);
             if (obj->tag == S_INT) {
                 diff = obj.asInt->value;
