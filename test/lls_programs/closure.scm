@@ -1,4 +1,4 @@
-(define (newline)
+(define (newline) ; Comment test
   (display "\n"))
 
 (define (foo i)
@@ -11,6 +11,8 @@
 	 (define (clos2)
 		(display i))
 	 (clos2)))
+
+; Comment ; inside a comment
 
 (let ((i (+ 4 5)))
   (define (noclos)

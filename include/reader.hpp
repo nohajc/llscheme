@@ -41,6 +41,7 @@ namespace llscm {
 		Token tok;
 		istream * is;
 		int par_left;
+		char skipSpaces();
 	public:
 		const Token * nextToken();
 		const Token * currToken();

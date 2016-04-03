@@ -108,17 +108,42 @@ namespace llscm {
 		delete is;
 	}
 
+	char Reader::skipSpaces() {
+		char c;
+		do {
+			is->get(c);
+			if (is->eof()) {
+				return 0;
+			}
+		} while (isspace(c));
+
+		return c;
+	}
+
 	const Token * Reader::nextToken() {
 		char c;
 		bool esc = false;
 		tok.name = "";
 
-		do {
-			is->get(c);
+		c = skipSpaces();
+		if (is->eof()) {
+			return nullptr;
+		}
+
+		if (c == ';') {
+			// Skip comment
+			do {
+				is->get(c);
+				if (is->eof()) {
+					return nullptr;
+				}
+			} while(c != '\n');
+
+			c = skipSpaces();
 			if (is->eof()) {
 				return nullptr;
 			}
-		} while (isspace(c));
+		}
 
 		switch (c) {
 			case '(':
