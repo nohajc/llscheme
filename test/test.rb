@@ -3,7 +3,7 @@
 require "open3"
 require_relative "colors"
 
-SCMC = File.join(__dir__, "../bin/Debug/schemec - -filetype=null")
+SCMC = File.join(__dir__, "../bin/Debug/schemec - -f null")
 
 class Test
 	def initialize(test_file)
