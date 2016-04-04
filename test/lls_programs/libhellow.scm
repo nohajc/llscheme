@@ -1,0 +1,1 @@
+(display "Hello library!\n")

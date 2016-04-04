@@ -16,9 +16,6 @@ using namespace std;
 using namespace llvm;
 
 namespace llscm {
-	int argc; // TODO: remove
-	char ** argv;
-
 	enum optionIdx { UNKNOWN, HELP, INPUT_STR, OUTPUT, FILETYPE, BUILDTYPE, OPTLEVEL };
 	const option::Descriptor usage[] = {
 			{ UNKNOWN, 0, "", "", Arg::Unknown,
@@ -150,6 +147,10 @@ namespace llscm {
 		}
 
 		ScmCodeGen cg(getGlobalContext(), &prog);
+		if (opts->buildtype == Options::BT_EXEC) {
+			cg.makeExecutable();
+		} // Otherwise we're building a library (module without main function)
+		cg.run();
 		cg.dump();
 
 		invokeLLC(cg.getModule());

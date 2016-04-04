@@ -5,7 +5,6 @@
 #include "../include/debug.hpp"
 
 namespace llscm {
-    //const char * RuntimeSymbol::malloc = "scm_alloc";
     const char * RuntimeSymbol::cons = "scm_cons";
     const char * RuntimeSymbol::car = "scm_car";
     const char * RuntimeSymbol::cdr = "scm_cdr";
@@ -36,11 +35,10 @@ namespace llscm {
         initTypes();
         initExternFuncs();
         entry_func = nullptr;
-        // TODO: Take these methods out of the constructor
-        addMainFuncProlog();
-        codegen(ast);
-        addMainFuncEpilog();
-        verifyFunction(*entry_func, &errs());
+
+        // Not adding main function by default
+        addEntryFuncProlog = &ScmCodeGen::addLibInitFuncProlog;
+        addEntryFuncEpilog = &ScmCodeGen::addLibInitFuncEpilog;
     }
 
     void ScmCodeGen::initTypes() {
@@ -311,9 +309,62 @@ namespace llscm {
     void ScmCodeGen::addMainFuncEpilog() {
         LoadInst * exit_c = builder.CreateLoad(g_exit_code);
         builder.CreateRet(exit_c);
-        //builder.SetInsertPoint(exit_c);
     }
 
+    void ScmCodeGen::addLibInitFuncProlog() {
+        FunctionType * libinit_func_type = FunctionType::get(
+                builder.getVoidTy(),
+                {},
+                false
+        );
+        Function * libinit_func = Function::Create(
+                libinit_func_type,
+                GlobalValue::InternalLinkage,
+                "lib_init", module.get()
+        );
+
+        libinit_func->setDoesNotThrow();
+        libinit_func->setHasUWTable();
+
+        BasicBlock * bb = BasicBlock::Create(context, "entry", libinit_func);
+        builder.SetInsertPoint(bb);
+
+        entry_func = libinit_func;
+
+        StructType * ctor_field_type = StructType::get(
+            context,
+            {
+                t.ti32,
+                PointerType::get(FunctionType::get(
+                     builder.getVoidTy(), {}, false
+                ), 0),
+                builder.getInt8PtrTy(0)
+            },
+            false
+        );
+
+        ArrayType * ctor_array_type = ArrayType::get(ctor_field_type, 1);
+
+        g_ctors = new GlobalVariable(
+            *module, ctor_array_type , false,
+            GlobalValue::AppendingLinkage,
+            ConstantArray::get(
+                ctor_array_type,
+                {
+                    ConstantStruct::get(ctor_field_type, {
+                        builder.getInt32(65535),
+                        libinit_func,
+                        ConstantPointerNull::get(builder.getInt8PtrTy())
+                    })
+                }
+            ),
+            "llvm.global_ctors"
+        );
+    }
+
+    void ScmCodeGen::addLibInitFuncEpilog() {
+        builder.CreateRetVoid();
+    }
 
     any_ptr ScmCodeGen::visit(ScmProg * node) {
         D(cerr << "VISITED ScmProg!" << endl);
@@ -956,6 +1007,13 @@ namespace llscm {
     any_ptr ScmCodeGen::visit(ScmQuoteSyntax * node) {
         D(cerr << "VISITED ScmQuoteSyntax!" << endl);
         return node->IR_val = codegen(node->data);
+    }
+
+    void ScmCodeGen::run() {
+        (this->*addEntryFuncProlog)();
+        codegen(ast);
+        (this->*addEntryFuncEpilog)();
+        verifyFunction(*entry_func, &errs());
     }
 
 }

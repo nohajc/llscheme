@@ -43,13 +43,19 @@ namespace llscm {
     };
 
     class ScmCodeGen: public AstVisitor {
-        shared_ptr<Module> module;
         LLVMContext & context;
+        shared_ptr<Module> module;
         IRBuilder<> builder;
         VisitableObj * ast;
-        Function * entry_func;
+
         GlobalVariable * g_exit_code;
         GlobalVariable * g_argv;
+        // Library constructors (called on module load)
+        GlobalVariable * g_ctors;
+
+        Function * entry_func;
+        void (ScmCodeGen::*addEntryFuncProlog)();
+        void (ScmCodeGen::*addEntryFuncEpilog)();
 
         struct {
             StructType * scm_type;
@@ -109,9 +115,12 @@ namespace llscm {
 
         void initTypes();
         void initExternFuncs();
+
         void addMainFuncProlog(); // Called when we want to compile a standalone app
         void addMainFuncEpilog();
-        //void addTestFunc();
+
+        void addLibInitFuncProlog();
+        void addLibInitFuncEpilog();
 
         Value * genAllocHeapStorage(int32_t size);
         void genHeapStore(Value * hs, Value * obj, int32_t idx);
@@ -187,6 +196,14 @@ namespace llscm {
         void dump() {
             module->dump();
         }
+
+        void run();
+
+        void makeExecutable() {
+            addEntryFuncProlog = &ScmCodeGen::addMainFuncProlog;
+            addEntryFuncEpilog = &ScmCodeGen::addMainFuncEpilog;
+        }
+
         Module * getModule() {
             return module.get();
         }
