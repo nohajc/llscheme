@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.4)
 project(llscheme)
 
 find_library(LIB_UNIT_TEST_CPP NAMES UnitTest++)
-#find_library(LIB_BOEHM_GC gc)
+find_library(LIB_BOEHM_GC gc)
 
 find_package(LLVM REQUIRED CONFIG)
 
@@ -12,7 +12,6 @@ message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -DDEBUG")
-#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 #set(LLVM_TARGETS_TO_BUILD all)
@@ -37,8 +36,6 @@ set(SOURCE_FILES
         include/ast_visitor.hpp
         src/ast_visitor.cpp
         include/runtime/types.hpp)
-        #src/runtime.cpp include/runtime.h
-        #src/compiler.cpp include/compiler.hpp)
 
 set(EXEC_FILES
         src/driver.cpp
@@ -56,19 +53,13 @@ set(RUNTIME_FILES
         include/runtime/memory.h src/runtime/memory.cpp
         include/runtime/error.h src/runtime/error.cpp include/runtime/internal.hpp include/runtime/meta.hpp)
 
-add_library(llscmrt STATIC ${RUNTIME_FILES})
+add_library(llscmrt SHARED ${RUNTIME_FILES})
 
 llvm_map_components_to_libnames(llvm_libs support core irreader bitwriter)
 
-# This is problematic because there are different target libs on different machines
-#llvm_map_components_to_libnames(llvm_libs support core irreader bitreader
-#        analysis mc scalaropts target asmprinter selectiondag
-#        cppbackend cppbackendcodegen cppbackendinfo
-#        x86 x86desc x86info x86asmparser
-#        bpf bpfcodegen bpfdesc bpfinfo
-#        nativecodegen codegen)
-
 target_link_libraries(schemec ${llvm_libs})
+target_link_libraries(llscmrt ${LIB_BOEHM_GC})
+
 target_link_libraries(unit_tests ${llvm_libs} ${LIB_UNIT_TEST_CPP})
 
 add_custom_command(TARGET schemec POST_BUILD COMMAND "${PROJECT_SOURCE_DIR}/test/test.rb" "${PROJECT_SOURCE_DIR}/test/parser.tests")

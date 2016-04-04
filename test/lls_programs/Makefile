@@ -1,7 +1,7 @@
 BIN=../../bin/Debug
 SCMC=$(BIN)/schemec
-LD=clang++
-LDFLAGS=-L$(BIN) -lllscmrt -lgc -fsanitize=address
+LD=clang
+LDFLAGS=-L$(BIN) -Wl,-R -Wl,"$(BIN)" -lllscmrt -fsanitize=address
 
 EXT=scm
 TARGETS=$(shell ls *.$(EXT) | xargs -L1 -I % basename % .$(EXT))
