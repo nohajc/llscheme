@@ -71,7 +71,7 @@ namespace llscm {
 		}
 
 		if (cmdargs[FILETYPE]) {
-			D(cerr << "Option: filetype=" << cmdargs[FILETYPE].arg << endl);
+			//D(cerr << "Option: filetype=" << cmdargs[FILETYPE].arg << endl);
 			opts->setOutputType(cmdargs[FILETYPE].arg);
 		}
 

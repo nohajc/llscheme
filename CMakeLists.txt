@@ -35,7 +35,8 @@ set(SOURCE_FILES
         include/any_ptr.hpp
         include/ast_visitor.hpp
         src/ast_visitor.cpp
-        include/runtime/types.hpp)
+        include/runtime/types.hpp
+        include/libmetainfo.hpp src/libmetainfo.cpp)
 
 set(EXEC_FILES
         src/driver.cpp

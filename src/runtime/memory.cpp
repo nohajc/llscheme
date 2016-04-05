@@ -38,9 +38,7 @@ namespace llscm {
         scm_type_t * alloc_str(const char *str) {
             size_t len = strlen(str);
             uint32_t str_alloc_size = sizeof(scm_str_t);
-            if (len > 1) {
-                str_alloc_size += (len - 1) * sizeof(char);
-            }
+            str_alloc_size += len * sizeof(char);
 
             scm_ptr_t obj = GC_MALLOC(str_alloc_size);
             obj->tag = S_STR;

@@ -44,6 +44,9 @@ namespace llscm {
         bool fail() {
             return err_flag;
         }
+        bool isGlobal() {
+            return this == top_level_env;
+        }
     };
 
     shared_ptr<ScmEnv> createGlobalEnvironment(ScmProg & prog);

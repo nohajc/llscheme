@@ -1,4 +1,3 @@
-#include <cassert>
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/Support/raw_ostream.h>
 #include "../include/codegen.hpp"
@@ -331,6 +330,8 @@ namespace llscm {
 
         entry_func = libinit_func;
 
+        // Make sure the lib_init function is run on library load:
+        // Add it to the llvm.global_ctors array.
         StructType * ctor_field_type = StructType::get(
             context,
             {
@@ -584,11 +585,11 @@ namespace llscm {
         return builder.CreateLoad(hs_idx);
     }
 
-    void ScmCodeGen::declFuncWrapper(ScmFunc * node) {
+    void ScmCodeGen::declFuncWrapper(ScmFunc * node, GlobalValue::LinkageTypes linkage) {
         // TODO: We don't need to generate wrappers for functions which take no arguments
         Function * func = Function::Create(
                 t.scm_wrfn_sig,
-                GlobalValue::ExternalLinkage,
+                linkage,
                 "argl_" + node->name, module.get()
         );
 
@@ -659,18 +660,23 @@ namespace llscm {
             }
         }
 
+        auto linkage = GlobalValue::InternalLinkage;
+        if (node->location == T_GLOB && !StringRef(node->name).startswith("__lambda#")) {
+            linkage = GlobalValue::ExternalLinkage;
+        }
+
         func_type = FunctionType::get(t.scm_type_ptr, arg_types, varargs);
         // TODO: How to handle redefinitions?
         func = Function::Create(
                 func_type,
-                GlobalValue::ExternalLinkage,
+                linkage,
                 node->name, module.get()
         );
 
         // Save function declaration
         node->IR_val = func;
 
-        declFuncWrapper(node);
+        declFuncWrapper(node, linkage);
 
         if (!node->arg_list) {
             // Return declaration only (in case of extern functions).
@@ -879,6 +885,14 @@ namespace llscm {
 
     any_ptr ScmCodeGen::visit(ScmDefineVarSyntax * node) {
         D(cerr << "VISITED ScmDefineVarSyntax!" << endl);
+
+        if (node->val->t == T_FUNC && node->val->location == T_GLOB) {
+            ScmFunc * fn = DPC<ScmFunc>(node->val).get();
+            if (!StringRef(fn->name).startswith("__lambda#")) {
+                // Metadata saved only for global named functions
+                output_meta.addRecord(fn->argc_expected, fn->name);
+            }
+        }
         if (node->val->t == T_FUNC || node->val->t == T_REF) {
             return codegen(node->val);
         }
@@ -1014,7 +1028,15 @@ namespace llscm {
         codegen(ast);
         (this->*addEntryFuncEpilog)();
         verifyFunction(*entry_func, &errs());
-    }
 
+        // Save generated metadata array to global variable
+        Constant * llsmeta = ConstantDataArray::get(context, output_meta.getBlob());
+
+        new GlobalVariable(
+                *module, llsmeta->getType(), false,
+                GlobalValue::ExternalLinkage,
+                llsmeta, "__llscheme_metainfo__"
+        );
+    }
 }
 

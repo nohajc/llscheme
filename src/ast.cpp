@@ -353,6 +353,10 @@ namespace llscm {
 			if (new_env->fail()) {
 				return nullptr;
 			}
+
+			if (env->isGlobal()) {
+				location = T_GLOB;
+			}
 		}
 		return shared_from_this();
 	}
@@ -502,7 +506,7 @@ namespace llscm {
 
 	P_ScmObj ScmLambdaSyntax::CT_Eval(P_ScmEnv env) {
 		// Creates a new symbol (name) for the anonymous function.
-		string fname = env->getUniqID("lambda");
+		string fname = env->getUniqID("__lambda#");
 		P_ScmObj fsym = make_shared<ScmSym>(fname);
 		ScmCons * c_arg_list = DPC<ScmCons>(arg_list).get();
 		int32_t argc = c_arg_list ? c_arg_list->length() : 0;

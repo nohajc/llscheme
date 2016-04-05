@@ -98,9 +98,7 @@ namespace llscm {
 
 		Options & setOutputType(const string & str) {
 			for (int i = 0; i < FT_COUNT; i++) {
-				cerr << "trying " << ft_id[i] << " with " << str << endl;
 				if (str == ft_id[i]) {
-					cerr << "FOUND MATCH" << endl;
 					filetype = (Filetype)i;
 					break;
 				}

@@ -11,6 +11,7 @@
 #include "ast.hpp"
 #include "debug.hpp"
 #include "runtime/types.hpp"
+#include "../include/libmetainfo.hpp"
 
 namespace llscm {
     using namespace std;
@@ -47,6 +48,8 @@ namespace llscm {
         shared_ptr<Module> module;
         IRBuilder<> builder;
         VisitableObj * ast;
+        Metadata input_meta;
+        Metadata output_meta;
 
         GlobalVariable * g_exit_code;
         GlobalVariable * g_argv;
@@ -163,7 +166,7 @@ namespace llscm {
             return phi;
         }
 
-        void declFuncWrapper(ScmFunc * node);
+        void declFuncWrapper(ScmFunc * node, GlobalValue::LinkageTypes linkage);
         void defFuncWrapper(ScmFunc * node, Function * func);
 
         virtual any_ptr visit(ScmProg * node);
