@@ -37,9 +37,25 @@ namespace llscm {
         Metadata();
         ~Metadata();
 
-        void addRecord(int32_t argc, const string & name);
+        FunctionInfo * addRecord(int32_t argc, const string & name);
+
+        template<typename F>
+        void foreachRecord(F func) {
+            uint8_t * arr_ptr = metadata + strlen(magic);
+            FunctionInfo * rec;
+
+            while (true) {
+                rec = (FunctionInfo*)arr_ptr;
+                if (!rec->name[0]) break;
+
+                func(rec);
+
+                arr_ptr += rec->size();
+            }
+        }
 
         vector<uint8_t> getBlob();
+        bool loadFromBlob(void * blob);
     };
 }
 

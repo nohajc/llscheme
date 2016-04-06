@@ -68,7 +68,7 @@ namespace llscm {
 	// TODO: constant folding
 
 	// TODO: introduce special syntax construct "require"
-	// which will import functions from other (compiled?) scheme modules.
+	// which will import functions from other compiled scheme modules.
 	class ScmObj: public enable_shared_from_this<ScmObj>, public Visitable<ScmObj> {
 	protected:
 		void printTabs(ostream & os, int tabs) const {

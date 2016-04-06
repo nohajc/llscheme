@@ -1,6 +1,7 @@
 #include <new>
 #include <iostream>
 #include "../include/libmetainfo.hpp"
+#include "../include/debug.hpp"
 
 namespace llscm {
     const size_t Metadata::InitSize = 32; // TODO: increase
@@ -24,7 +25,7 @@ namespace llscm {
         free(metadata);
     }
 
-    void Metadata::addRecord(int32_t argc, const string & name) {
+    FunctionInfo * Metadata::addRecord(int32_t argc, const string & name) {
         size_t namelen = name.length();
         uint8_t * arr;
 
@@ -39,11 +40,36 @@ namespace llscm {
         }
         FunctionInfo * rec = new(metadata + md_size, namelen) FunctionInfo(argc, name.c_str());
         md_size += rec->size();
+
+        return rec;
     }
 
     vector<uint8_t> Metadata::getBlob() {
         addRecord(0, ""); // Empty record marks the end of array.
         return vector<uint8_t>(metadata, metadata + md_size);
+    }
+
+    bool Metadata::loadFromBlob(void * blob) {
+        D(cerr << "METAINFO FOUND AT " << blob << endl);
+
+        size_t magiclen = strlen(magic);
+        uint8_t * arr_ptr = (uint8_t*)blob;
+
+        if (memcmp(arr_ptr, magic, magiclen)) {
+            return false;
+        }
+        arr_ptr += magiclen;
+
+        FunctionInfo * rec;
+        FunctionInfo * saved;
+
+        do {
+            rec = (FunctionInfo*)arr_ptr;
+            saved = addRecord(rec->argc, rec->name);
+            arr_ptr += saved->size();
+        } while (rec->name[0]);
+
+        return true;
     }
 
     void * FunctionInfo::operator new(std::size_t s, void * p, int32_t namelen) {

@@ -36,6 +36,19 @@ namespace llscm {
             exit(EXIT_FAILURE);
         }
 
+        Metadata input_meta;
+        void * metainfo_blob = dylib.getAddressOfSymbol("__llscheme_metainfo__");
+        if (!input_meta.loadFromBlob(metainfo_blob)) {
+            cerr << "Error: Invalid metadata in the runtime library." << endl;
+            exit(EXIT_FAILURE);
+        }
+
+        input_meta.foreachRecord([env] (FunctionInfo * rec) {
+            D(cerr << "Found function \"" << rec->name << "\" with " << rec->argc << " args." << endl);
+            // Add the function to environment
+            env->set(rec->name, make_shared<ScmFunc>(rec->argc, rec->name));
+        });
+
         return env;
     }
 
