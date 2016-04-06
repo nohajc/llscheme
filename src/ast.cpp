@@ -199,6 +199,19 @@ namespace llscm {
 		return os;
 	}
 
+	P_ScmObj ScmProg::CT_Eval(P_ScmEnv env) {
+		for (auto & e: form_lst) {
+			e = e->CT_Eval(env);
+			if (env->fail()) {
+				return nullptr;
+			}
+		}
+		// We don't really use the return value
+		// but nullptr is error so we must return something.
+		return *form_lst.rbegin();
+	}
+
+
 	P_ScmObj ScmSym::CT_Eval(P_ScmEnv env) {
 		P_ScmObj sym = shared_from_this();
 		P_ScmObj last_sym;

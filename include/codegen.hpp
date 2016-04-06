@@ -41,6 +41,7 @@ namespace llscm {
         static const char *error_wrong_arg_num;
         static const char *apply;
         static const char *length;
+        static const char *eval;
     };
 
     class ScmCodeGen: public AstVisitor {

@@ -56,12 +56,12 @@ set(RUNTIME_FILES
         include/runtime/internal.hpp include/runtime/meta.hpp
         src/runtime/scmlib.o)
 
-add_library(llscmrt SHARED ${RUNTIME_FILES})
+add_library(llscmrt SHARED ${RUNTIME_FILES} ${SOURCE_FILES})
 
 llvm_map_components_to_libnames(llvm_libs support core irreader bitwriter)
 
 target_link_libraries(schemec ${llvm_libs} -Wl,-R -Wl,${llscheme_SOURCE_DIR}/bin/Debug)
-target_link_libraries(llscmrt ${LIB_BOEHM_GC})
+target_link_libraries(llscmrt ${LIB_BOEHM_GC} ${llvm_libs})
 
 target_link_libraries(unit_tests ${llvm_libs} ${LIB_UNIT_TEST_CPP})
 

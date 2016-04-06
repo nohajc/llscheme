@@ -1,9 +1,14 @@
 #include <string>
+#include <cstring>
 #include <iostream>
+#include <llvm/ADT/STLExtras.h>
 #include "../include/reader.hpp"
 #include "../include/debug.hpp"
+#include "../include/runtime/internal.hpp"
 
 namespace llscm {
+	using namespace llvm;
+
 	const char * KwrdNames[] = {
 		"(", ")", "#t", "#f", "null",
 		"define", "lambda", "quote", "if", "let", "\'",
@@ -92,9 +97,9 @@ namespace llscm {
 		//D(cerr << "symbol token ");
 	}
 
-	Reader::Reader() {
+	/*Reader::Reader() {
 		par_left = 0;
-	}
+	}*/
 
 	FileReader::FileReader(istream & f) {
 		is = &f;
@@ -241,6 +246,146 @@ namespace llscm {
 
 	void Reader::error(const string & msg) {
 		cout << "Error: " << msg << endl;
+	}
+
+	using namespace runtime;
+
+	ListReader::ListReader(scm_ptr_t expr) {
+		st.push_back(expr);
+		eof = false;
+		lstend_mark = make_unique<scm_type_t>();
+		lstend_mark->tag = -1;
+	}
+
+	const Token * ListReader::nextToken() {
+		if (st.empty()) {
+			eof = true;
+			return nullptr;
+		}
+
+		scm_ptr_t obj = st.back();
+		st.pop_back();
+
+		if (obj.asType == lstend_mark.get()) {
+			tok.t = KWRD;
+			tok.name = ")";
+			tok.kw = KW_RPAR;
+
+			return &tok;
+		}
+
+		switch(obj->tag) {
+			case S_FALSE: {
+				tok.t = KWRD;
+				tok.name = "#f";
+				tok.kw = KW_FALSE;
+
+				return &tok;
+			}
+			case S_TRUE: {
+				tok.t = KWRD;
+				tok.name = "#t";
+				tok.kw = KW_TRUE;
+
+				return &tok;
+			}
+			case S_NIL: {
+				tok.t = KWRD;
+				tok.name = "null";
+				tok.kw = KW_NULL;
+
+				return &tok;
+			}
+			case S_INT: {
+				tok.t = INT;
+				tok.name = "";
+				tok.int_val = obj.asInt->value;
+
+				return &tok;
+			}
+			case S_FLOAT: {
+				tok.t = FLOAT;
+				tok.name = "";
+				tok.float_val = obj.asFloat->value;
+
+				return &tok;
+			}
+			case S_STR: {
+				tok.t = STR;
+				tok.name = obj.asStr->str;
+
+				return &tok;
+			}
+			case S_SYM: {
+				if (!strcmp(obj.asSym->sym, "define")) {
+					tok.t = KWRD;
+					tok.name = obj.asSym->sym;
+					tok.kw = KW_DEFINE;
+
+					return &tok;
+				}
+				if (!strcmp(obj.asSym->sym, "lambda")) {
+					tok.t = KWRD;
+					tok.name = obj.asSym->sym;
+					tok.kw = KW_LAMBDA;
+
+					return &tok;
+				}
+				if (!strcmp(obj.asSym->sym, "quote")) {
+					tok.t = KWRD;
+					tok.name = obj.asSym->sym;
+					tok.kw = KW_QUOTE;
+
+					return &tok;
+				}
+				if (!strcmp(obj.asSym->sym, "if")) {
+					tok.t = KWRD;
+					tok.name = obj.asSym->sym;
+					tok.kw = KW_IF;
+
+					return &tok;
+				}
+				if (!strcmp(obj.asSym->sym, "let")) {
+					tok.t = KWRD;
+					tok.name = obj.asSym->sym;
+					tok.kw = KW_LET;
+
+					return &tok;
+				}
+				tok.t = SYM;
+				tok.name = obj.asSym->sym;
+
+				return &tok;
+			}
+			case S_CONS: {
+				D(cerr << "ListReader: reading cons." << endl);
+				vector<scm_ptr_t> lst_elems;
+				list_foreach(obj, [&lst_elems](scm_ptr_t elem) {
+					D(cerr << "ListReader: pushing list elem." << endl);
+					lst_elems.push_back(elem.asCons->car);
+				});
+				// Push special list end mark
+				st.push_back(lstend_mark.get());
+				// Push list elements in reverse order
+				st.insert(st.end(), lst_elems.rbegin(), lst_elems.rend());
+				tok.t = KWRD;
+				tok.name = "(";
+				tok.kw = KW_LPAR;
+
+				return &tok;
+			}
+			default:
+				tok.t = ERR;
+				error("Invalid token in quoted expression.");
+				return &tok;
+		}
+	}
+
+	const Token * ListReader::currToken() {
+		if (eof) {
+			return nullptr;
+		}
+		return &tok;
 	}
 
 }

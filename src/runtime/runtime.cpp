@@ -3,13 +3,20 @@
 #include <cmath>
 #include <cinttypes>
 #include <vector>
+#include <llvm/ADT/STLExtras.h>
 #include "../../include/runtime.h"
 #include "../../include/runtime/internal.hpp"
+#include "../../include/reader.hpp"
+#include "../../include/parser.hpp"
+#include "../../include/environment.hpp"
+#include "../../include/codegen.hpp"
 
 #define EPSILON 10E-9
 
 namespace llscm {
     namespace runtime {
+        using namespace llvm;
+
         scm_type_t Constant::scm_null = { S_NIL };
         scm_type_t Constant::scm_true = { S_TRUE };
         scm_type_t Constant::scm_false = { S_FALSE };
@@ -248,6 +255,37 @@ namespace llscm {
             arg_vec.push_back((scm_type_t*)func.asFunc->ctxptr);
 
             return func.asFunc->wrfnptr(&arg_vec[0]);
+        }
+
+        DEF_WITH_WRAPPER(scm_eval, scm_ptr_t expr) {
+            unique_ptr<Reader> r = make_unique<ListReader>(expr);
+            unique_ptr<Parser> p = make_unique<Parser>(r);
+
+            ScmProg prog = p->NT_Prog();
+
+            if (p->fail()) {
+                EVAL_FAILED();
+            }
+
+            // TODO: Move this to a separate function which returns
+            // scheme namespace (a wrapper struct for ScmEnv)
+            shared_ptr<ScmEnv> env = createGlobalEnvironment(prog);
+
+            if (!prog.CT_Eval(env)) {
+                EVAL_FAILED();
+            }
+
+            /*for (auto & e: prog) {
+                e->printSrc(cerr);
+                cerr << endl;
+            }*/
+
+            ScmCodeGen cg(getGlobalContext(), &prog);
+            cg.run();
+            cg.dump();
+            // TODO: implement JIT in the ScmCodeGen class
+
+            return SCM_NULL;
         }
     }
 }

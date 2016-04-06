@@ -107,6 +107,10 @@ namespace llscm {
 		}
 
 		if (opts->buildtype == Options::BT_LIB) {
+			// TODO: Will this work in all cases?
+			// Probably it will, as long as all the scheme modules
+			// are compiled as position independent
+			// dynamic shared libraries except the executables.
 			ss << " -relocation-model=pic";
 		}
 
@@ -132,11 +136,13 @@ namespace llscm {
 
 	bool Driver::compile(unique_ptr<Parser> && p) {
 		ScmProg prog = p->NT_Prog();
-		shared_ptr<ScmEnv> env = createGlobalEnvironment(prog);
 
 		if (p->fail()) {
 			return false;
 		}
+
+		shared_ptr<ScmEnv> env = createGlobalEnvironment(prog);
+
 		for (auto & e: prog) {
 			cout << *e;
 			e = e->CT_Eval(env);
@@ -146,8 +152,8 @@ namespace llscm {
 		}
 
 		for (auto & e: prog) {
-			e->printSrc(cerr);
-			cerr << endl;
+			D(e->printSrc(cerr));
+			D(cerr << endl);
 		}
 
 		ScmCodeGen cg(getGlobalContext(), &prog);
@@ -195,6 +201,7 @@ namespace llscm {
 		}
 		return compileSourceFile(opts->in_fname);
 	}
+
 }
 
 int main(int argc, char * argv[]) {

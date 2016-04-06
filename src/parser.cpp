@@ -310,6 +310,7 @@ namespace llscm {
 	/*
 	 * data = atom | ( "(" list ")" )
 	 */
+	// TODO: short form quote inside quote (eval as symbol "quote")
 	P_ScmObj Parser::NT_Data() {
 		const Token * tok = reader->currToken();
 		P_ScmObj obj;

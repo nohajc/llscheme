@@ -131,6 +131,8 @@ namespace llscm {
 		list<P_ScmObj>::iterator end() {
 			return form_lst.end();
 		}
+
+		virtual P_ScmObj CT_Eval(P_ScmEnv env);
 	};
 
 	class ScmArg: public Visitable<ScmArg, ScmObj> {

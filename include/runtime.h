@@ -144,6 +144,8 @@ namespace llscm {
             DECL_WITH_WRAPPER(scm_length, scm_ptr_t list);
 
             DECL_WITH_WRAPPER(scm_apply, scm_ptr_t func, scm_ptr_t list);
+
+            DECL_WITH_WRAPPER(scm_eval, scm_ptr_t expr);
         }
     }
 }

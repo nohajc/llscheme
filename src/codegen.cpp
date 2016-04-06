@@ -27,6 +27,7 @@ namespace llscm {
     const char * RuntimeSymbol::error_wrong_arg_num = "error_wrong_arg_num";
     const char * RuntimeSymbol::apply = "scm_apply";
     const char * RuntimeSymbol::length = "scm_length";
+    const char * RuntimeSymbol::eval = "scm_eval";
 
     ScmCodeGen::ScmCodeGen(LLVMContext &ctxt, ScmProg * tree):
             context(ctxt), builder(ctxt), ast(tree) {

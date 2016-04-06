@@ -13,6 +13,7 @@
 
 #define INVALID_ARG_TYPE() RUNTIME_ERROR("Invalid type of argument given to %s.\n", __func__)
 #define WRONG_ARG_NUM() RUNTIME_ERROR("Wrong number of arguments given to %s.\n", __func__)
+#define EVAL_FAILED() RUNTIME_ERROR("%s: Evaluation of quoted expression failed.", __func__)
 
 namespace llscm {
     namespace runtime {

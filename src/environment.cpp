@@ -3,6 +3,7 @@
 #include <llvm/Support/DynamicLibrary.h>
 #include "../include/environment.hpp"
 #include "../include/debug.hpp"
+#include "../include/codegen.hpp"
 
 namespace llscm {
     using namespace std;
@@ -28,6 +29,8 @@ namespace llscm {
         env->set("apply", make_shared<ScmApplyFunc>());
         env->set("length", make_shared<ScmLengthFunc>());
 
+        env->set("eval", make_shared<ScmFunc>(1, RuntimeSymbol::eval));
+
         // Load other symbols from the runtime library
         string errmsg;
         sys::DynamicLibrary dylib = sys::DynamicLibrary::getPermanentLibrary("libllscmrt.so", &errmsg);
@@ -45,7 +48,7 @@ namespace llscm {
 
         input_meta.foreachRecord([env] (FunctionInfo * rec) {
             D(cerr << "Found function \"" << rec->name << "\" with " << rec->argc << " args." << endl);
-            // Add the function to environment
+            // Add the function into environment
             env->set(rec->name, make_shared<ScmFunc>(rec->argc, rec->name));
         });
 

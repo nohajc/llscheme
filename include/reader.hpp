@@ -3,7 +3,11 @@
 
 #include <iostream>
 #include <sstream>
+#include <memory>
 #include <string>
+#include <vector>
+#include <stack>
+#include "runtime.h"
 
 namespace llscm {
 	using namespace std;
@@ -40,14 +44,13 @@ namespace llscm {
 	protected:
 		Token tok;
 		istream * is;
-		int par_left;
 		char skipSpaces();
 	public:
-		const Token * nextToken();
-		const Token * currToken();
+		virtual const Token * nextToken();
+		virtual const Token * currToken();
 		void error(const string & msg);
 
-		Reader();
+		//Reader();
 		virtual ~Reader() {};
 	};
 
@@ -60,6 +63,18 @@ namespace llscm {
 	public:
 		StringReader(const string & str);
 		virtual ~StringReader();
+	};
+
+	// Used when calling compiler through eval function at runtime
+	class ListReader: public Reader {
+		vector<runtime::scm_ptr_t> st; // Using vector as stack
+		unique_ptr<runtime::scm_type_t> lstend_mark;
+		bool eof;
+	public:
+		virtual const Token * nextToken();
+		virtual const Token * currToken();
+
+		ListReader(runtime::scm_ptr_t expr);
 	};
 }
 
