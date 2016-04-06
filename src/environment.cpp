@@ -1,5 +1,6 @@
 #include <sstream>
 #include <llvm/ADT/STLExtras.h>
+#include <llvm/Support/DynamicLibrary.h>
 #include "../include/environment.hpp"
 #include "../include/debug.hpp"
 
@@ -26,6 +27,14 @@ namespace llscm {
         env->set("vector-ref", make_shared<ScmVecRefFunc>());
         env->set("apply", make_shared<ScmApplyFunc>());
         env->set("length", make_shared<ScmLengthFunc>());
+
+        // Load other symbols from the runtime library
+        string errmsg;
+        sys::DynamicLibrary dylib = sys::DynamicLibrary::getPermanentLibrary("libllscmrt.so", &errmsg);
+        if (!dylib.isValid()) {
+            cerr << errmsg << endl;
+            exit(EXIT_FAILURE);
+        }
 
         return env;
     }

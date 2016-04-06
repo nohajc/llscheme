@@ -6,6 +6,7 @@
 #include <memory>
 #include "ast.hpp"
 #include "parser.hpp"
+#include "libmetainfo.hpp"
 
 namespace llscm {
     using namespace std;
@@ -17,6 +18,7 @@ namespace llscm {
         ScmEnv * top_level_env;
         unordered_map<ScmSym, P_ScmObj> binding;
         unordered_map<string, uint32_t> uniq_id;
+        Metadata input_meta;
     public:
         static int GlobalLevel;
         ScmProg & prog;

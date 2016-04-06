@@ -48,7 +48,6 @@ namespace llscm {
         shared_ptr<Module> module;
         IRBuilder<> builder;
         VisitableObj * ast;
-        Metadata input_meta;
         Metadata output_meta;
 
         GlobalVariable * g_exit_code;

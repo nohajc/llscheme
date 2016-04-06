@@ -24,5 +24,9 @@
   (display "\n"))
 
 ; Test the functions
-(define lst '(1 2 3 4 5))
-(displayln (map (lambda (x) (+ x x)) lst))
+;(define lst '(1 2 3 4 5))
+;(displayln (map (lambda (x) (+ x x)) lst))
+
+; This is for debugging.
+; We just want to see if the library was loaded.
+(display "Hello library!\n")

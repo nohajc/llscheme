@@ -10,7 +10,6 @@
 namespace llscm {
     namespace runtime {
 
-
         struct scm_type_t {
             int32_t tag;
         };

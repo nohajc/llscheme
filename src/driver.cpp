@@ -106,6 +106,10 @@ namespace llscm {
 			ss << " -o " << opts->out_fname;
 		}
 
+		if (opts->buildtype == Options::BT_LIB) {
+			ss << " -relocation-model=pic";
+		}
+
 		ss << " -filetype=" << opts->ft_id[opts->filetype];
 		ss << " -O" << opts->optlevel;
 

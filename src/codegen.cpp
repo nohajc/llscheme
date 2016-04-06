@@ -328,6 +328,35 @@ namespace llscm {
         BasicBlock * bb = BasicBlock::Create(context, "entry", libinit_func);
         builder.SetInsertPoint(bb);
 
+        g_exit_code = new GlobalVariable(
+                *module, builder.getInt32Ty(), false,
+                GlobalValue::WeakAnyLinkage,
+                builder.getInt32((uint32_t)-1), RuntimeSymbol::exit_code
+        );
+
+        g_argv = new GlobalVariable(
+                *module, t.scm_type_ptr, false,
+                GlobalValue::WeakAnyLinkage,
+                ConstantPointerNull::get(t.scm_type_ptr), RuntimeSymbol::argv
+        );
+
+        // With this trick, we can tell whether the lib was loaded from
+        // the compiler (exit_code = -1) or from a scheme executable (exit_code = 0).
+        // In case of compiler, we don't execute the lib_init code.
+        Value * exit_code = builder.CreateLoad(g_exit_code);
+        Value * cond_val = builder.CreateICmpEQ(exit_code, builder.getInt32((uint32_t)-1));
+
+        BasicBlock * then_bb = BasicBlock::Create(context, "then", libinit_func);
+        BasicBlock * else_bb = BasicBlock::Create(context, "else");
+
+        builder.CreateCondBr(cond_val, then_bb, else_bb);
+
+        builder.SetInsertPoint(then_bb);
+        builder.CreateRetVoid();
+
+        libinit_func->getBasicBlockList().push_back(else_bb);
+        builder.SetInsertPoint(else_bb);
+
         entry_func = libinit_func;
 
         // Make sure the lib_init function is run on library load:
@@ -1034,7 +1063,7 @@ namespace llscm {
 
         new GlobalVariable(
                 *module, llsmeta->getType(), false,
-                GlobalValue::ExternalLinkage,
+                GlobalValue::AppendingLinkage,
                 llsmeta, "__llscheme_metainfo__"
         );
     }
