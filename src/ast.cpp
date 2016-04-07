@@ -77,7 +77,12 @@ namespace llscm {
 	}
 
 	ostream &ScmNull::printSrc(ostream &os) const {
-		os << "null";
+		if (empty_list) {
+			os << "()";
+		}
+		else {
+			os << "null";
+		}
 		return os;
 	}
 
@@ -631,7 +636,7 @@ namespace llscm {
 
 	ScmCdrFunc::ScmCdrFunc() : Visitable(1, RuntimeSymbol::cdr) {}
 
-	ScmNullFunc::ScmNullFunc() : Visitable(1, RuntimeSymbol::isNull) {}
+	ScmNullFunc::ScmNullFunc() : Visitable(1, RuntimeSymbol::is_null) {}
 
 	ScmPlusFunc::ScmPlusFunc() : Visitable(ArgsAnyCount, RuntimeSymbol::plus) {}
 

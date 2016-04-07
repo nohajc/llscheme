@@ -44,7 +44,7 @@ namespace llscm {
             atexit(mem_cleanup);
         }
 
-        static RegisterLibDestructor libdtor;
+        static RegisterLibDestructor lib_dtor;
 
 
         scm_type_t Constant::scm_null = { S_NIL };
@@ -118,10 +118,10 @@ namespace llscm {
                     printf("#f");
                     break;
                 case S_NIL:
-                    printf("()");
+                    printf("()"); // TODO: '()
                     break;
                 case S_CONS: {
-                    printf("(");
+                    printf("("); // TODO: we should quote the top level list
                     list_foreach(obj.asCons, [](scm_ptr_t elem) {
                         scm_display(elem.asCons->car);
                         if (elem.asCons->cdr->tag == S_CONS) {

@@ -10,6 +10,6 @@ callsyn = "lambda" "(" symlist ")" body
 atom = str | sym | int | float | true | false | null
 symlist = { sym }
 bindlist = { "(" sym expr ")" }
-data = atom | ( "(" list ")" )
+data = atom | ( "(" list ")" ) | "'" data
 list = { data }
 body = { form }

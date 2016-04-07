@@ -255,6 +255,9 @@ namespace llscm {
 		eof = false;
 		lstend_mark = make_unique<scm_type_t>();
 		lstend_mark->tag = -1;
+		quote_mark = make_unique<scm_type_t>();
+		quote_mark->tag = -1;
+		quoted = false;
 	}
 
 	const Token * ListReader::nextToken() {
@@ -265,6 +268,20 @@ namespace llscm {
 
 		scm_ptr_t obj = st.back();
 		st.pop_back();
+
+		if (obj.asType == quote_mark.get()) {
+			if (quoted) {
+				quoted = false;
+				obj = st.back();
+				st.pop_back();
+			}
+			else {
+				quoted = true;
+				obj = st.back();
+				st.pop_back();
+				st.push_back(quote_mark.get());
+			}
+		}
 
 		if (obj.asType == lstend_mark.get()) {
 			tok.t = KWRD;
@@ -317,40 +334,43 @@ namespace llscm {
 				return &tok;
 			}
 			case S_SYM: {
-				if (!strcmp(obj.asSym->sym, "define")) {
-					tok.t = KWRD;
-					tok.name = obj.asSym->sym;
-					tok.kw = KW_DEFINE;
+				if (!quoted) {
+					if (!strcmp(obj.asSym->sym, "define")) {
+						tok.t = KWRD;
+						tok.name = obj.asSym->sym;
+						tok.kw = KW_DEFINE;
 
-					return &tok;
-				}
-				if (!strcmp(obj.asSym->sym, "lambda")) {
-					tok.t = KWRD;
-					tok.name = obj.asSym->sym;
-					tok.kw = KW_LAMBDA;
+						return &tok;
+					}
+					if (!strcmp(obj.asSym->sym, "lambda")) {
+						tok.t = KWRD;
+						tok.name = obj.asSym->sym;
+						tok.kw = KW_LAMBDA;
 
-					return &tok;
-				}
-				if (!strcmp(obj.asSym->sym, "quote")) {
-					tok.t = KWRD;
-					tok.name = obj.asSym->sym;
-					tok.kw = KW_QUOTE;
+						return &tok;
+					}
+					if (!strcmp(obj.asSym->sym, "quote")) {
+						tok.t = KWRD;
+						tok.name = obj.asSym->sym;
+						tok.kw = KW_QUOTE;
+						st.push_back(quote_mark.get());
 
-					return &tok;
-				}
-				if (!strcmp(obj.asSym->sym, "if")) {
-					tok.t = KWRD;
-					tok.name = obj.asSym->sym;
-					tok.kw = KW_IF;
+						return &tok;
+					}
+					if (!strcmp(obj.asSym->sym, "if")) {
+						tok.t = KWRD;
+						tok.name = obj.asSym->sym;
+						tok.kw = KW_IF;
 
-					return &tok;
-				}
-				if (!strcmp(obj.asSym->sym, "let")) {
-					tok.t = KWRD;
-					tok.name = obj.asSym->sym;
-					tok.kw = KW_LET;
+						return &tok;
+					}
+					if (!strcmp(obj.asSym->sym, "let")) {
+						tok.t = KWRD;
+						tok.name = obj.asSym->sym;
+						tok.kw = KW_LET;
 
-					return &tok;
+						return &tok;
+					}
 				}
 				tok.t = SYM;
 				tok.name = obj.asSym->sym;

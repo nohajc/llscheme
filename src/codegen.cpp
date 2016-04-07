@@ -7,7 +7,7 @@ namespace llscm {
     const char * RuntimeSymbol::cons = "scm_cons";
     const char * RuntimeSymbol::car = "scm_car";
     const char * RuntimeSymbol::cdr = "scm_cdr";
-    const char * RuntimeSymbol::isNull = "scm_is_null";
+    const char * RuntimeSymbol::is_null = "scm_is_null";
     const char * RuntimeSymbol::plus = "scm_plus";
     const char * RuntimeSymbol::minus = "scm_minus";
     const char * RuntimeSymbol::times = "scm_times";

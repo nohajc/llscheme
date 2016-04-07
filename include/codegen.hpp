@@ -21,7 +21,7 @@ namespace llscm {
         static const char *cons;
         static const char *car;
         static const char *cdr;
-        static const char *isNull;
+        static const char *is_null;
         static const char *plus;
         static const char *minus;
         static const char *times;

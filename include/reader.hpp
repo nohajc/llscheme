@@ -69,7 +69,9 @@ namespace llscm {
 	class ListReader: public Reader {
 		vector<runtime::scm_ptr_t> st; // Using vector as stack
 		unique_ptr<runtime::scm_type_t> lstend_mark;
+		unique_ptr<runtime::scm_type_t> quote_mark;
 		bool eof;
+		bool quoted;
 	public:
 		virtual const Token * nextToken();
 		virtual const Token * currToken();

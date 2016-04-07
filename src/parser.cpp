@@ -308,9 +308,8 @@ namespace llscm {
 	}
 
 	/*
-	 * data = atom | ( "(" list ")" )
+	 * data = atom | ( "(" list ")" ) | "'" data
 	 */
-	// TODO: short form quote inside quote (eval as symbol "quote")
 	P_ScmObj Parser::NT_Data() {
 		const Token * tok = reader->currToken();
 		P_ScmObj obj;
@@ -323,8 +322,23 @@ namespace llscm {
 		}
 
 		if (tok->t == KWRD && tok->kw == KW_LPAR) {
-			reader->nextToken();
-			obj = NT_List();
+			tok = reader->nextToken();
+
+			if (!tok) {
+				error("Reached EOF while parsing a list.");
+				return nullptr;
+			}
+
+			D(cerr << tok->name << endl);
+
+			if (tok->t == KWRD && tok->kw == KW_RPAR) {
+				// Empty list
+				D(cerr << "EMPTY LIST" << endl);
+				obj = make_unique<ScmNull>(true);
+			}
+			else {
+				obj = NT_List();
+			}
 			if (fail()) return nullptr;
 
 			if (!match(reader->currToken(), Token(KW_RPAR))) {
@@ -332,6 +346,15 @@ namespace llscm {
 			}
 			return obj;
 		}
+
+		// Short form quote inside quote (eval as symbol "quote")
+		if (tok->t == KWRD && tok->kw == KW_QUCHAR) {
+			// Quote, short form
+			reader->nextToken();
+			if (fail()) return nullptr;
+			return makeScmList({make_unique<ScmSym>("quote"), NT_Data()});
+		}
+
 		D(cerr << tok->name << endl);
 		return NT_Atom(true);
 	}
@@ -392,7 +415,7 @@ namespace llscm {
 		D(cerr << tok->name << endl);
 
 		if (tok->t == KWRD && tok->kw == KW_RPAR) {
-			// Empty list
+			// End of list
 			return make_unique<ScmNull>();
 		}
 		obj = NT_Data();
