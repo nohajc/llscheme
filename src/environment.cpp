@@ -9,9 +9,7 @@ namespace llscm {
     using namespace std;
     using namespace llvm;
 
-    shared_ptr<ScmEnv> createGlobalEnvironment(ScmProg & prog) {
-        shared_ptr<ScmEnv> env = make_shared<ScmEnv>(prog);
-
+    void initGlobalEnvironment(ScmEnv * env) {
         env->set("cons", make_shared<ScmConsFunc>());
         env->set("car", make_shared<ScmCarFunc>());
         env->set("cdr", make_shared<ScmCdrFunc>());
@@ -29,6 +27,7 @@ namespace llscm {
         env->set("apply", make_shared<ScmApplyFunc>());
         env->set("length", make_shared<ScmLengthFunc>());
 
+        env->set("make-base-namespace", make_shared<ScmFunc>(0, RuntimeSymbol::make_base_nspace));
         env->set("eval", make_shared<ScmFunc>(1, RuntimeSymbol::eval));
 
         // Load other symbols from the runtime library
@@ -51,13 +50,18 @@ namespace llscm {
             // Add the function into environment
             env->set(rec->name, make_shared<ScmFunc>(rec->argc, rec->name));
         });
+    }
 
+    shared_ptr<ScmEnv> createGlobalEnvironment(ScmProg & prog) {
+        shared_ptr<ScmEnv> env = make_shared<ScmEnv>(&prog);
+
+        initGlobalEnvironment(env.get());
         return env;
     }
 
     int ScmEnv::GlobalLevel = -2;
 
-    ScmEnv::ScmEnv(ScmProg & p, P_ScmEnv penv): prog(p), parent_env(penv) {
+    ScmEnv::ScmEnv(ScmProg * p, P_ScmEnv penv): prog(p), parent_env(penv) {
         if (!penv) {
             top_level_env = this;
         }
@@ -65,8 +69,15 @@ namespace llscm {
             top_level_env = penv->top_level_env;
         }
         err_flag = false;
-        prog_begin = prog.begin();
+        if (prog) {
+            prog_begin = prog->begin();
+        }
         context = nullptr;
+    }
+
+    void ScmEnv::setProg(ScmProg & p) {
+        prog = &p;
+        prog_begin = prog->begin();
     }
 
     P_ScmObj ScmEnv::get(P_ScmObj k, ScmLoc * loc) {
@@ -153,18 +164,23 @@ namespace llscm {
     }
 
     string ScmEnv::getUniqID(const string & name) {
-        auto kv = top_level_env->uniq_id.find(name);
+        return top_level_env->namegen.getUniqID(name);
+    }
+
+    string ScmNameGen::getUniqID(const string & name) {
+        auto kv = uniq_id.find(name);
         stringstream ss;
-        if (kv != top_level_env->uniq_id.end()) {
+        if (kv != uniq_id.end()) {
             kv->second++;
             ss << name << kv->second;
         }
         else {
-            top_level_env->uniq_id[name] = 0;
+            uniq_id[name] = 0;
             ss << name << 0;
         }
         return ss.str();
     }
+
 
     ScmFunc * ScmEnv::defInFunc() {
         ScmFunc * func = nullptr;
@@ -178,6 +194,5 @@ namespace llscm {
         }
         return func;
     }
-
-
 }
+

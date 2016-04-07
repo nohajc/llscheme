@@ -20,9 +20,9 @@ namespace llscm {
 		bool compileSourceFile(const string & fname);
 		bool compileString(const string & str);
 		bool compile(unique_ptr<Parser> && p);
-		void writeBitcodeToPipe(Module * mod, FILE * pipe);
+		void writeBitcodeToPipe(const shared_ptr<Module> & mod, FILE * pipe);
 		string getLLCompilerCommand();
-		bool invokeLLC(Module * mod);
+		bool invokeLLC(const shared_ptr<Module> & mod);
 	public:
 		Driver(unique_ptr<Options> o) : opts(move(o)) {}
 		bool run();

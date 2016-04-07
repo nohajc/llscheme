@@ -1,9 +1,15 @@
 #include <gc.h>
 #include <cstring>
 #include "../../include/runtime/memory.h"
+#include "../../include/environment.hpp"
 
 namespace llscm {
     namespace runtime {
+
+        void mem_cleanup() {
+            GCed<ScmEnv>::cleanup();
+        }
+
         scm_type_t * alloc_int(int64_t value) {
             scm_ptr_t obj = GC_MALLOC(sizeof(scm_int_t));
             obj->tag = S_INT;
@@ -73,6 +79,12 @@ namespace llscm {
             return obj;
         }
 
+        scm_type_t * alloc_nspace(ScmEnv * env) {
+            scm_ptr_t obj = GC_MALLOC(sizeof(scm_nspace_t));
+            obj->tag = S_NSPACE;
+            obj.asNspace->env = env;
 
+            return obj;
+        }
     }
 }

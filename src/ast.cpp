@@ -535,7 +535,7 @@ namespace llscm {
 		if (env->fail()) {
 			return nullptr;
 		}
-		env->prog.insert(env->prog_begin, def_var);
+		env->prog->insert(env->prog_begin, def_var);
 
 		// We've moved the inplace lambda definition to a separate node
 		// at the start of ScmProg and now we just return the unique symbol bound to it.

@@ -1,9 +1,9 @@
 #ifndef LLSCHEME_DEBUG_HPP
 #define LLSCHEME_DEBUG_HPP
 
-#ifdef DEBUG
+#ifdef DBGBUILD
 #define D(x) x
-#else 
+#else
 #define D(x)
 #endif
 

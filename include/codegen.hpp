@@ -42,6 +42,7 @@ namespace llscm {
         static const char *apply;
         static const char *length;
         static const char *eval;
+        static const char *make_base_nspace;
     };
 
     class ScmCodeGen: public AstVisitor {
@@ -57,8 +58,9 @@ namespace llscm {
         GlobalVariable * g_ctors;
 
         Function * entry_func;
+        string entry_func_name;
         void (ScmCodeGen::*addEntryFuncProlog)();
-        void (ScmCodeGen::*addEntryFuncEpilog)();
+        void (ScmCodeGen::*addEntryFuncEpilog)(Value *);
 
         struct {
             StructType * scm_type;
@@ -120,10 +122,13 @@ namespace llscm {
         void initExternFuncs();
 
         void addMainFuncProlog(); // Called when we want to compile a standalone app
-        void addMainFuncEpilog();
+        void addMainFuncEpilog(Value * last_val);
 
         void addLibInitFuncProlog();
-        void addLibInitFuncEpilog();
+        void addLibInitFuncEpilog(Value * last_val);
+
+        void addExprFuncProlog();
+        void addExprFuncEpilog(Value * last_val);
 
         Value * genAllocHeapStorage(int32_t size);
         void genHeapStore(Value * hs, Value * obj, int32_t idx);
@@ -207,8 +212,14 @@ namespace llscm {
             addEntryFuncEpilog = &ScmCodeGen::addMainFuncEpilog;
         }
 
-        Module * getModule() {
-            return module.get();
+        void makeExpression(const string & name) {
+            entry_func_name = name;
+            addEntryFuncProlog = &ScmCodeGen::addExprFuncProlog;
+            addEntryFuncEpilog = &ScmCodeGen::addExprFuncEpilog;
+        }
+
+        shared_ptr<Module> getModule() {
+            return module;
         }
 
         LLVMContext & getContext() {

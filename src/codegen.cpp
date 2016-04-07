@@ -28,6 +28,7 @@ namespace llscm {
     const char * RuntimeSymbol::apply = "scm_apply";
     const char * RuntimeSymbol::length = "scm_length";
     const char * RuntimeSymbol::eval = "scm_eval";
+    const char * RuntimeSymbol::make_base_nspace = "scm_make_base_nspace";
 
     ScmCodeGen::ScmCodeGen(LLVMContext &ctxt, ScmProg * tree):
             context(ctxt), builder(ctxt), ast(tree) {
@@ -306,7 +307,7 @@ namespace llscm {
         entry_func = main_func;
     }
 
-    void ScmCodeGen::addMainFuncEpilog() {
+    void ScmCodeGen::addMainFuncEpilog(Value *) {
         LoadInst * exit_c = builder.CreateLoad(g_exit_code);
         builder.CreateRet(exit_c);
     }
@@ -393,18 +394,46 @@ namespace llscm {
         );
     }
 
-    void ScmCodeGen::addLibInitFuncEpilog() {
+    void ScmCodeGen::addLibInitFuncEpilog(Value *) {
         builder.CreateRetVoid();
     }
 
+    void ScmCodeGen::addExprFuncProlog() {
+        FunctionType * expr_func_type = FunctionType::get(
+                t.scm_type_ptr,
+                {},
+                false
+        );
+        Function * expr_func = Function::Create(
+                expr_func_type,
+                GlobalValue::ExternalLinkage,
+                entry_func_name, module.get()
+        );
+
+        /*expr_func->setDoesNotThrow();
+        expr_func->setHasUWTable();*/
+
+        BasicBlock * bb = BasicBlock::Create(context, "entry", expr_func);
+        builder.SetInsertPoint(bb);
+
+        entry_func = expr_func;
+    }
+
+    void ScmCodeGen::addExprFuncEpilog(Value * last_val) {
+        builder.CreateRet(last_val);
+    }
+
+
     any_ptr ScmCodeGen::visit(ScmProg * node) {
         D(cerr << "VISITED ScmProg!" << endl);
+        Value * ret = nullptr;
+
         for (auto & e: *node) {
             //e->printSrc(cerr);
             //cerr << endl;
-            codegen(e);
+            ret = codegen(e);
         }
-        return any_ptr();
+        return ret;
     }
 
     any_ptr ScmCodeGen::visit(ScmInt * node) {
@@ -1054,9 +1083,11 @@ namespace llscm {
     }
 
     void ScmCodeGen::run() {
+        Value * last_val;
+
         (this->*addEntryFuncProlog)();
-        codegen(ast);
-        (this->*addEntryFuncEpilog)();
+        last_val = codegen(ast);
+        (this->*addEntryFuncEpilog)(last_val);
         verifyFunction(*entry_func, &errs());
 
         // Save generated metadata array to global variable
@@ -1068,5 +1099,6 @@ namespace llscm {
                 llsmeta, "__llscheme_metainfo__"
         );
     }
+
 }
 

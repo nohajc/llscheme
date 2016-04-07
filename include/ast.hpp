@@ -16,7 +16,6 @@
 #include "llvm/IR/Verifier.h"
 #include "common.hpp"
 #include "ast_visitor.hpp"
-#include "runtime.h"
 
 namespace llscm {
 	using namespace std;

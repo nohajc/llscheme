@@ -11,7 +11,7 @@ message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
 set(CMAKE_VERBOSE_MAKEFILE on)
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -DDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -DDBGBUILD")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 #set(LLVM_TARGETS_TO_BUILD all)
@@ -54,11 +54,12 @@ set(RUNTIME_FILES
         include/runtime/memory.h src/runtime/memory.cpp
         include/runtime/error.h src/runtime/error.cpp
         include/runtime/internal.hpp include/runtime/meta.hpp
-        src/runtime/scmlib.o)
+        src/runtime/scmlib.o include/runtime/scmjit.hpp)
 
 add_library(llscmrt SHARED ${RUNTIME_FILES} ${SOURCE_FILES})
 
-llvm_map_components_to_libnames(llvm_libs support core irreader bitwriter)
+llvm_map_components_to_libnames(llvm_libs support core irreader bitwriter
+        analysis executionengine instcombine object runtimedyld scalaropts support native)
 
 target_link_libraries(schemec ${llvm_libs} -Wl,-R -Wl,${llscheme_SOURCE_DIR}/bin/Debug)
 target_link_libraries(llscmrt ${LIB_BOEHM_GC} ${llvm_libs})

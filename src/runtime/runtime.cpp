@@ -16,6 +16,36 @@
 namespace llscm {
     namespace runtime {
         using namespace llvm;
+        using namespace orc;
+
+        InitJIT::InitJIT() {
+            InitializeNativeTarget();
+            InitializeNativeTargetAsmPrinter();
+            InitializeNativeTargetAsmParser();
+            jit = make_unique<ScmJIT>();
+            D(std::cerr << "InitJIT completed" << std::endl);
+        }
+
+        ScmJIT * InitJIT::getJIT() {
+            return jit.get();
+        }
+
+        static string getUniqID(const string & name) {
+            static ScmNameGen gen;
+            return gen.getUniqID(name);
+        }
+
+        static ScmJIT * getJIT() {
+            static InitJIT jit_obj;
+            return jit_obj.getJIT();
+        }
+
+        RegisterLibDestructor::RegisterLibDestructor() {
+            atexit(mem_cleanup);
+        }
+
+        static RegisterLibDestructor libdtor;
+
 
         scm_type_t Constant::scm_null = { S_NIL };
         scm_type_t Constant::scm_true = { S_TRUE };
@@ -59,14 +89,6 @@ namespace llscm {
         SCM_ARGLIST_WRAPPER(func); \
         scm_type_t * func(__VA_ARGS__) \
 
-        /*void * fn_table[] = {
-                //(void*)SCM_ARGLIST_WRAPPER(scm_display),
-                (void*)SCM_ARGLIST_WRAPPER(scm_gt),
-                (void*)SCM_ARGLIST_WRAPPER(scm_num_eq),
-                (void*)SCM_ARGLIST_WRAPPER(scm_cons),
-                (void*)SCM_ARGLIST_WRAPPER(scm_car)
-        };*/
-
         SCM_VA_WRAPPERS(scm_plus);
         SCM_VA_WRAPPERS(scm_minus);
         SCM_VA_WRAPPERS(scm_times);
@@ -100,7 +122,7 @@ namespace llscm {
                     break;
                 case S_CONS: {
                     printf("(");
-                    list_foreach(obj.asCons, [] (scm_ptr_t elem) {
+                    list_foreach(obj.asCons, [](scm_ptr_t elem) {
                         scm_display(elem.asCons->car);
                         if (elem.asCons->cdr->tag == S_CONS) {
                             printf(" ");
@@ -109,10 +131,12 @@ namespace llscm {
                     printf(")");
                     break;
                 }
+                // TODO:
+                /*case S_FUNC:
+                case S_VEC:*/
                 default:
                     INVALID_ARG_TYPE();
             }
-            // TODO: rest of the types including CONS
 
             return SCM_NULL;
         }
@@ -242,7 +266,7 @@ namespace llscm {
             }
 
             int64_t argc = 0;
-            std::vector<scm_type_t*> arg_vec;
+            vector<scm_type_t*> arg_vec;
 
             list_foreach(list, [&arg_vec, &argc](scm_ptr_t elem) {
                 arg_vec.push_back(elem.asCons->car);
@@ -255,6 +279,12 @@ namespace llscm {
             arg_vec.push_back((scm_type_t*)func.asFunc->ctxptr);
 
             return func.asFunc->wrfnptr(&arg_vec[0]);
+        }
+
+        DEF_WITH_WRAPPER(scm_make_base_nspace) {
+            ScmEnv * env = new GCed<ScmEnv>(nullptr);
+
+            return alloc_nspace(env);
         }
 
         DEF_WITH_WRAPPER(scm_eval, scm_ptr_t expr) {
@@ -280,14 +310,28 @@ namespace llscm {
                 cerr << endl;
             }*/
 
+            string expr_name = getUniqID("__anon_expr#");
+
             ScmCodeGen cg(getGlobalContext(), &prog);
+            cg.makeExpression(expr_name);
             cg.run();
             cg.dump();
-            // TODO: implement JIT in the ScmCodeGen class
 
-            return SCM_NULL;
+            // Compile the Module
+            ScmJIT * jit = getJIT();
+            shared_ptr<Module> mod = cg.getModule();
+            mod->setDataLayout(jit->getTargetMachine().createDataLayout());
+
+            // TODO: optimizations (PassManager)
+            jit->addModule(mod);
+            JITSymbol expr_func_symbol = jit->findSymbol(expr_name);
+            assert(expr_func_symbol);
+
+            scm_expr_ptr_t expr_func = (scm_expr_ptr_t)expr_func_symbol.getAddress();
+
+            // Call the compiled function
+            return expr_func();
         }
     }
 }
 
-#undef RUNTIME_ERROR

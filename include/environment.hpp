@@ -13,19 +13,28 @@ namespace llscm {
 
     typedef shared_ptr<pair<int, ScmFunc*>> ScmLoc;
 
+    class ScmNameGen {
+        unordered_map<string, uint32_t> uniq_id;
+    public:
+        string getUniqID(const string & name);
+    };
+
     class ScmEnv: public enable_shared_from_this<ScmEnv> {
         bool err_flag;
         ScmEnv * top_level_env;
         unordered_map<ScmSym, P_ScmObj> binding;
-        unordered_map<string, uint32_t> uniq_id;
+        //unordered_map<string, uint32_t> uniq_id;
+        ScmNameGen namegen;
     public:
         static int GlobalLevel;
-        ScmProg & prog;
+        ScmProg * prog;
         list<P_ScmObj>::iterator prog_begin;
         shared_ptr<ScmEnv> parent_env;
         P_ScmObj context; // Function using this environment or nullptr
 
-        ScmEnv(ScmProg & p, P_ScmEnv penv = nullptr);
+        ScmEnv(ScmProg * p, P_ScmEnv penv = nullptr);
+
+        void setProg(ScmProg & p);
 
         string getUniqID(const string & name);
         // We  return information about the number of levels
@@ -51,6 +60,7 @@ namespace llscm {
     };
 
     shared_ptr<ScmEnv> createGlobalEnvironment(ScmProg & prog);
+    void initGlobalEnvironment(ScmEnv * env);
 }
 
 #endif //LLSCHEME_ENVIRONMENT_HPP

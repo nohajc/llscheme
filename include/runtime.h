@@ -1,14 +1,32 @@
 #ifndef LLSCHEME_RUNTIME_H
 #define LLSCHEME_RUNTIME_H
 
+#include <memory>
+#include <set>
 #include "runtime/types.hpp"
+#include "runtime/scmjit.hpp"
+#include "gc_cpp.h"
 
 #define SCM_NULL &(Constant::scm_null)
 #define SCM_TRUE &(Constant::scm_true)
 #define SCM_FALSE &(Constant::scm_false)
 
 namespace llscm {
+    class ScmEnv;
+
     namespace runtime {
+
+        class RegisterLibDestructor {
+        public:
+            RegisterLibDestructor();
+        };
+
+        class InitJIT {
+            std::unique_ptr<llvm::orc::ScmJIT> jit;
+        public:
+            InitJIT();
+            llvm::orc::ScmJIT * getJIT();
+        };
 
         struct scm_type_t {
             int32_t tag;
@@ -44,6 +62,7 @@ namespace llscm {
 
         typedef scm_type_t * (*scm_fnptr_t)(scm_type_t * arg0, ...);
         typedef scm_type_t * (*al_wrapper_t)(scm_type_t **);
+        typedef scm_type_t * (*scm_expr_ptr_t)();
 
         struct scm_func_t {
             int32_t tag;
@@ -57,6 +76,11 @@ namespace llscm {
             int32_t tag;
             int32_t size;
             scm_type_t * elems[1];
+        };
+
+        struct scm_nspace_t {
+            int32_t tag;
+            ScmEnv * env;
         };
 
         struct Constant {
@@ -75,6 +99,7 @@ namespace llscm {
             scm_cons_t * asCons;
             scm_func_t * asFunc;
             scm_vec_t * asVec;
+            scm_nspace_t * asNspace;
 
             scm_type_t * operator->() {
                 return asType;
@@ -144,6 +169,8 @@ namespace llscm {
             DECL_WITH_WRAPPER(scm_length, scm_ptr_t list);
 
             DECL_WITH_WRAPPER(scm_apply, scm_ptr_t func, scm_ptr_t list);
+
+            DECL_WITH_WRAPPER(scm_make_base_nspace);
 
             DECL_WITH_WRAPPER(scm_eval, scm_ptr_t expr);
         }

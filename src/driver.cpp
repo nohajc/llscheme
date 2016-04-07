@@ -86,14 +86,14 @@ namespace llscm {
 		return opts;
 	}
 
-	void Driver::writeBitcodeToPipe(Module * mod, FILE * pipe) {
+	void Driver::writeBitcodeToPipe(const shared_ptr<Module> & mod, FILE * pipe) {
 		int pipe_fd;
 		unique_ptr<raw_ostream> pipe_stream;
 
 		pipe_fd = fileno(pipe);
 		pipe_stream = make_unique<raw_fd_ostream>(pipe_fd, false);
 
-		WriteBitcodeToFile(mod, *pipe_stream);
+		WriteBitcodeToFile(mod.get(), *pipe_stream);
 		fflush(pipe);
 	}
 
@@ -120,7 +120,7 @@ namespace llscm {
 		return ss.str();
 	}
 
-	bool Driver::invokeLLC(Module * mod) {
+	bool Driver::invokeLLC(const shared_ptr<Module> & mod) {
 		string command;
 		FILE * pipe;
 
