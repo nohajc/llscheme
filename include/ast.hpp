@@ -181,8 +181,6 @@ namespace llscm {
 	class ScmNull: public Visitable<ScmNull, ScmObj> {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;
-		// TODO: we must preserve this information
-		// in the generated data structure representing null.
 		bool empty_list;
 	public:
 		ScmNull(bool elst = false): Visitable(T_NULL) {

@@ -37,7 +37,7 @@ test_out "Test incomplete body 5", "(define (foo a b c) (+ a b c) (define d a))"
 test_out "Test empty quote", "(quote)", "Error: Expected atom or list to quote.\n"
 test_out "Test incomplete quote", "(quote define", "Error: Expected token \")\".\n"
 
-test_out "Test empty lambda", "(lambda)", "Error: Expected token \"(\".\n"
+test_out "Test empty lambda", "(lambda)", "Error: Expected lambda argument list.\n"
 
 test_out "Test incomplete lambda", "(lambda ()", "Error: Reached EOF while parsing a body.\n"
 

@@ -121,14 +121,27 @@ namespace llscm {
 		if (tok->t == KWRD) {
 			switch (tok->kw) {
 				case KW_LAMBDA:
-					if (!match(reader->nextToken(), Token(KW_LPAR))) {
-						return nullptr;
-					}
-					reader->nextToken();
-					expr = NT_SymList();
-					if (fail()) return nullptr;
+					tok = reader->nextToken();
 
-					if (!match(reader->currToken(), Token(KW_RPAR))) {
+					/*if (!match(tok, Token(KW_LPAR))) {
+						return nullptr;
+					}*/
+					if (tok->t == KWRD && tok->kw == KW_LPAR) {
+						reader->nextToken();
+						expr = NT_SymList();
+						if (fail()) return nullptr;
+
+						if (!match(reader->currToken(), Token(KW_RPAR))) {
+							return nullptr;
+						}
+					}
+					else if (tok->t == KWRD && tok->kw == KW_NULL) {
+						// We also accept leteral "null" as empty list
+						// so that quoted code is evaluated right
+						expr = make_unique<ScmNull>(true);
+					}
+					else {
+						error("Expected lambda argument list.");
 						return nullptr;
 					}
 
@@ -170,18 +183,31 @@ namespace llscm {
 					return make_unique<ScmIfSyntax>(move(ce), move(te), move(ee));
 				case KW_LET:
 					D(cerr << "NT_Let: " << endl);
-
-					if (!match(reader->nextToken(), Token(KW_LPAR))) {
-						return nullptr;
-					}
 					reader->nextToken();
-					//D(cerr << tok->name << endl);
 
-					expr = NT_BindList();
-					if (fail()) return nullptr;
-					if (!match(reader->currToken(), Token(KW_RPAR))) {
+					/*if (!match(tok, Token(KW_LPAR))) {
+						return nullptr;
+					}*/
+					if (tok->t == KWRD && tok->kw == KW_LPAR) {
+						reader->nextToken();
+						//D(cerr << tok->name << endl);
+
+						expr = NT_BindList();
+						if (fail()) return nullptr;
+						if (!match(reader->currToken(), Token(KW_RPAR))) {
+							return nullptr;
+						}
+					}
+					else if (tok->t == KWRD && tok->kw == KW_NULL) {
+						// We also accept leteral "null" as empty list
+						// so that quoted code is evaluated right
+						expr = make_unique<ScmNull>(true);
+					}
+					else {
+						error("Expected let binding list.");
 						return nullptr;
 					}
+
 					reader->nextToken();
 					//D(cerr << tok->name << endl);
 

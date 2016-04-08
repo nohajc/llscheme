@@ -16,9 +16,9 @@ namespace llscm {
 
     namespace runtime {
 
-        class RegisterLibDestructor {
+        class LibSetup {
         public:
-            RegisterLibDestructor();
+            ~LibSetup();
         };
 
         class InitJIT {

@@ -40,11 +40,11 @@ namespace llscm {
             return jit_obj.getJIT();
         }
 
-        RegisterLibDestructor::RegisterLibDestructor() {
-            atexit(mem_cleanup);
+        LibSetup::~LibSetup() {
+           mem_cleanup();
         }
 
-        static RegisterLibDestructor lib_dtor;
+        static LibSetup lib_setup;
 
 
         scm_type_t Constant::scm_null = { S_NIL };
