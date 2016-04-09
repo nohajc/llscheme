@@ -420,7 +420,7 @@ namespace llscm {
     }
 
     void ScmCodeGen::addExprFuncEpilog(Value * last_val) {
-        builder.CreateRet(last_val);
+        builder.CreateRet(builder.CreateBitCast(last_val, t.scm_type_ptr));
     }
 
 
@@ -576,7 +576,24 @@ namespace llscm {
         }
 
         if (robj->location == T_GLOB) {
-            return builder.CreateLoad(robj->IR_val);
+            Value * ret_val;
+            // Handle external globals
+            if (robj->is_extern) {
+                GlobalVariable * gvar = module->getGlobalVariable(robj->exported_name);
+                if (!gvar) {
+                    gvar = new GlobalVariable(
+                            *module, t.scm_type_ptr, false,
+                            GlobalValue::ExternalLinkage,
+                            nullptr, robj->exported_name
+                    );
+                }
+                ret_val = gvar;
+            }
+            else {
+                ret_val = robj->IR_val;
+            }
+
+            return builder.CreateLoad(ret_val);
         }
 
         return node->IR_val = robj->IR_val;
@@ -737,7 +754,7 @@ namespace llscm {
 
         declFuncWrapper(node, linkage);
 
-        if (!node->arg_list) {
+        if (node->is_extern || !node->arg_list) {
             // Return declaration only (in case of extern functions).
             return func;
         }
@@ -964,15 +981,19 @@ namespace llscm {
         // That's needed for top-level definitions only.
 
         if (node->val->location == T_GLOB) {
+            ScmSym * defname = DPC<ScmSym>(node->name).get();
+
             Value * gvar = new GlobalVariable(
                     *module, etype, false,
-                    GlobalValue::InternalLinkage,
-                    ConstantPointerNull::get(etype), ""
+                    GlobalValue::ExternalLinkage,
+                    ConstantPointerNull::get(etype),
+                    defname->val
             );
 
             // Save expr to global var
             builder.CreateStore(expr, gvar);
             node->val->IR_val = gvar;
+            node->val->exported_name = defname->val;
         }
         else if (node->val->location == T_HEAP_LOC) {
             // Save expr to heap storage

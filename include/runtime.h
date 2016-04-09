@@ -78,9 +78,12 @@ namespace llscm {
             scm_type_t * elems[1];
         };
 
+        template<class C>
+        class GCed;
+
         struct scm_nspace_t {
             int32_t tag;
-            ScmEnv * env;
+            GCed<ScmEnv> * env;
         };
 
         struct Constant {
@@ -172,7 +175,7 @@ namespace llscm {
 
             DECL_WITH_WRAPPER(scm_make_base_nspace);
 
-            DECL_WITH_WRAPPER(scm_eval, scm_ptr_t expr);
+            DECL_WITH_WRAPPER(scm_eval, scm_ptr_t expr, scm_ptr_t ns);
         }
     }
 }

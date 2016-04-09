@@ -472,6 +472,10 @@ namespace llscm {
 		// Bind symbol to value
 		env->set(name, val);
 
+		if (env->isGlobal()) {
+			val->location = T_GLOB;
+		}
+
 		return shared_from_this();
 	}
 

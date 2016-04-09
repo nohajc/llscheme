@@ -28,7 +28,7 @@ namespace llscm {
         env->set("length", make_shared<ScmLengthFunc>());
 
         env->set("make-base-namespace", make_shared<ScmFunc>(0, RuntimeSymbol::make_base_nspace));
-        env->set("eval", make_shared<ScmFunc>(1, RuntimeSymbol::eval));
+        env->set("eval", make_shared<ScmFunc>(2, RuntimeSymbol::eval));
 
         // Load other symbols from the runtime library
         string errmsg;
@@ -193,6 +193,14 @@ namespace llscm {
             p_env = p_env->parent_env.get();
         }
         return func;
+    }
+
+    void ScmEnv::setGlobalsAsExternal() {
+        for (auto & b: binding) {
+            P_ScmObj & obj = b.second;
+            obj->is_extern = true;
+            obj->IR_val = nullptr;
+        }
     }
 }
 

@@ -77,7 +77,7 @@ namespace llscm {
 		ScmObj(ScmType type) {
 			t = type;
 			IR_val = nullptr;
-			is_global_var = false;
+			is_extern = false;
 			location = T_STACK_LOC;
 		}
 
@@ -103,7 +103,8 @@ namespace llscm {
 		// ScmRef code generation depends on the type.
 		ScmLocType location;
 
-		bool is_global_var; // TODO: remove
+		bool is_extern;
+		string exported_name;
 
 		// Pointer to ScmFunc. We need it for heap locals
 		// in the codegen phase so that we can look up their index in the right

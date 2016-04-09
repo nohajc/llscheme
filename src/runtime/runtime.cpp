@@ -282,12 +282,17 @@ namespace llscm {
         }
 
         DEF_WITH_WRAPPER(scm_make_base_nspace) {
-            ScmEnv * env = new GCed<ScmEnv>(nullptr);
+            GCed<ScmEnv> * env = new GCed<ScmEnv>(nullptr);
+            initGlobalEnvironment(env);
 
             return alloc_nspace(env);
         }
 
-        DEF_WITH_WRAPPER(scm_eval, scm_ptr_t expr) {
+        DEF_WITH_WRAPPER(scm_eval, scm_ptr_t expr, scm_ptr_t ns) {
+            if (ns->tag != S_NSPACE) {
+                INVALID_ARG_TYPE();
+            }
+
             unique_ptr<Reader> r = make_unique<ListReader>(expr);
             unique_ptr<Parser> p = make_unique<Parser>(r);
 
@@ -297,9 +302,9 @@ namespace llscm {
                 EVAL_FAILED();
             }
 
-            // TODO: Move this to a separate function which returns
-            // scheme namespace (a wrapper struct for ScmEnv)
-            shared_ptr<ScmEnv> env = createGlobalEnvironment(prog);
+            //shared_ptr<ScmEnv> env = createGlobalEnvironment(prog);
+            P_ScmEnv env = ns.asNspace->env->getSharedPtr();
+            env->setProg(prog);
 
             if (!prog.CT_Eval(env)) {
                 EVAL_FAILED();
@@ -326,6 +331,9 @@ namespace llscm {
             jit->addModule(mod);
             JITSymbol expr_func_symbol = jit->findSymbol(expr_name);
             assert(expr_func_symbol);
+
+            // Prepare the environment for any future compilation
+            env->setGlobalsAsExternal();
 
             scm_expr_ptr_t expr_func = (scm_expr_ptr_t)expr_func_symbol.getAddress();
 

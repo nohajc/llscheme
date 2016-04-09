@@ -79,7 +79,7 @@ namespace llscm {
             return obj;
         }
 
-        scm_type_t * alloc_nspace(ScmEnv * env) {
+        scm_type_t * alloc_nspace(GCed<ScmEnv> * env) {
             scm_ptr_t obj = GC_MALLOC(sizeof(scm_nspace_t));
             obj->tag = S_NSPACE;
             obj.asNspace->env = env;

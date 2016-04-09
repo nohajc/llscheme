@@ -57,6 +57,11 @@ namespace llscm {
         bool isGlobal() {
             return this == top_level_env;
         }
+        // This method has to be run on the environment in case
+        // we want to use it again to compile different program.
+        // Otherwise it would still contain references to the
+        // previously generated LLVM Module.
+        void setGlobalsAsExternal();
     };
 
     shared_ptr<ScmEnv> createGlobalEnvironment(ScmProg & prog);
