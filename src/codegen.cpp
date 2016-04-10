@@ -757,7 +757,7 @@ namespace llscm {
         }
 
         func_type = FunctionType::get(t.scm_type_ptr, arg_types, varargs);
-        // TODO: How to handle redefinitions?
+
         func = Function::Create(
                 func_type,
                 linkage,
