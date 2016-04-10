@@ -32,7 +32,7 @@ namespace llscm {
         env->set("read", make_shared<ScmFunc>(0, RuntimeSymbol::read));
         env->set("eof-object?", make_shared<ScmFunc>(1, RuntimeSymbol::is_eof));
 
-        // TODO: and, or, list, eq? equal?
+        // TODO: list, eq? equal?
 
         // Load other symbols from the runtime library
         string errmsg;

@@ -5,9 +5,9 @@
 (define (cddr l) (cdr (cdr l)))
 (define (zero? n) (= n 0))
 
-;(define (>= a b) (or (> a b) (= a b)))
+(define (>= a b) (or (> a b) (= a b)))
 (define (<= a b) (not (> a b)))
-;(define (< a b) (not (>= a b)))
+(define (< a b) (not (>= a b)))
 
 (define (append a b)
   (if (null? a) b (cons (car a) (append (cdr a) b))))
