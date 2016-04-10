@@ -26,7 +26,6 @@ namespace llscm {
     class ScmLetSyntax;
     class ScmAndSyntax;
     class ScmOrSyntax;
-    // TODO: add the rest
 
     class AstVisitor {
     public:

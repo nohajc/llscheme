@@ -4,7 +4,7 @@
 #include "../include/debug.hpp"
 
 namespace llscm {
-    const size_t Metadata::InitSize = 32; // TODO: increase
+    const size_t Metadata::InitSize = 1024;
     const char Metadata::magic[] = "\xFE\xEDLLSMETA";
 
     Metadata::Metadata() {

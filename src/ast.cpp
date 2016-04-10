@@ -616,7 +616,7 @@ namespace llscm {
 
 
 	P_ScmObj ScmIfSyntax::CT_Eval(P_ScmEnv env) {
-		// TODO: detect dead branches
+		// TODO: detect dead branches (although that could handle LLVM for us)
 		cond_expr = cond_expr->CT_Eval(env);
 		if (env->fail()) {
 			return nullptr;

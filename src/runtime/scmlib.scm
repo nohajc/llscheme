@@ -1,9 +1,17 @@
 ; Library functions implementation
 
 (define (not obj) (if obj #f #t))
+(define (zero? n) (= n 0))
+
 (define (cadr l) (car (cdr l)))
 (define (cddr l) (cdr (cdr l)))
-(define (zero? n) (= n 0))
+
+(define (list-ref lst idx)
+  (if (null? lst)
+	 null
+	 (if (zero? idx)
+	   (car lst)
+	   (list-ref (cdr lst) (- idx 1)))))
 
 (define (>= a b) (or (> a b) (= a b)))
 (define (<= a b) (not (> a b)))
@@ -23,6 +31,9 @@
     (if (pred (car lst))
       (cons (car lst) (filter pred (cdr lst)))
       (filter pred (cdr lst)))))
+
+(define (compose1 fn1 fn2)
+  (lambda (x) (fn1 (fn2 x))))
 
 (define (displayln obj)
   (display obj)
