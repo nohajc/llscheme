@@ -140,13 +140,85 @@ namespace llscm {
 
         template<typename F1, typename F2>
         inline scm_type_t * internal_scm_times(F1 first_arg, F2 next_arg) {
-            return SCM_NULL;
-        };
+            int64_t prod = 1;
+            double fprod = 1.0;
+            bool is_int = true;
+            scm_ptr_t obj = first_arg();
+
+            while (obj.asType != nullptr) {
+                if (is_int) {
+                    if (obj->tag == S_INT) {
+                        prod *= obj.asInt->value;
+                    }
+                    else if (obj->tag == S_FLOAT) {
+                        fprod = prod * obj.asFloat->value;
+                        is_int = false;
+                    }
+                    else {
+                        INVALID_ARG_TYPE();
+                    }
+                }
+                else {
+                    if (obj->tag == S_INT) {
+                        fprod *= obj.asInt->value;
+                    }
+                    else if (obj->tag == S_FLOAT) {
+                        fprod *= obj.asFloat->value;
+                    }
+                    else {
+                        INVALID_ARG_TYPE();
+                    }
+                }
+                obj = next_arg();
+            }
+
+            if (is_int) {
+                return alloc_int(prod);
+            }
+            return alloc_float(fprod);
+        }
 
         template<typename F1, typename F2>
         inline scm_type_t * internal_scm_div(F1 first_arg, F2 next_arg) {
-            return SCM_NULL;
-        };
+            double fquot;
+            scm_type_t * arg0 = first_arg();
+            scm_ptr_t obj = arg0;
+
+            if (arg0 == nullptr) { // Zero arguments
+                WRONG_ARG_NUM();
+            }
+
+            //obj = va_arg(ap, scm_type_t*);
+            if (obj->tag == S_INT) {
+                fquot = obj.asInt->value;
+            }
+            else if (obj->tag == S_FLOAT) {
+                fquot = obj.asFloat->value;
+            }
+            else {
+                INVALID_ARG_TYPE();
+            }
+
+            obj = next_arg();
+            if (obj.asType == nullptr) { // One argument
+                return alloc_float(1 / fquot);
+            }
+
+            while (obj.asType != nullptr) {
+                if (obj->tag == S_INT) {
+                    fquot /= obj.asInt->value;
+                }
+                else if (obj->tag == S_FLOAT) {
+                    fquot /= obj.asFloat->value;
+                }
+                else {
+                    INVALID_ARG_TYPE();
+                }
+                obj = next_arg();
+            }
+
+            return alloc_float(fquot);
+        }
 
         template<typename F>
         void list_foreach(scm_ptr_t list, F func) {

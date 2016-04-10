@@ -968,6 +968,10 @@ namespace llscm {
                 args.push_back(ConstantPointerNull::get(
                         PointerType::get(t.scm_type_ptr, 0)
                 ));
+
+                if (args.size() == 1) {
+                    args[0] = builder.CreateBitCast(args[0], t.scm_type_ptr);
+                }
             }
 
             return node->IR_val = builder.CreateCall(func, args, fn_obj->name);
