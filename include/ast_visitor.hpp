@@ -24,6 +24,8 @@ namespace llscm {
     class ScmQuoteSyntax;
     class ScmIfSyntax;
     class ScmLetSyntax;
+    class ScmAndSyntax;
+    class ScmOrSyntax;
     // TODO: add the rest
 
     class AstVisitor {
@@ -47,6 +49,8 @@ namespace llscm {
         virtual any_ptr visit(ScmQuoteSyntax * node);
         virtual any_ptr visit(ScmIfSyntax * node);
         virtual any_ptr visit(ScmLetSyntax * node);
+        virtual any_ptr visit(ScmAndSyntax * node);
+        virtual any_ptr visit(ScmOrSyntax * node);
     };
 
     class VisitableObj {

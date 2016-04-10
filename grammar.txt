@@ -6,6 +6,8 @@ callsyn = "lambda" "(" symlist ")" body
 		| "quote" data
 		| "if" expr expr expr
 		| "let" "(" bindlist ")" body
+		| "and" { expr }
+		| "or" { expr }
 		| expr { expr }
 atom = str | sym | int | float | true | false | null
 symlist = { sym }

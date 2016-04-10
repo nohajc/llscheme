@@ -159,8 +159,25 @@ namespace llscm {
 
         //scm_type_t * scm_gt(scm_ptr_t a, scm_ptr_t b) {
         DEF_WITH_WRAPPER(scm_gt, scm_ptr_t a, scm_ptr_t b) {
-            // TODO: implement
-            return nullptr;
+            if (a->tag == S_INT) {
+                if (b->tag == S_INT) {
+                    return a.asInt->value > b.asInt->value ? SCM_TRUE : SCM_FALSE;
+                }
+                if (b->tag == S_FLOAT) {
+                    return (a.asInt->value - b.asFloat->value) > EPSILON ? SCM_TRUE : SCM_FALSE;
+                }
+                INVALID_ARG_TYPE();
+            }
+            if (a->tag == S_FLOAT) {
+                if (b->tag == S_INT) {
+                    return (a.asFloat->value - b.asInt->value) > EPSILON ? SCM_TRUE : SCM_FALSE;
+                }
+                if (b->tag == S_FLOAT) {
+                    return (a.asFloat->value - b.asFloat->value) > EPSILON ? SCM_TRUE : SCM_FALSE;
+                }
+                INVALID_ARG_TYPE();
+            }
+            INVALID_ARG_TYPE();
         }
 
         DEF_WITH_WRAPPER(scm_num_eq, scm_ptr_t a, scm_ptr_t b) {
@@ -182,7 +199,7 @@ namespace llscm {
                 }
                 INVALID_ARG_TYPE();
             }
-            return SCM_NULL;
+            INVALID_ARG_TYPE();
         }
 
         DEF_WITH_WRAPPER(scm_cons, scm_ptr_t car, scm_ptr_t cdr) {
@@ -356,6 +373,7 @@ namespace llscm {
             return expr_func();
         }
 
+        // TODO: Move somewhere else?
         static scm_type_t * read_atom(const unique_ptr<Reader> & r) {
             const Token * tok = r->currToken();
 

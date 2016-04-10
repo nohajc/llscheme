@@ -77,4 +77,12 @@ namespace llscm {
     any_ptr AstVisitor::visit(ScmLetSyntax * node) {
         return node;
     }
+
+    any_ptr AstVisitor::visit(ScmAndSyntax *node) {
+        return node;
+    }
+
+    any_ptr AstVisitor::visit(ScmOrSyntax *node) {
+        return node;
+    }
 }

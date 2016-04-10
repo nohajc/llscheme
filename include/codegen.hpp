@@ -45,6 +45,8 @@ namespace llscm {
         static const char *make_base_nspace;
         static const char *read;
         static const char *is_eof;
+        static const char *bool_and;
+        static const char *bool_or;
     };
 
     class ScmCodeGen: public AstVisitor {
@@ -132,6 +134,8 @@ namespace llscm {
         void addExprFuncProlog();
         void addExprFuncEpilog(Value * last_val);
 
+        Value * genGlobalConstant(Constant * c);
+
         Value * genAllocHeapStorage(int32_t size);
         void genHeapStore(Value * hs, Value * obj, int32_t idx);
         Value * genHeapLoad(Value * hs, int32_t idx);
@@ -173,6 +177,9 @@ namespace llscm {
             return phi;
         }
 
+        Value * genAndExpr(ScmCons * cell);
+        Value * genOrExpr(ScmCons * cell);
+
         void declFuncWrapper(ScmFunc * node, GlobalValue::LinkageTypes linkage);
         void defFuncWrapper(ScmFunc * node, Function * func);
 
@@ -192,6 +199,8 @@ namespace llscm {
         virtual any_ptr visit(ScmQuoteSyntax * node);
         virtual any_ptr visit(ScmIfSyntax * node);
         virtual any_ptr visit(ScmLetSyntax * node);
+        virtual any_ptr visit(ScmAndSyntax * node);
+        virtual any_ptr visit(ScmOrSyntax * node);
 
         inline Value * codegen(VisitableObj * node) {
             any_ptr ret = node->accept(this);

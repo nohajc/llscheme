@@ -105,6 +105,8 @@ namespace llscm {
 	 *		   | "quote" data
 	 *		   | "if" expr expr expr
 	 *		   | "let" "(" bindlist ")" body
+	 *		   | "and" { expr }
+	 *		   | "or" { expr }
 	 *		   | expr { expr }
 	 */
 	P_ScmObj Parser::NT_CallOrSyntax() {
@@ -183,7 +185,7 @@ namespace llscm {
 					return make_unique<ScmIfSyntax>(move(ce), move(te), move(ee));
 				case KW_LET:
 					D(cerr << "NT_Let: " << endl);
-					reader->nextToken();
+					tok = reader->nextToken();
 
 					/*if (!match(tok, Token(KW_LPAR))) {
 						return nullptr;
@@ -212,6 +214,34 @@ namespace llscm {
 					//D(cerr << tok->name << endl);
 
 					return make_unique<ScmLetSyntax>(move(expr), NT_Body());
+				case KW_AND:
+					tok = reader->nextToken();
+					do {
+						if (!tok) {
+							error("Reached EOF while parsing and expression.");
+							return nullptr;
+						}
+						if (tok->t == KWRD && tok->kw == KW_RPAR) {
+							return make_unique<ScmAndSyntax>(makeScmList(move(lst)));
+						}
+						lst.push_back(NT_Expr());
+						if (fail()) return nullptr;
+						tok = reader->nextToken();
+					} while (true);
+				case KW_OR:
+					tok = reader->nextToken();
+					do {
+						if (!tok) {
+							error("Reached EOF while parsing or expression.");
+							return nullptr;
+						}
+						if (tok->t == KWRD && tok->kw == KW_RPAR) {
+							return make_unique<ScmOrSyntax>(makeScmList(move(lst)));
+						}
+						lst.push_back(NT_Expr());
+						if (fail()) return nullptr;
+						tok = reader->nextToken();
+					} while (true);
 				case KW_LPAR:
 					break; // Fall through to function call
 				case KW_RPAR:

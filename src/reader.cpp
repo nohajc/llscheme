@@ -11,7 +11,8 @@ namespace llscm {
 
 	const char * KwrdNames[] = {
 		"(", ")", "#t", "#f", "null",
-		"define", "lambda", "quote", "if", "let", "\'",
+		"define", "lambda", "quote", "if", "let",
+		"\'", "and", "or",
 		nullptr
 	};
 
@@ -367,6 +368,20 @@ namespace llscm {
 						tok.t = KWRD;
 						tok.name = obj.asSym->sym;
 						tok.kw = KW_LET;
+
+						return &tok;
+					}
+					if (!strcmp(obj.asSym->sym, "and")) {
+						tok.t = KWRD;
+						tok.name = obj.asSym->sym;
+						tok.kw = KW_AND;
+
+						return &tok;
+					}
+					if (!strcmp(obj.asSym->sym, "or")) {
+						tok.t = KWRD;
+						tok.name = obj.asSym->sym;
+						tok.kw = KW_OR;
 
 						return &tok;
 					}

@@ -438,54 +438,67 @@ namespace llscm {
         return ret;
     }
 
+    Value * ScmCodeGen::genGlobalConstant(Constant * c) {
+        return new GlobalVariable(
+                *module, c->getType(), true,
+                GlobalValue::InternalLinkage,
+                c
+        );
+    }
+
     any_ptr ScmCodeGen::visit(ScmInt * node) {
         D(cerr << "VISITED ScmInt!" << endl);
         Constant * c = getScmConstant<S_INT>(node->val);
-        return node->IR_val = new GlobalVariable(
+        /*return node->IR_val = new GlobalVariable(
                 *module, t.scm_int, true,
                 GlobalValue::InternalLinkage,
                 c, ""
-        );
+        );*/
+        return node->IR_val = genGlobalConstant(c);
     }
 
     any_ptr ScmCodeGen::visit(ScmFloat * node) {
         D(cerr << "VISITED ScmFloat!" << endl);
         Constant * c = getScmConstant<S_FLOAT>(node->val);
-        return node->IR_val = new GlobalVariable(
+        /*return node->IR_val = new GlobalVariable(
                 *module, t.scm_float, true,
                 GlobalValue::InternalLinkage,
                 c, ""
-        );
+        );*/
+        return node->IR_val = genGlobalConstant(c);
     }
 
     any_ptr ScmCodeGen::visit(ScmTrue * node) {
         D(cerr << "VISITED ScmTrue!" << endl);
         Constant * c = getScmConstant<S_TRUE>();
-        return node->IR_val = new GlobalVariable(
+        /*return node->IR_val = new GlobalVariable(
                 *module, t.scm_type, true,
                 GlobalValue::InternalLinkage,
                 c, ""
-        );
+        );*/
+        return node->IR_val = genGlobalConstant(c);
     }
 
     any_ptr ScmCodeGen::visit(ScmFalse * node) {
         D(cerr << "VISITED ScmFalse!" << endl);
         Constant * c = getScmConstant<S_FALSE>();
-        return node->IR_val = new GlobalVariable(
+        /*return node->IR_val = new GlobalVariable(
                 *module, t.scm_type, true,
                 GlobalValue::InternalLinkage,
                 c, ""
-        );
+        );*/
+        return node->IR_val = genGlobalConstant(c);
     }
 
     any_ptr ScmCodeGen::visit(ScmNull * node) {
         D(cerr << "VISITED ScmNull!" << endl);
         Constant * c = getScmConstant<S_NIL>();
-        return node->IR_val = new GlobalVariable(
+        /*return node->IR_val = new GlobalVariable(
                 *module, t.scm_type, true,
                 GlobalValue::InternalLinkage,
                 c, ""
-        );
+        );*/
+        return node->IR_val = genGlobalConstant(c);
     }
 
     any_ptr ScmCodeGen::visit(ScmStr * node) {
@@ -1107,6 +1120,76 @@ namespace llscm {
         return node->IR_val = codegen(node->data);
     }
 
+    Value * ScmCodeGen::genAndExpr(ScmCons * cell) {
+        if (cell->cdr->t == T_NULL) {
+            // Last expression
+            Value * expr = codegen(cell->car);
+            return builder.CreateBitCast(expr, t.scm_type_ptr);
+        }
+        return genIfElse(
+                [this, cell] () {
+                    Value * expr = codegen(cell->car);
+                    vector<Value*> indices(2, builder.getInt32(0));
+                    Value * expr_arg_addr = builder.CreateGEP(expr, indices);
+                    Value * expr_tag = builder.CreateLoad(expr_arg_addr);
+                    return builder.CreateICmpEQ(expr_tag, builder.getInt32(S_FALSE));
+                },
+                [this] () {
+                    Constant * c = getScmConstant<S_FALSE>();
+                    return genGlobalConstant(c);
+                },
+                [this, cell] () {
+                    return genAndExpr(DPC<ScmCons>(cell->cdr).get());
+                }
+        );
+    }
+
+    any_ptr ScmCodeGen::visit(ScmAndSyntax * node) {
+        D(cerr << "VISITED ScmAndSyntax!" << endl);
+        ScmCons * expr_list = DPC<ScmCons>(node->expr_list).get();
+        if (!expr_list) {
+            Constant * c = getScmConstant<S_TRUE>();
+            return node->IR_val = genGlobalConstant(c);
+        }
+
+        return genAndExpr(expr_list);
+    }
+
+    Value * ScmCodeGen::genOrExpr(ScmCons * cell) {
+        if (cell->cdr->t == T_NULL) {
+            // Last expression
+            Value * expr = codegen(cell->car);
+            return builder.CreateBitCast(expr, t.scm_type_ptr);
+        }
+
+        Value * expr = codegen(cell->car);
+        return genIfElse(
+                [this, cell, expr] () {
+                    vector<Value*> indices(2, builder.getInt32(0));
+                    Value * expr_arg_addr = builder.CreateGEP(expr, indices);
+                    Value * expr_tag = builder.CreateLoad(expr_arg_addr);
+                    return builder.CreateICmpNE(expr_tag, builder.getInt32(S_FALSE));
+                },
+                [this, expr] () {
+                    return builder.CreateBitCast(expr, t.scm_type_ptr);
+                },
+                [this, cell] () {
+                    return genOrExpr(DPC<ScmCons>(cell->cdr).get());
+                }
+        );
+    }
+
+    any_ptr ScmCodeGen::visit(ScmOrSyntax * node) {
+        D(cerr << "VISITED ScmOrSyntax!" << endl);
+        ScmCons * expr_list = DPC<ScmCons>(node->expr_list).get();
+        if (!expr_list) {
+            Constant * c = getScmConstant<S_FALSE>();
+            return node->IR_val = genGlobalConstant(c);
+        }
+
+        return genOrExpr(expr_list);
+    }
+
     void ScmCodeGen::run() {
         Value * last_val;
 
@@ -1124,6 +1207,5 @@ namespace llscm {
                 llsmeta, "__llscheme_metainfo__"
         );
     }
-
 }
 

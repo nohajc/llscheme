@@ -18,7 +18,8 @@ namespace llscm {
 
 	enum Keyword {
 		KW_LPAR, KW_RPAR, KW_TRUE, KW_FALSE, KW_NULL,
-		KW_DEFINE, KW_LAMBDA, KW_QUOTE, KW_IF, KW_LET, KW_QUCHAR
+		KW_DEFINE, KW_LAMBDA, KW_QUOTE, KW_IF, KW_LET,
+		KW_QUCHAR, KW_AND, KW_OR
 	};
 
 	extern const char * KwrdNames[];

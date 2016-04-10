@@ -466,6 +466,26 @@ namespace llscm {
 		P_ScmObj body_list;
 	};
 
+	class ScmAndSyntax: public Visitable<ScmAndSyntax, ScmExpr> {
+		virtual ostream & print(ostream & os, int tabs) const;
+		virtual ostream & printSrc(ostream & os) const;
+	public:
+		ScmAndSyntax(P_ScmObj el): expr_list(move(el)) {}
+		virtual P_ScmObj CT_Eval(P_ScmEnv env);
+
+		P_ScmObj expr_list;
+	};
+
+	class ScmOrSyntax: public Visitable<ScmOrSyntax, ScmExpr> {
+		virtual ostream & print(ostream & os, int tabs) const;
+		virtual ostream & printSrc(ostream & os) const;
+	public:
+		ScmOrSyntax(P_ScmObj el): expr_list(move(el)) {}
+		virtual P_ScmObj CT_Eval(P_ScmEnv env);
+
+		P_ScmObj expr_list;
+	};
+
 	class ScmLambdaSyntax: public Visitable<ScmLambdaSyntax, ScmExpr> {
 		virtual ostream & print(ostream & os, int tabs) const;
 		virtual ostream & printSrc(ostream & os) const;

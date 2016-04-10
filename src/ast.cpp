@@ -166,6 +166,20 @@ namespace llscm {
 		return os;
 	}
 
+	ostream &ScmAndSyntax::print(ostream & os, int tabs) const {
+		printTabs(os, tabs);
+		os << "and:" << endl;
+		expr_list->print(os, tabs + 1);
+		return os;
+	}
+
+	ostream &ScmOrSyntax::print(ostream & os, int tabs) const {
+		printTabs(os, tabs);
+		os << "or:" << endl;
+		expr_list->print(os, tabs + 1);
+		return os;
+	}
+
 	ostream &ScmQuoteSyntax::print(ostream & os, int tabs) const {
 		printTabs(os, tabs);
 		os << "quote:" << endl;
@@ -562,6 +576,42 @@ namespace llscm {
 		DPC<ScmCons>(body_list)->printElems(os);
 		os << ")";
 		return os;
+	}
+
+	ostream &ScmAndSyntax::printSrc(ostream & os) const {
+		ScmCons * el = DPC<ScmCons>(expr_list).get();
+		if (!el) {
+			os << "(and)";
+		}
+		else {
+			os << "(and ";
+			el->printElems(os);
+			os << ")";
+		}
+		return os;
+	}
+
+	P_ScmObj ScmAndSyntax::CT_Eval(P_ScmEnv env) {
+		expr_list = expr_list->CT_Eval(env);
+		return shared_from_this();
+	}
+
+	ostream &ScmOrSyntax::printSrc(ostream & os) const {
+		ScmCons * el = DPC<ScmCons>(expr_list).get();
+		if (!el) {
+			os << "(or)";
+		}
+		else {
+			os << "(or ";
+			el->printElems(os);
+			os << ")";
+		}
+		return os;
+	}
+
+	P_ScmObj ScmOrSyntax::CT_Eval(P_ScmEnv env) {
+		expr_list = expr_list->CT_Eval(env);
+		return shared_from_this();
 	}
 
 

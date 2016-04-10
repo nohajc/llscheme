@@ -63,7 +63,9 @@ add_library(llscmrt SHARED ${RUNTIME_FILES} ${SOURCE_FILES})
 llvm_map_components_to_libnames(llvm_libs support core irreader bitwriter
         analysis executionengine instcombine object runtimedyld scalaropts support native)
 
-target_link_libraries(schemec ${llvm_libs} -Wl,-R -Wl,${llscheme_SOURCE_DIR}/bin/Debug)
+target_link_libraries(schemec ${llvm_libs})
+#target_link_libraries(schemec optimized -Wl,-R -Wl,${llscheme_SOURCE_DIR}/bin/Release)
+target_link_libraries(schemec -Wl,-R -Wl,${llscheme_SOURCE_DIR}/bin/Debug)
 target_link_libraries(llscmrt ${LIB_BOEHM_GC} ${llvm_libs})
 
 target_link_libraries(unit_tests ${llvm_libs} ${LIB_UNIT_TEST_CPP})
