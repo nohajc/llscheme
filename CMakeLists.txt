@@ -54,7 +54,9 @@ set(RUNTIME_FILES
         include/runtime/memory.h src/runtime/memory.cpp
         include/runtime/error.h src/runtime/error.cpp
         include/runtime/internal.hpp include/runtime/meta.hpp
-        src/runtime/scmlib.o include/runtime/scmjit.hpp)
+        src/runtime/scmlib.o include/runtime/scmjit.hpp
+        src/runtime/readlinestream.cpp include/runtime/readlinestream.hpp
+        include/linenoise/linenoise.c include/linenoise/linenoise.h)
 
 add_library(llscmrt SHARED ${RUNTIME_FILES} ${SOURCE_FILES})
 

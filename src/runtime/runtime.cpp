@@ -3,9 +3,11 @@
 #include <cmath>
 #include <cinttypes>
 #include <vector>
+#include <iostream>
 #include <llvm/ADT/STLExtras.h>
 #include "../../include/runtime.h"
 #include "../../include/runtime/internal.hpp"
+#include "../../include/runtime/readlinestream.hpp"
 #include "../../include/reader.hpp"
 #include "../../include/parser.hpp"
 #include "../../include/environment.hpp"
@@ -40,6 +42,11 @@ namespace llscm {
             return jit_obj.getJIT();
         }
 
+        static readlinestream & getReadlineStream() {
+            static readlinestream readlns;
+            return readlns;
+        }
+
         LibSetup::~LibSetup() {
            mem_cleanup();
         }
@@ -50,6 +57,7 @@ namespace llscm {
         scm_type_t Constant::scm_null = { S_NIL };
         scm_type_t Constant::scm_true = { S_TRUE };
         scm_type_t Constant::scm_false = { S_FALSE };
+        scm_type_t Constant::scm_eof = { S_EOF };
 
 #define SCM_VARARGS_WRAPPER(func) \
         scm_type_t * func(scm_type_t * arg0, ...) { \
@@ -57,8 +65,8 @@ namespace llscm {
             va_start(ap, arg0); \
 \
             scm_type_t * res = internal_##func( \
-                    [&arg0] () { return arg0; }, \
-                    [&ap] () { return va_arg(ap, scm_type_t*); } \
+                [&arg0] () { return arg0; }, \
+                [&ap] () { return va_arg(ap, scm_type_t*); } \
             ); \
 \
             va_end(ap); \
@@ -98,6 +106,10 @@ namespace llscm {
         // auto argl_scm_display = SCM_ARGLIST_WRAPPER(scm_display);
         // scm_type_t * scm_display(scm_ptr_t obj) {
         DEF_WITH_WRAPPER(scm_display, scm_ptr_t obj) {
+            if (!obj.asType) {
+                return SCM_NULL;
+            }
+
             switch (obj->tag) {
                 case S_STR:
                     printf("%s", obj.asStr->str);
@@ -131,9 +143,13 @@ namespace llscm {
                     printf(")");
                     break;
                 }
+                case S_FUNC: {
+                    // TODO: we should store name in scm_func_t
+                    printf("#<procedure>");
+                    break;
+                }
                 // TODO:
-                /*case S_FUNC:
-                case S_VEC:*/
+                /*case S_VEC:*/
                 default:
                     INVALID_ARG_TYPE();
             }
@@ -302,7 +318,6 @@ namespace llscm {
                 EVAL_FAILED();
             }
 
-            //shared_ptr<ScmEnv> env = createGlobalEnvironment(prog);
             P_ScmEnv env = ns.asNspace->env->getSharedPtr();
             env->setProg(prog);
 
@@ -339,6 +354,102 @@ namespace llscm {
 
             // Call the compiled function
             return expr_func();
+        }
+
+        static scm_type_t * read_atom(const unique_ptr<Reader> & r) {
+            const Token * tok = r->currToken();
+
+            switch (tok->t) {
+                case STR:
+                    return alloc_str(tok->name.c_str());
+                case SYM:
+                    return alloc_sym(tok->name.c_str());
+                case INT:
+                    return alloc_int(tok->int_val);
+                case FLOAT:
+                    return alloc_float(tok->float_val);
+                case ERR:
+                    READ_FAILED();
+                default:;
+            }
+
+            if (tok->t != KWRD) {
+                fprintf(stderr, "Invalid token for an atom.\n");
+                READ_FAILED();
+            }
+            switch (tok->kw) {
+                case KW_TRUE:
+                    return SCM_TRUE;
+                case KW_FALSE:
+                    return SCM_FALSE;
+                case KW_NULL:
+                    return SCM_NULL;
+                case KW_RPAR:
+                    fprintf(stderr, "Unexpected \")\".\n");
+                    READ_FAILED();
+                default:
+                    return alloc_sym(tok->name.c_str());
+            }
+        }
+
+        static scm_type_t * read_expr(const unique_ptr<Reader> & r);
+
+        static scm_type_t * read_list(const unique_ptr<Reader> & r) {
+            const Token * tok = r->currToken();
+
+            if (tok->t == KWRD && tok->kw == KW_RPAR) {
+                return SCM_NULL;
+            }
+
+            scm_type_t * car = read_expr(r);
+            r->nextToken();
+            scm_type_t * cdr = read_list(r);
+
+            return alloc_cons(car, cdr);
+        }
+
+        static scm_type_t * read_expr(const unique_ptr<Reader> & r) {
+            const Token * tok = r->currToken();
+            scm_type_t * expr;
+
+            if (!tok) {
+                return SCM_EOF;
+            }
+
+            if (tok->t == KWRD && tok->kw == KW_LPAR) {
+                r->nextToken();
+                expr = read_list(r);
+
+                tok = r->currToken();
+                if (tok->t != KWRD || tok->kw != KW_RPAR) {
+                    fprintf(stderr, "Expected token \")\".\n");
+                    READ_FAILED();
+                }
+            }
+            else if(tok->t == KWRD && tok->kw == KW_QUCHAR) {
+                r->nextToken();
+
+                scm_type_t * quoted = alloc_cons(read_expr(r), SCM_NULL);
+                expr = alloc_cons(alloc_sym("quote"), quoted);
+            }
+            else {
+                expr = read_atom(r);
+            }
+
+            return expr;
+        }
+
+        DEF_WITH_WRAPPER(scm_read) {
+            readlinestream & readlns = getReadlineStream();
+            readlns.setPrompt("> ");
+            unique_ptr<Reader> r = make_unique<FileReader>(readlns);
+
+            r->nextToken();
+            return read_expr(r);
+        }
+
+        DEF_WITH_WRAPPER(scm_is_eof, scm_ptr_t obj) {
+            return obj->tag == S_EOF ? SCM_TRUE : SCM_FALSE;
         }
     }
 }

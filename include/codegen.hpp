@@ -43,6 +43,8 @@ namespace llscm {
         static const char *length;
         static const char *eval;
         static const char *make_base_nspace;
+        static const char *read;
+        static const char *is_eof;
     };
 
     class ScmCodeGen: public AstVisitor {

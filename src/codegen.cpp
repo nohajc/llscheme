@@ -29,6 +29,8 @@ namespace llscm {
     const char * RuntimeSymbol::length = "scm_length";
     const char * RuntimeSymbol::eval = "scm_eval";
     const char * RuntimeSymbol::make_base_nspace = "scm_make_base_nspace";
+    const char * RuntimeSymbol::read = "scm_read";
+    const char * RuntimeSymbol::is_eof = "scm_is_eof";
 
     ScmCodeGen::ScmCodeGen(LLVMContext &ctxt, ScmProg * tree):
             context(ctxt), builder(ctxt), ast(tree) {
@@ -970,7 +972,9 @@ namespace llscm {
             }
         }
         if (node->val->t == T_FUNC || node->val->t == T_REF) {
-            return codegen(node->val);
+            codegen(node->val);
+            //return codegen(node->val);
+            return ConstantPointerNull::get(t.scm_type_ptr);
         }
 
         Value * expr = codegen(node->val);
@@ -1007,7 +1011,7 @@ namespace llscm {
             genHeapStore(curr_func->IR_heap_storage, node->val->IR_val, idx);
         }
 
-        return node->val->IR_val;
+        return ConstantPointerNull::get(t.scm_type_ptr);
     }
 
     any_ptr ScmCodeGen::visit(ScmIfSyntax * node) {

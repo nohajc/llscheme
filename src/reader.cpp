@@ -172,7 +172,6 @@ namespace llscm {
 		}
 		// Read literal
 		do {
-			//D(cerr << "DEBUG: " << c << endl);
 			tok.name += c;
 			is->get(c);
 			if (is->eof()) {
@@ -233,7 +232,7 @@ namespace llscm {
 		};
 
 		tok.t = STR;
-		D(cerr << "STR:" << tok.name << " ");
+		//D(cerr << "STR:" << tok.name << " ");
 		return &tok;
 	}
 

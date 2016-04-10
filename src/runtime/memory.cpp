@@ -54,6 +54,19 @@ namespace llscm {
             return obj;
         }
 
+        scm_type_t * alloc_sym(const char *sym) {
+            size_t len = strlen(sym);
+            uint32_t sym_alloc_size = sizeof(scm_sym_t);
+            sym_alloc_size += len * sizeof(char);
+
+            scm_ptr_t obj = GC_MALLOC(sym_alloc_size);
+            obj->tag = S_SYM;
+            obj.asSym->len = (int32_t)len;
+            strcpy(obj.asSym->sym, sym);
+
+            return obj;
+        }
+
         scm_type_t ** alloc_heap_storage(int32_t size) {
             return (scm_type_t**)GC_MALLOC(size * sizeof(scm_type_t*));
         }

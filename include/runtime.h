@@ -5,11 +5,11 @@
 #include <set>
 #include "runtime/types.hpp"
 #include "runtime/scmjit.hpp"
-#include "gc_cpp.h"
 
 #define SCM_NULL &(Constant::scm_null)
 #define SCM_TRUE &(Constant::scm_true)
 #define SCM_FALSE &(Constant::scm_false)
+#define SCM_EOF &(Constant::scm_eof)
 
 namespace llscm {
     class ScmEnv;
@@ -90,6 +90,7 @@ namespace llscm {
             static scm_type_t scm_null;
             static scm_type_t scm_true;
             static scm_type_t scm_false;
+            static scm_type_t scm_eof;
         };
 
         // Smart tagged union with convenient operator overloads
@@ -140,7 +141,7 @@ namespace llscm {
             //scm_type_t * scm_cmd_args();
             DECL_WITH_WRAPPER(scm_cmd_args);
             // scm_type_t * scm_display(scm_ptr_t obj);
-            DECL_WITH_WRAPPER(scm_display, scm_ptr_t obj);
+            DECL_WITH_WRAPPER(scm_display, scm_ptr_t obj); // TODO: also implement print
             //scm_type_t * scm_gt(scm_ptr_t a, scm_ptr_t b);
             DECL_WITH_WRAPPER(scm_gt, scm_ptr_t a, scm_ptr_t b);
             //scm_type_t * scm_num_eq(scm_ptr_t a, scm_ptr_t b);
@@ -176,6 +177,10 @@ namespace llscm {
             DECL_WITH_WRAPPER(scm_make_base_nspace);
 
             DECL_WITH_WRAPPER(scm_eval, scm_ptr_t expr, scm_ptr_t ns);
+
+            DECL_WITH_WRAPPER(scm_read);
+
+            DECL_WITH_WRAPPER(scm_is_eof, scm_ptr_t obj);
         }
     }
 }

@@ -29,6 +29,8 @@ namespace llscm {
 
         env->set("make-base-namespace", make_shared<ScmFunc>(0, RuntimeSymbol::make_base_nspace));
         env->set("eval", make_shared<ScmFunc>(2, RuntimeSymbol::eval));
+        env->set("read", make_shared<ScmFunc>(0, RuntimeSymbol::read));
+        env->set("eof-object?", make_shared<ScmFunc>(1, RuntimeSymbol::is_eof));
 
         // Load other symbols from the runtime library
         string errmsg;
