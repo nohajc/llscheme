@@ -2,6 +2,7 @@
 schemec
 .idea
 bin
+doc
 build
 test/lls_programs/*
 !test/lls_programs/*.*
