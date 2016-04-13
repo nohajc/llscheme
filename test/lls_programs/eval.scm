@@ -13,5 +13,5 @@
 (eval '(define (func x y z) (- (+ x y) z)) ns)
 (eval '(displayln (func 7 8 3)) ns)
 
-;(eval '(let () (define lst '(2 3 4 5)) (displayln lst)))
+(eval '(let () (define lst '(2 3 4 5)) (displayln lst)) ns)
 ;(let () (define lst '(2 3 4 5)) (displayln lst))
