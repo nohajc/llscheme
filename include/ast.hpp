@@ -241,6 +241,17 @@ namespace llscm {
 				ref_obj = obj;
 			}
 		}
+		ScmRef & operator=(const ScmRef & ref) {
+			if (&ref != this) {
+				ref_obj_weak = ref.ref_obj_weak;
+				num_of_levels_up = ref.num_of_levels_up;
+				is_weak = ref.is_weak;
+				if (!is_weak) {
+					ref_obj = ref.ref_obj;
+				}
+			}
+			return *this;
+		}
 		P_ScmObj refObj() {
 			return ref_obj_weak.lock();
 		}

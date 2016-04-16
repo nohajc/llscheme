@@ -1,6 +1,7 @@
 #include <cstdint>
 
 #include <memory>
+#include <algorithm>
 #include <llvm/ADT/STLExtras.h>
 #include "../include/ast.hpp"
 #include "../include/environment.hpp"
@@ -225,6 +226,11 @@ namespace llscm {
 				return nullptr;
 			}
 		}
+
+		env->checkUnRefs();
+		if (env->fail()) {
+			return nullptr;
+		}
 		// We don't really use the return value
 		// but nullptr is error so we must return something.
 		return *form_lst.rbegin();
@@ -232,7 +238,9 @@ namespace llscm {
 
 
 	P_ScmObj ScmSym::CT_Eval(P_ScmEnv env) {
-		P_ScmObj sym = shared_from_this();
+		//P_ScmObj sym = shared_from_this();
+		P_ScmObj dummy;
+		P_ScmObj sym = shared_ptr<ScmObj>(dummy, this);
 		P_ScmObj last_sym;
 		string last_sym_name;
 		int num_of_levels_up = 0;
@@ -264,8 +272,15 @@ namespace llscm {
 		//D(cerr << "LEVELS: " << num_of_levels_up << endl);
 
 		if (!sym) {
-			env->error(last_sym_name + " is not defined.");
-			return nullptr;
+			//env->error(last_sym_name + " is not defined.");
+			//return nullptr;
+			shared_ptr<ScmRef> ref = make_shared<ScmRef>(last_sym_name, nullptr);
+			env->getUnRefs().emplace(
+				make_pair(
+					*DPC<ScmSym>(last_sym), ScmEnv::CapturedRef(env, ref)
+				)
+			);
+			return ref;
 		}
 
 		// Set type of sym (global, stack local or heap local),
@@ -421,6 +436,18 @@ namespace llscm {
 		// be a valid case as it always returns data.
 		if (fref) {
 			obj = fref->refObj();
+			if (!obj) {
+				// Call to forward referenced object
+				// We need to run CT_Eval on this node again
+				// when the object is defined.
+				env->evalAgain().emplace(
+					make_pair(
+						fref.get(), ScmEnv::CapturedObj(env, shared_from_this())
+					)
+				);
+				D(cerr << "queued CT_Eval" << endl);
+				return shared_from_this();
+			}
 		}
 		else {
 			obj = fexpr;
@@ -457,6 +484,7 @@ namespace llscm {
 		if (env->fail()) {
 			return nullptr;
 		}
+
 		return shared_from_this();
 	}
 
@@ -485,6 +513,29 @@ namespace llscm {
 
 		// Bind symbol to value
 		env->set(name, val);
+
+		// Resolve forward references to this newly defined symbol
+		auto urefs = env->getUnRefs().equal_range(*DPC<ScmSym>(name));
+		for (auto it = urefs.first; it != urefs.second; ++it) {
+			ScmSym & sym = const_cast<ScmSym&>(it->first);
+			P_ScmObj obj = sym.CT_Eval(it->second.env);
+			if (env->fail()) {
+				return nullptr;
+			}
+			shared_ptr<ScmRef> ref = DPC<ScmRef>(obj);
+			assert(ref);
+			*it->second.ref = *ref;
+
+			auto objs = env->evalAgain().equal_range(it->second.ref.get());
+			D(cerr << "got queued objects" << endl);
+			for (auto o = objs.first; o != objs.second; ++o) {
+				D(cerr << "calling CT_Eval again" << endl);
+				o->second.obj->CT_Eval(o->second.env);
+				D(cerr << "called CT_Eval again" << endl);
+			}
+			env->evalAgain().erase(objs.first, objs.second);
+		}
+		env->getUnRefs().erase(urefs.first, urefs.second);
 
 		if (env->isGlobal()) {
 			val->location = T_GLOB;

@@ -206,5 +206,14 @@ namespace llscm {
             obj->IR_val = nullptr;
         }
     }
+
+    void ScmEnv::checkUnRefs() {
+        auto & refs = getUnRefs();
+        for (auto r: refs) {
+            error(r.first.val + " is not defined.");
+        }
+        refs.clear();
+        eval_again.clear();
+    }
 }
 

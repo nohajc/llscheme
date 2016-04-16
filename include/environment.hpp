@@ -23,7 +23,6 @@ namespace llscm {
         bool err_flag;
         ScmEnv * top_level_env;
         unordered_map<ScmSym, P_ScmObj> binding;
-        //unordered_map<string, uint32_t> uniq_id;
         ScmNameGen namegen;
     public:
         static int GlobalLevel;
@@ -62,6 +61,33 @@ namespace llscm {
         // Otherwise it would still contain references to the
         // previously generated LLVM Module.
         void setGlobalsAsExternal();
+
+        struct CapturedRef {
+            P_ScmEnv env;
+            shared_ptr<ScmRef> ref;
+
+            CapturedRef(P_ScmEnv env, shared_ptr<ScmRef> ref): env(env), ref(ref) {}
+        };
+        unordered_multimap<ScmSym, CapturedRef> & getUnRefs() {
+            return top_level_env->urefs;
+        };
+
+        struct CapturedObj {
+            P_ScmEnv env;
+            P_ScmObj obj;
+
+            CapturedObj(P_ScmEnv env, P_ScmObj obj): env(env), obj(obj) {}
+        };
+        unordered_multimap<ScmRef*, CapturedObj> & evalAgain() {
+            return top_level_env->eval_again;
+        };
+
+        void checkUnRefs();
+    private:
+        // Unresolved references
+        // (there can be multiple references to the same symbol, of course)
+        unordered_multimap<ScmSym, CapturedRef> urefs;
+        unordered_multimap<ScmRef*, CapturedObj> eval_again;
     };
 
     shared_ptr<ScmEnv> createGlobalEnvironment(ScmProg & prog);

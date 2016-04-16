@@ -151,6 +151,15 @@ namespace llscm {
 			}
 		}
 
+		env->checkUnRefs();
+		if (env->fail()) {
+			return false;
+		}
+
+		/*if (!prog.CT_Eval(env)) {
+			return false;
+		}*/
+
 		for (auto & e: prog) {
 			D(e->printSrc(cerr));
 			D(cerr << endl);
