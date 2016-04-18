@@ -220,6 +220,52 @@ namespace llscm {
             return alloc_float(fquot);
         }
 
+        template<typename F1, typename F2>
+        inline scm_type_t * internal_scm_list(F1 first_arg, F2 next_arg) {
+            scm_type_t * arg0 = first_arg();
+            if (!arg0) {
+                return SCM_NULL;
+            }
+
+            scm_type_t * obj = arg0;
+            scm_ptr_t lst;
+            scm_ptr_t * lst_tail = &lst;
+
+            do {
+                *lst_tail = alloc_cons(obj, nullptr);
+                lst_tail = (scm_ptr_t*)&(*lst_tail).asCons->cdr;
+                obj = next_arg();
+            } while (obj);
+
+            *lst_tail = SCM_NULL;
+            return lst;
+        }
+
+        template<typename F1, typename F2>
+        inline scm_type_t * internal_scm_current_nspace(F1 first_arg, F2 next_arg) {
+            static scm_ptr_t nspace;
+
+            scm_type_t * arg0 = first_arg();
+
+            if (!arg0) {
+                if (nspace.asType == SCM_NULL) {
+                    nspace = scm_make_base_nspace();
+                }
+                return nspace;
+            }
+
+            if (next_arg()) {
+                WRONG_ARG_NUM();
+            }
+
+            if (arg0->tag != S_NSPACE) {
+                INVALID_ARG_TYPE();
+            }
+
+            nspace = arg0;
+            return SCM_NULL;
+        };
+
         template<typename F>
         void list_foreach(scm_ptr_t list, F func) {
             scm_ptr_t cell = list;

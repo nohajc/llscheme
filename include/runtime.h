@@ -114,7 +114,7 @@ namespace llscm {
             }
 
             scm_ptr_t() {
-                asType = &Constant::scm_null;
+                asType = SCM_NULL;
             }
 
             template<class T>
@@ -176,11 +176,25 @@ namespace llscm {
 
             DECL_WITH_WRAPPER(scm_make_base_nspace);
 
+            DECL_WITH_WRAPPER(scm_current_nspace, scm_type_t * arg0, ...);
+
             DECL_WITH_WRAPPER(scm_eval, scm_ptr_t expr, scm_ptr_t ns);
 
             DECL_WITH_WRAPPER(scm_read);
 
             DECL_WITH_WRAPPER(scm_is_eof, scm_ptr_t obj);
+
+            DECL_WITH_WRAPPER(scm_list, scm_type_t * arg0, ...);
+
+            DECL_WITH_WRAPPER(scm_string_to_symbol, scm_ptr_t obj);
+
+            DECL_WITH_WRAPPER(scm_string_equals, scm_ptr_t a, scm_ptr_t b);
+
+            DECL_WITH_WRAPPER(scm_string_append, scm_ptr_t a, scm_ptr_t b);
+
+            DECL_WITH_WRAPPER(scm_string_replace, scm_ptr_t str, scm_ptr_t a, scm_ptr_t b);
+
+            DECL_WITH_WRAPPER(scm_string_split, scm_ptr_t str);
         }
     }
 }

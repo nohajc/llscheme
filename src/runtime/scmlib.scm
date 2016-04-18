@@ -1,5 +1,7 @@
 ; Library functions implementation
 
+(define (identity x) x)
+
 (define (not obj) (if obj #f #t))
 (define (zero? n) (= n 0))
 

@@ -28,11 +28,18 @@ namespace llscm {
         env->set("length", make_shared<ScmLengthFunc>());
 
         env->set("make-base-namespace", make_shared<ScmFunc>(0, RuntimeSymbol::make_base_nspace));
+        env->set("current-namespace", make_shared<ScmFunc>(ArgsAnyCount, RuntimeSymbol::current_nspace));
         env->set("eval", make_shared<ScmFunc>(2, RuntimeSymbol::eval));
         env->set("read", make_shared<ScmFunc>(0, RuntimeSymbol::read));
         env->set("eof-object?", make_shared<ScmFunc>(1, RuntimeSymbol::is_eof));
+        env->set("list", make_shared<ScmFunc>(ArgsAnyCount, RuntimeSymbol::list));
+        env->set("string->symbol", make_shared<ScmFunc>(1, RuntimeSymbol::string_to_symbol));
+        env->set("string=?", make_shared<ScmFunc>(2, RuntimeSymbol::string_equals));
+        env->set("string-append", make_shared<ScmFunc>(2, RuntimeSymbol::string_append));
+        env->set("string-replace", make_shared<ScmFunc>(3, RuntimeSymbol::string_replace));
+        env->set("string-split", make_shared<ScmFunc>(1, RuntimeSymbol::string_split));
 
-        // TODO: list, eq? equal?
+        // TODO: eq? equal?
 
         // Load other symbols from the runtime library
         string errmsg;

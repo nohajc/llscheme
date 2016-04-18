@@ -1,5 +1,7 @@
 #include <cstdlib>
 #include <cstdio>
+#include <cstring>
+#include <string>
 #include <cmath>
 #include <cinttypes>
 #include <vector>
@@ -101,6 +103,8 @@ namespace llscm {
         SCM_VA_WRAPPERS(scm_minus);
         SCM_VA_WRAPPERS(scm_times);
         SCM_VA_WRAPPERS(scm_div);
+        SCM_VA_WRAPPERS(scm_list);
+        SCM_VA_WRAPPERS(scm_current_nspace);
 
         // DEF_WITH_WRAPPER expands to:
         // auto argl_scm_display = SCM_ARGLIST_WRAPPER(scm_display);
@@ -146,6 +150,10 @@ namespace llscm {
                 case S_FUNC: {
                     // TODO: we should store name in scm_func_t
                     printf("#<procedure>");
+                    break;
+                }
+                case S_NSPACE: {
+                    printf("#<namespace>");
                     break;
                 }
                 // TODO:
@@ -468,6 +476,65 @@ namespace llscm {
 
         DEF_WITH_WRAPPER(scm_is_eof, scm_ptr_t obj) {
             return obj->tag == S_EOF ? SCM_TRUE : SCM_FALSE;
+        }
+
+        DEF_WITH_WRAPPER(scm_string_to_symbol, scm_ptr_t obj) {
+            if (obj->tag != S_STR) {
+                INVALID_ARG_TYPE();
+            }
+
+            return alloc_sym(obj.asStr->str);
+        }
+
+        DEF_WITH_WRAPPER(scm_string_equals, scm_ptr_t a, scm_ptr_t b) {
+            if (a->tag != S_STR || b->tag != S_STR) {
+                INVALID_ARG_TYPE();
+            }
+            return !strcmp(a.asStr->str, b.asStr->str) ? SCM_TRUE : SCM_FALSE;
+        }
+
+        DEF_WITH_WRAPPER(scm_string_append, scm_ptr_t a, scm_ptr_t b) {
+            if (a->tag != S_STR || b->tag != S_STR) {
+                INVALID_ARG_TYPE();
+            }
+            string concat = a.asStr->str;
+            concat += b.asStr->str;
+            return alloc_str(concat.c_str());
+        }
+
+        DEF_WITH_WRAPPER(scm_string_replace, scm_ptr_t str, scm_ptr_t a, scm_ptr_t b) {
+            if (str->tag != S_STR || a->tag != S_STR || b->tag != S_STR) {
+                INVALID_ARG_TYPE();
+            }
+
+            string sstr = str.asStr->str;
+            string sa = a.asStr->str;
+            string sb = b.asStr->str;
+
+            size_t pos = 0;
+            while ((pos = sstr.find(sa, pos)) != string::npos) {
+                sstr.replace(pos, sa.length(), sb);
+                pos += sb.length();
+            }
+
+            return alloc_str(sstr.c_str());
+        }
+
+        DEF_WITH_WRAPPER(scm_string_split, scm_ptr_t str) {
+            if (str->tag != S_STR) {
+                INVALID_ARG_TYPE();
+            }
+
+            vector<scm_type_t*> parts;
+            string word;
+            istringstream ss(str.asStr->str);
+
+            while (ss >> word) {
+                parts.push_back(alloc_str(word.c_str()));
+            }
+            parts.push_back(nullptr);
+
+            return argl_scm_list(&parts[0]);
         }
     }
 }

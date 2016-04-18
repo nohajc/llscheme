@@ -29,8 +29,15 @@ namespace llscm {
     const char * RuntimeSymbol::length = "scm_length";
     const char * RuntimeSymbol::eval = "scm_eval";
     const char * RuntimeSymbol::make_base_nspace = "scm_make_base_nspace";
+    const char * RuntimeSymbol::current_nspace = "scm_current_nspace";
     const char * RuntimeSymbol::read = "scm_read";
     const char * RuntimeSymbol::is_eof = "scm_is_eof";
+    const char * RuntimeSymbol::list = "scm_list";
+    const char * RuntimeSymbol::string_to_symbol = "scm_string_to_symbol";
+    const char * RuntimeSymbol::string_equals = "scm_string_equals";
+    const char * RuntimeSymbol::string_append = "scm_string_append";
+    const char * RuntimeSymbol::string_replace = "scm_string_replace";
+    const char * RuntimeSymbol::string_split = "scm_string_split";
 
     ScmCodeGen::ScmCodeGen(LLVMContext &ctxt, ScmProg * tree):
             context(ctxt), builder(ctxt), ast(tree) {

@@ -1,4 +1,5 @@
 (define ns (make-base-namespace))
+(current-namespace ns)
 
 (define (repl)
   (define expr (read))
