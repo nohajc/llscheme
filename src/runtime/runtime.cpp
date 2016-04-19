@@ -156,6 +156,14 @@ namespace llscm {
                     printf("#<namespace>");
                     break;
                 }
+                case S_FILE: {
+                    printf("#<input-port>");
+                    break;
+                }
+                case S_EOF: {
+                    printf("#<eof>");
+                    break;
+                }
                 // TODO:
                 /*case S_VEC:*/
                 default:
@@ -535,6 +543,49 @@ namespace llscm {
             parts.push_back(nullptr);
 
             return argl_scm_list(&parts[0]);
+        }
+
+        DEF_WITH_WRAPPER(scm_open_input_file, scm_ptr_t path) {
+            if (path->tag != S_STR) {
+                INVALID_ARG_TYPE();
+            }
+
+            FILE * handle = fopen(path.asStr->str, "r");
+            if (!handle) {
+                return SCM_NULL;
+            }
+
+            return alloc_file(handle);
+        }
+
+        DEF_WITH_WRAPPER(scm_close_input_port, scm_ptr_t port) {
+            if (port->tag != S_FILE) {
+                INVALID_ARG_TYPE();
+            }
+
+            fclose(port.asFile->handle);
+            return SCM_NULL;
+        }
+
+        DEF_WITH_WRAPPER(scm_read_line, scm_ptr_t port) {
+            if (port->tag != S_FILE) {
+                INVALID_ARG_TYPE();
+            }
+
+            scm_ptr_t ret;
+            size_t n = 0;
+            char * line_ptr = nullptr;
+            ssize_t read_count = getline(&line_ptr, &n, port.asFile->handle);
+            if (read_count == -1) {
+                ret = SCM_EOF;
+            }
+            else {
+                line_ptr[read_count - 1] = 0;
+                ret = alloc_str(line_ptr);
+            }
+
+            free(line_ptr);
+            return ret;
         }
     }
 }

@@ -99,5 +99,13 @@ namespace llscm {
 
             return obj;
         }
+
+        scm_type_t * alloc_file(FILE * handle) {
+            scm_ptr_t obj = GC_MALLOC(sizeof(scm_file_t));
+            obj->tag = S_FILE;
+            obj.asFile->handle = handle;
+
+            return obj;
+        }
     }
 }

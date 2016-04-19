@@ -2,6 +2,7 @@
 #define LLSCHEME_MEMORY_HPP
 
 #include <cstdint>
+#include <cstdio>
 #include "../runtime.h"
 #include "gc_cpp.h"
 
@@ -61,6 +62,7 @@ namespace llscm {
                                     al_wrapper_t wrfnptr, scm_type_t ** ctxptr);
             scm_type_t * alloc_cons(scm_type_t * car, scm_type_t * cdr);
             scm_type_t * alloc_nspace(GCed<ScmEnv> * env);
+            scm_type_t * alloc_file(FILE * handle);
             scm_type_t ** alloc_heap_storage(int32_t size);
         }
     }

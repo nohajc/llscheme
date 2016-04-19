@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <set>
+#include <cstdio>
 #include "runtime/types.hpp"
 #include "runtime/scmjit.hpp"
 
@@ -86,6 +87,11 @@ namespace llscm {
             GCed<ScmEnv> * env;
         };
 
+        struct scm_file_t {
+            int32_t tag;
+            FILE * handle;
+        };
+
         struct Constant {
             static scm_type_t scm_null;
             static scm_type_t scm_true;
@@ -104,6 +110,7 @@ namespace llscm {
             scm_func_t * asFunc;
             scm_vec_t * asVec;
             scm_nspace_t * asNspace;
+            scm_file_t * asFile;
 
             scm_type_t * operator->() {
                 return asType;
@@ -195,6 +202,12 @@ namespace llscm {
             DECL_WITH_WRAPPER(scm_string_replace, scm_ptr_t str, scm_ptr_t a, scm_ptr_t b);
 
             DECL_WITH_WRAPPER(scm_string_split, scm_ptr_t str);
+
+            DECL_WITH_WRAPPER(scm_open_input_file, scm_ptr_t path);
+
+            DECL_WITH_WRAPPER(scm_close_input_port, scm_ptr_t port);
+
+            DECL_WITH_WRAPPER(scm_read_line, scm_ptr_t port);
         }
     }
 }

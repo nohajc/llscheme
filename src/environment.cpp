@@ -38,6 +38,9 @@ namespace llscm {
         env->set("string-append", make_shared<ScmFunc>(2, RuntimeSymbol::string_append));
         env->set("string-replace", make_shared<ScmFunc>(3, RuntimeSymbol::string_replace));
         env->set("string-split", make_shared<ScmFunc>(1, RuntimeSymbol::string_split));
+        env->set("open-input-file", make_shared<ScmFunc>(1, RuntimeSymbol::open_input_file));
+        env->set("close-input-port", make_shared<ScmFunc>(1, RuntimeSymbol::close_input_port));
+        env->set("read-line", make_shared<ScmFunc>(1, RuntimeSymbol::read_line));
 
         // TODO: eq? equal?
 

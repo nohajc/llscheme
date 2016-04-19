@@ -6,7 +6,7 @@
 #define EOF_ORIG EOF
 #undef EOF
 
-#define TYPES_DEF(T) T(FALSE), T(TRUE), T(NIL), T(INT), T(FLOAT), T(STR), T(SYM), T(CONS), T(FUNC), T(VEC), T(NSPACE), T(EOF)
+#define TYPES_DEF(T) T(FALSE), T(TRUE), T(NIL), T(INT), T(FLOAT), T(STR), T(SYM), T(CONS), T(FUNC), T(VEC), T(NSPACE), T(EOF), T(FILE)
 
 #define T_STR(name) "S_" #name
 #define T_ENUM(name) S_##name
