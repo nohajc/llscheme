@@ -41,6 +41,9 @@ namespace llscm {
     const char * RuntimeSymbol::open_input_file = "scm_open_input_file";
     const char * RuntimeSymbol::close_input_port = "scm_close_input_port";
     const char * RuntimeSymbol::read_line = "scm_read_line";
+    const char * RuntimeSymbol::equal = "scm_equal";
+    const char * RuntimeSymbol::exit = "scm_exit";
+    const char * RuntimeSymbol::random = "scm_random";
 
     ScmCodeGen::ScmCodeGen(LLVMContext &ctxt, ScmProg * tree):
             context(ctxt), builder(ctxt), ast(tree) {

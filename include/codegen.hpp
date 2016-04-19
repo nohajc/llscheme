@@ -57,6 +57,9 @@ namespace llscm {
         static const char *open_input_file;
         static const char *close_input_port;
         static const char *read_line;
+        static const char *equal;
+        static const char *exit;
+        static const char *random;
     };
 
     class ScmCodeGen: public AstVisitor {

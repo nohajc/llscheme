@@ -41,10 +41,13 @@ namespace llscm {
         env->set("open-input-file", make_shared<ScmFunc>(1, RuntimeSymbol::open_input_file));
         env->set("close-input-port", make_shared<ScmFunc>(1, RuntimeSymbol::close_input_port));
         env->set("read-line", make_shared<ScmFunc>(1, RuntimeSymbol::read_line));
+        env->set("equal?", make_shared<ScmFunc>(2, RuntimeSymbol::equal));
+        env->set("exit", make_shared<ScmFunc>(1, RuntimeSymbol::exit));
+        env->set("random", make_shared<ScmFunc>(1, RuntimeSymbol::random));
 
-        // TODO: eq? equal?
+        // TODO: eq?
 
-        // Load other symbols from the runtime library
+        // Load other symbols from the runtime library (those implemented in Scheme - without c headers)
         string errmsg;
         sys::DynamicLibrary dylib = sys::DynamicLibrary::getPermanentLibrary("libllscmrt.so", &errmsg);
         if (!dylib.isValid()) {
@@ -223,7 +226,7 @@ namespace llscm {
             error(r.first.val + " is not defined.");
         }
         refs.clear();
-        eval_again.clear();
+        evalAgain().clear();
     }
 }
 

@@ -34,12 +34,35 @@
       (cons (car lst) (filter pred (cdr lst)))
       (filter pred (cdr lst)))))
 
+(define (zip a b)
+  (if (or (null? a) (null? b))
+    null
+    (cons (list (car a) (car b)) (zip (cdr a) (cdr b)))))
+
+(define (member v lst)
+  (if (null? lst)
+	 #f
+	 (or (equal? (car lst) v)
+		  (member v (cdr lst)))))
+
+(define (uniq_r lst added)
+  (if (null? lst)
+	 null
+	 (if (member (car lst) added)
+		(uniq_r (cdr lst) added)
+		(cons (car lst) (uniq_r (cdr lst) (cons (car lst) added))))))
+
+(define (remove-duplicates lst)
+  (uniq_r lst null))
+
 (define (compose1 fn1 fn2)
   (lambda (x) (fn1 (fn2 x))))
 
 (define (displayln obj)
   (display obj)
   (display "\n"))
+
+(define (newline) (display "\n"))
 
 ; This is for debugging.
 ; We just want to see if the library was loaded.

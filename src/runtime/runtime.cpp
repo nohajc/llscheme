@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <ctime>
 #include <string>
 #include <cmath>
 #include <cinttypes>
@@ -47,6 +48,10 @@ namespace llscm {
         static readlinestream & getReadlineStream() {
             static readlinestream readlns;
             return readlns;
+        }
+
+        LibSetup::LibSetup() {
+            srand((uint32_t)time(nullptr));
         }
 
         LibSetup::~LibSetup() {
@@ -586,6 +591,72 @@ namespace llscm {
 
             free(line_ptr);
             return ret;
+        }
+
+        DEF_WITH_WRAPPER(scm_equal, scm_ptr_t a, scm_ptr_t b) {
+            if (a->tag != b->tag) {
+                return SCM_FALSE;
+            }
+
+            switch(a->tag) {
+                case S_STR:
+                    return !strcmp(a.asStr->str, b.asStr->str) ? SCM_TRUE : SCM_FALSE;
+                case S_SYM:
+                    return !strcmp(a.asSym->sym, b.asSym->sym) ? SCM_TRUE : SCM_FALSE;
+                case S_INT:
+                    return a.asInt->value == b.asInt->value ? SCM_TRUE : SCM_FALSE;
+                case S_FLOAT:
+                    return a.asFloat->value == b.asFloat->value ? SCM_TRUE : SCM_FALSE;
+                case S_CONS: {
+                    bool equals = true;
+                    scm_ptr_t lena = scm_length(a);
+                    scm_ptr_t lenb = scm_length(b);
+                    if (lena.asInt->value != lenb.asInt->value) {
+                        equals = false;
+                    }
+                    else {
+                        list_foreach(zip(a, b), [&equals](scm_ptr_t elem) {
+                            scm_ptr_t pair = elem.asCons->car;
+                            scm_ptr_t first = pair.asCons->car;
+                            scm_ptr_t second = ((scm_ptr_t)pair.asCons->cdr).asCons->car;
+                            if (scm_equal(first, second) == SCM_FALSE) {
+                                equals = false;
+                            }
+                        });
+                    }
+                    return equals ? SCM_TRUE : SCM_FALSE;
+                }
+                case S_FUNC:
+                    return a.asFunc->fnptr == b.asFunc->fnptr ? SCM_TRUE : SCM_FALSE;
+                case S_NSPACE:
+                    return a.asNspace->env == b.asNspace->env ? SCM_TRUE : SCM_FALSE;
+                case S_FILE:
+                    return a.asFile->handle == b.asFile->handle ? SCM_TRUE : SCM_TRUE;
+
+                case S_TRUE:
+                case S_FALSE:
+                case S_NIL:
+                case S_EOF:
+                    return a->tag == b->tag ? SCM_TRUE : SCM_FALSE;
+                default:
+                    return SCM_NULL;
+            }
+        }
+
+        DEF_WITH_WRAPPER(scm_exit, scm_ptr_t code) {
+            if (code->tag != S_INT) {
+                INVALID_ARG_TYPE();
+            }
+
+            exit(code.asInt->value);
+        }
+
+        DEF_WITH_WRAPPER(scm_random, scm_ptr_t k) {
+            if (k->tag != S_INT) {
+                INVALID_ARG_TYPE();
+            }
+
+            return alloc_int(rand() % k.asInt->value);
         }
     }
 }

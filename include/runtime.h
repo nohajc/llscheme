@@ -19,6 +19,7 @@ namespace llscm {
 
         class LibSetup {
         public:
+            LibSetup();
             ~LibSetup();
         };
 
@@ -144,6 +145,8 @@ namespace llscm {
             extern int32_t exit_code;
             extern scm_type_t * scm_argv;
 
+            extern scm_type_t * zip(scm_ptr_t a, scm_ptr_t b);
+
             scm_type_t * scm_get_arg_vector(int argc, char * argv[]);
             //scm_type_t * scm_cmd_args();
             DECL_WITH_WRAPPER(scm_cmd_args);
@@ -208,6 +211,12 @@ namespace llscm {
             DECL_WITH_WRAPPER(scm_close_input_port, scm_ptr_t port);
 
             DECL_WITH_WRAPPER(scm_read_line, scm_ptr_t port);
+
+            DECL_WITH_WRAPPER(scm_equal, scm_ptr_t a, scm_ptr_t b);
+
+            DECL_WITH_WRAPPER(scm_exit, scm_ptr_t code);
+
+            DECL_WITH_WRAPPER(scm_random, scm_ptr_t k);
         }
     }
 }
