@@ -277,7 +277,7 @@ namespace llscm {
 			shared_ptr<ScmRef> ref = make_shared<ScmRef>(last_sym_name, nullptr);
 			env->getUnRefs().emplace(
 				make_pair(
-					*DPC<ScmSym>(last_sym), ScmEnv::CapturedRef(env, ref)
+					*DPC<ScmSym>(last_sym), ScmEnv::CapturedRef{env, ref}
 				)
 			);
 			return ref;
@@ -442,7 +442,7 @@ namespace llscm {
 				// when the object is defined.
 				env->evalAgain().emplace(
 					make_pair(
-						fref.get(), ScmEnv::CapturedObj(env, shared_from_this())
+						fref.get(), ScmEnv::CapturedObj{env, shared_from_this()}
 					)
 				);
 				D(cerr << "queued CT_Eval" << endl);

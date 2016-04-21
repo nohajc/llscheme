@@ -25,11 +25,14 @@ namespace llscm {
             };
         };
 
-        template<int E>
+        /*template<int E>
         struct Arguments<Range<E>>: Arguments<typename Range<E>::type> {};
 
         template<int C>
-        struct Argc: Arguments<Range<C>> {};
+        struct Argc: Arguments<Range<C>> {};*/
+
+        template<int C>
+        using Argc = Arguments<typename Range<C>::type>;
 
         template<typename F1, typename F2>
         inline scm_type_t * internal_scm_plus(F1 first_arg, F2 next_arg) {

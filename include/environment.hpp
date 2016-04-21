@@ -65,8 +65,6 @@ namespace llscm {
         struct CapturedRef {
             P_ScmEnv env;
             shared_ptr<ScmRef> ref;
-
-            CapturedRef(P_ScmEnv env, shared_ptr<ScmRef> ref): env(env), ref(ref) {}
         };
         unordered_multimap<ScmSym, CapturedRef> & getUnRefs() {
             return top_level_env->urefs;
@@ -75,8 +73,6 @@ namespace llscm {
         struct CapturedObj {
             P_ScmEnv env;
             P_ScmObj obj;
-
-            CapturedObj(P_ScmEnv env, P_ScmObj obj): env(env), obj(obj) {}
         };
         unordered_multimap<ScmRef*, CapturedObj> & evalAgain() {
             return top_level_env->eval_again;

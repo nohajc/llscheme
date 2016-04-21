@@ -1,5 +1,3 @@
-;(hehehe 1 2)
-
 (define (even n)
   (if (= n 0)
 	 #t
