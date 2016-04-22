@@ -8,7 +8,7 @@
 (eval '(displayln gstr) ns)
 
 (eval '(define sum (+ 3 4 5 6 7)) ns)
-(eval '(displayln sum) ns)
+(eval (list 'displayln 'sum) ns)
 
 (eval '(define (func x y z) (- (+ x y) z)) ns)
 (eval '(displayln (func 7 8 3)) ns)

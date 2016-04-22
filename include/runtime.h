@@ -66,6 +66,9 @@ namespace llscm {
         typedef scm_type_t * (*al_wrapper_t)(scm_type_t **);
         typedef scm_type_t * (*scm_expr_ptr_t)();
 
+        // TODO: store function name
+        // so that we can use unquoted function object
+        // as the input to eval parser (parser needs the name)
         struct scm_func_t {
             int32_t tag;
             int32_t argc;
