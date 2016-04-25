@@ -502,12 +502,26 @@ namespace llscm {
 
 
 	P_ScmObj ScmDefineVarSyntax::CT_Eval(P_ScmEnv env) {
-		// TODO: handle lambda inside define
-		//P_ScmObj lambda = DPC<ScmLambdaSyntax>(val);
+		ScmLambdaSyntax * lambda = DPC<ScmLambdaSyntax>(val).get();
 
 		defined_in_func = DPC<ScmFunc>(env->context).get();
 
+		// In case of lambda inside define which was written explicitly in the
+		// source code, we don't want to CT_Eval the lambda function the usual way.
+		// Instead, we just convert it to a named function in place.
+		if (lambda && !StringRef(DPC<ScmSym>(name)->val).startswith("__lambda#")) {
+			const string & fname = DPC<ScmSym>(name)->val;
+			ScmCons * c_arg_list = DPC<ScmCons>(lambda->arg_list).get();
+			int32_t argc = c_arg_list ? c_arg_list->length() : 0;
+
+			val = make_shared<ScmFunc>(
+					argc, fname,
+					move(lambda->arg_list), move(lambda->body_list)
+			);
+		}
+
 		val = val->CT_Eval(env);
+
 		if (env->fail()) {
 			return nullptr;
 		}
