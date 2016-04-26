@@ -170,7 +170,7 @@ namespace llscm {
 			cg.makeExecutable();
 		} // Otherwise we're building a library (module without main function)
 		cg.run();
-		cg.dump();
+		D(cg.dump());
 
 		invokeLLC(cg.getModule());
 

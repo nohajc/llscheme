@@ -373,7 +373,7 @@ namespace llscm {
             ScmCodeGen cg(getGlobalContext(), &prog);
             cg.makeExpression(expr_name);
             cg.run();
-            cg.dump();
+            D(cg.dump());
 
             // Compile the Module
             ScmJIT * jit = getJIT();
