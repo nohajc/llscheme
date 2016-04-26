@@ -1,3 +1,9 @@
 #!/usr/bin/env bash
 
-cmake -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..
+CMAKE_BUILD_TYPE="RELEASE"
+
+if [ -n $1 ] && [ x$1 == x"--enable-debug" ]; then
+	CMAKE_BUILD_TYPE="DEBUG"
+fi
+
+cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..

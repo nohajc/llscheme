@@ -4,6 +4,7 @@ schemec
 bin
 doc
 build
+!build/configure
 test/lls_programs/*
 !test/lls_programs/*.*
 !test/lls_programs/Makefile

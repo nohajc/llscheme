@@ -48,26 +48,31 @@ set(TEST_FILES
 add_executable(schemec ${SOURCE_FILES} ${EXEC_FILES})
 add_executable(unit_tests EXCLUDE_FROM_ALL ${SOURCE_FILES} ${TEST_FILES})
 
+# Add a custom rule to generate the Scheme part of our runtime library
+add_custom_command(OUTPUT scmlib.o
+        COMMAND schemec "${PROJECT_SOURCE_DIR}/src/runtime/scmlib.scm" -o "scmlib.o" -b lib)
+
 set(RUNTIME_FILES
         include/runtime/types.hpp
         src/runtime/runtime.cpp include/runtime.h
         include/runtime/memory.h src/runtime/memory.cpp
         include/runtime/error.h src/runtime/error.cpp
         include/runtime/internal.hpp include/runtime/meta.hpp
-        src/runtime/scmlib.o include/runtime/scmjit.hpp
+        scmlib.o include/runtime/scmjit.hpp
         src/runtime/readlinestream.cpp include/runtime/readlinestream.hpp
         include/linenoise/linenoise.c include/linenoise/linenoise.h)
 
 add_library(llscmrt SHARED ${RUNTIME_FILES} ${SOURCE_FILES})
+set_target_properties(llscmrt PROPERTIES LINKER_LANGUAGE CXX)
 
-set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES ${PROJECT_SOURCE_DIR}/src/runtime/scmlib.o)
+set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES ${PROJECT_SOURCE_DIR}/test/schemec)
 
 llvm_map_components_to_libnames(llvm_libs support core irreader bitwriter
         analysis executionengine instcombine object runtimedyld scalaropts support native)
 
 target_link_libraries(schemec ${llvm_libs})
 
-IF(${CMAKE_BUILD_TYPE} MATCHES DEBUG)
+IF(CMAKE_CFG_INTDIR MATCHES "Debug" OR CMAKE_BUILD_TYPE MATCHES DEBUG)
     set(EXEC_DIR ${PROJECT_SOURCE_DIR}/bin/Debug)
 ELSE()
     set(EXEC_DIR ${PROJECT_SOURCE_DIR}/bin/Release)
@@ -78,10 +83,14 @@ target_link_libraries(llscmrt ${LIB_BOEHM_GC} ${llvm_libs})
 
 target_link_libraries(unit_tests ${llvm_libs} ${LIB_UNIT_TEST_CPP})
 
-#add_custom_command(TARGET schemec POST_BUILD COMMAND "${PROJECT_SOURCE_DIR}/test/test.rb" "${PROJECT_SOURCE_DIR}/test/parser.tests")
+add_custom_command(TARGET schemec POST_BUILD
+        COMMAND mkdir -p ${EXEC_DIR}
+        COMMAND ${CMAKE_COMMAND} -E create_symlink ${EXEC_DIR}/schemec ${PROJECT_SOURCE_DIR}/test/schemec)
 
-add_custom_command(TARGET schemec POST_BUILD COMMAND schemec "${PROJECT_SOURCE_DIR}/src/runtime/scmlib.scm" -b lib)
-add_custom_command(TARGET schemec POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:schemec> ${EXEC_DIR})
-add_custom_command(TARGET llscmrt POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy  $<TARGET_FILE:llscmrt> ${EXEC_DIR})
+# Run tests after the compiler is built
+add_custom_command(TARGET schemec POST_BUILD COMMAND "${PROJECT_SOURCE_DIR}/test/test.rb" "${PROJECT_SOURCE_DIR}/test/parser.tests")
+
+add_custom_command(TARGET schemec POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:schemec> ${EXEC_DIR}/)
+add_custom_command(TARGET llscmrt POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy  $<TARGET_FILE:llscmrt> ${EXEC_DIR}/)
 
 add_dependencies(llscmrt schemec)
