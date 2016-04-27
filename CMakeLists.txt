@@ -6,6 +6,9 @@ find_library(LIB_BOEHM_GC gc)
 
 find_package(LLVM REQUIRED CONFIG)
 
+# Optional, needed for the basic post-build tests
+find_program(RUBY ruby)
+
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
@@ -80,7 +83,7 @@ ENDIF()
 target_link_libraries(schemec -Wl,-R -Wl,${EXEC_DIR})
 target_link_libraries(llscmrt ${LIB_BOEHM_GC} ${llvm_libs})
 
-IF(${LIB_UNIT_TEST_CPP})
+IF(LIB_UNIT_TEST_CPP)
     add_executable(unit_tests EXCLUDE_FROM_ALL ${SOURCE_FILES} ${TEST_FILES})
     target_link_libraries(unit_tests ${llvm_libs} ${LIB_UNIT_TEST_CPP})
 ENDIF()
@@ -90,7 +93,9 @@ add_custom_command(TARGET schemec POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E create_symlink ${EXEC_DIR}/schemec ${PROJECT_SOURCE_DIR}/test/schemec)
 
 # Run tests after the compiler is built
-add_custom_command(TARGET schemec POST_BUILD COMMAND "${PROJECT_SOURCE_DIR}/test/test.rb" "${PROJECT_SOURCE_DIR}/test/parser.tests")
+IF(RUBY)
+    add_custom_command(TARGET schemec POST_BUILD COMMAND "${PROJECT_SOURCE_DIR}/test/test.rb" "${PROJECT_SOURCE_DIR}/test/parser.tests")
+ENDIF()
 
 add_custom_command(TARGET schemec POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:schemec> ${EXEC_DIR}/)
 add_custom_command(TARGET llscmrt POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy  $<TARGET_FILE:llscmrt> ${EXEC_DIR}/)
