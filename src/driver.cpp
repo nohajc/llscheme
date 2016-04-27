@@ -11,6 +11,7 @@
 #include "../include/environment.hpp"
 #include "../include/codegen.hpp"
 #include "../include/optionparser/argtypes.h"
+#include "../include/fs_helpers.hpp"
 
 using namespace std;
 using namespace llvm;
@@ -215,6 +216,7 @@ namespace llscm {
 
 int main(int argc, char * argv[]) {
 	using namespace llscm;
+	initExecPath(argv[0]);
 
 	option::Stats stats(true, usage, argc - 1, argv + 1);
 	vector<option::Option> cmdargs(stats.options_max);

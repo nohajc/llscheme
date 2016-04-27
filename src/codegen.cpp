@@ -55,6 +55,7 @@ namespace llscm {
         // Not adding main function by default
         addEntryFuncProlog = &ScmCodeGen::addLibInitFuncProlog;
         addEntryFuncEpilog = &ScmCodeGen::addLibInitFuncEpilog;
+        btype = BuildType::LIB;
     }
 
     void ScmCodeGen::initTypes() {
@@ -996,7 +997,7 @@ namespace llscm {
 
         if (node->val->t == T_FUNC && node->val->location == T_GLOB) {
             ScmFunc * fn = DPC<ScmFunc>(node->val).get();
-            if (!StringRef(fn->name).startswith("__lambda#")) {
+            if (!StringRef(fn->name).startswith("__lambda#") && btype != BuildType::EXEC) {
                 // Metadata saved only for global named functions
                 output_meta.addRecord(fn->argc_expected, fn->name);
             }
@@ -1215,14 +1216,24 @@ namespace llscm {
         (this->*addEntryFuncEpilog)(last_val);
         verifyFunction(*entry_func, &errs());
 
-        // Save generated metadata array to global variable
-        Constant * llsmeta = ConstantDataArray::get(context, output_meta.getBlob());
+        if (btype != BuildType::EXEC) {
+            auto blob = output_meta.getBlob();
+            // Save generated metadata array to global variable
+            Constant *llsmeta = ConstantDataArray::get(context, blob);
 
-        new GlobalVariable(
-                *module, llsmeta->getType(), false,
-                GlobalValue::AppendingLinkage,
-                llsmeta, "__llscheme_metainfo__"
-        );
+            new GlobalVariable(
+                    *module, llsmeta->getType(), false,
+                    GlobalValue::AppendingLinkage,
+                    llsmeta, "__llscheme_metainfo__"
+            );
+        }
+
+        /*new GlobalVariable(
+                *module, t.ti32, false,
+                GlobalValue::WeakAnyLinkage,
+                builder.getInt32((uint32_t)blob.size()),
+                "__llscheme_metainfo_length__"
+        );*/
     }
 }
 

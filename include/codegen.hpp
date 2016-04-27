@@ -79,6 +79,12 @@ namespace llscm {
         void (ScmCodeGen::*addEntryFuncProlog)();
         void (ScmCodeGen::*addEntryFuncEpilog)(Value *);
 
+        enum class BuildType {
+            EXEC, LIB, EXPR
+        };
+
+        BuildType btype;
+
         struct {
             StructType * scm_type;
             StructType * scm_int;
@@ -102,6 +108,7 @@ namespace llscm {
             Function * error_not_a_func;
             Function * error_wrong_arg_num;
         } fn;
+
 
         template<Tag tag, typename ...Args>
         Constant * getScmConstant(Args ...args) {
@@ -234,12 +241,14 @@ namespace llscm {
         void makeExecutable() {
             addEntryFuncProlog = &ScmCodeGen::addMainFuncProlog;
             addEntryFuncEpilog = &ScmCodeGen::addMainFuncEpilog;
+            btype = BuildType::EXEC;
         }
 
         void makeExpression(const string & name) {
             entry_func_name = name;
             addEntryFuncProlog = &ScmCodeGen::addExprFuncProlog;
             addEntryFuncEpilog = &ScmCodeGen::addExprFuncEpilog;
+            btype = BuildType::EXPR;
         }
 
         shared_ptr<Module> getModule() {

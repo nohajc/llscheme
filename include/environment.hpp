@@ -87,7 +87,7 @@ namespace llscm {
     };
 
     shared_ptr<ScmEnv> createGlobalEnvironment(ScmProg & prog);
-    void initGlobalEnvironment(ScmEnv * env);
+    void initGlobalEnvironment(ScmEnv * env, void * lib_blob = nullptr);
 }
 
 #endif //LLSCHEME_ENVIRONMENT_HPP

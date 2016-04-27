@@ -337,7 +337,7 @@ namespace llscm {
 
         DEF_WITH_WRAPPER(scm_make_base_nspace) {
             GCed<ScmEnv> * env = new GCed<ScmEnv>(nullptr);
-            initGlobalEnvironment(env);
+            initGlobalEnvironment(env, __llscheme_metainfo__);
 
             return alloc_nspace(env);
         }

@@ -4,12 +4,14 @@
 #include "../include/environment.hpp"
 #include "../include/debug.hpp"
 #include "../include/codegen.hpp"
+#include "../include/fs_helpers.hpp"
+#include "../include/lib_reader.hpp"
 
 namespace llscm {
     using namespace std;
     using namespace llvm;
 
-    void initGlobalEnvironment(ScmEnv * env) {
+    void initGlobalEnvironment(ScmEnv * env, void * lib_blob) {
         env->set("cons", make_shared<ScmConsFunc>());
         env->set("car", make_shared<ScmCarFunc>());
         env->set("cdr", make_shared<ScmCdrFunc>());
@@ -47,30 +49,43 @@ namespace llscm {
 
         // TODO: eq?
 
+        LibReader dylib;
+        Metadata input_meta;
+        void * metainfo_blob;
+
         // Load other symbols from the runtime library (those implemented in Scheme - without c headers)
-        string errmsg;
-        sys::DynamicLibrary dylib = sys::DynamicLibrary::getPermanentLibrary("libllscmrt.so", &errmsg);
-        /*if (!dylib.isValid()) {
-            cerr << errmsg << endl;
-            exit(EXIT_FAILURE);
-        }*/
+        if (lib_blob) {
+            metainfo_blob = lib_blob;
+            D(cerr << "lib blob address = " << lib_blob << endl);
+        }
+        else {
+            D(cerr << "loading library using our custom reader" << endl);
+            auto res = getLibraryPath("libllscmrt.so");
+            if (!res.second) {
+                cerr << "Runtime library not found" << endl;
+                return;
+            }
 
-        if (dylib.isValid()) {
-            Metadata input_meta;
-            void *metainfo_blob = dylib.getAddressOfSymbol("__llscheme_metainfo__");
-            if (metainfo_blob) {
-                if (!input_meta.loadFromBlob(metainfo_blob)) {
-                    cerr << "Error: Invalid metadata in the runtime library." << endl;
-                    exit(EXIT_FAILURE);
-                }
+            if (!dylib.load(res.first)) {
+                return;
+            }
 
-                input_meta.foreachRecord([env](FunctionInfo *rec) {
-                    D(cerr << "Found function \"" << rec->name << "\" with " << rec->argc << " args." << endl);
-                    // Add the function into environment
-                    env->set(rec->name, make_shared<ScmFunc>(rec->argc, rec->name));
-                });
+            metainfo_blob = dylib.getAddressOfSymbol("__llscheme_metainfo__");
+            if (!metainfo_blob) {
+                return;
             }
         }
+
+        if (!input_meta.loadFromBlob(metainfo_blob)) {
+            cerr << "Error: Invalid metadata in the runtime library." << endl;
+            exit(EXIT_FAILURE);
+        }
+
+        input_meta.foreachRecord([env](FunctionInfo *rec) {
+            D(cerr << "Found function \"" << rec->name << "\" with " << rec->argc << " args." << endl);
+            // Add the function into environment
+            env->set(rec->name, make_shared<ScmFunc>(rec->argc, rec->name));
+        });
     }
 
     shared_ptr<ScmEnv> createGlobalEnvironment(ScmProg & prog) {

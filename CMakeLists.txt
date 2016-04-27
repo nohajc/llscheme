@@ -4,6 +4,9 @@ project(llscheme)
 find_library(LIB_UNIT_TEST_CPP NAMES UnitTest++)
 find_library(LIB_BOEHM_GC gc)
 
+find_library(LIB_BOOST_SYS boost_system)
+find_library(LIB_BOOST_FS boost_filesystem)
+
 find_package(LLVM REQUIRED CONFIG)
 
 # Optional, needed for the basic post-build tests
@@ -39,7 +42,10 @@ set(SOURCE_FILES
         include/ast_visitor.hpp
         src/ast_visitor.cpp
         include/runtime/types.hpp
-        include/libmetainfo.hpp src/libmetainfo.cpp)
+        include/libmetainfo.hpp src/libmetainfo.cpp
+        src/fs_helpers.cpp include/fs_helpers.hpp
+        src/lib_reader.cpp include/lib_reader.hpp
+        include/elfio/elfio.hpp)
 
 set(EXEC_FILES
         src/driver.cpp
@@ -47,6 +53,8 @@ set(EXEC_FILES
 
 set(TEST_FILES
         src/test/main.cpp src/test/environment.cpp src/test/any_ptr.cpp)
+
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
 add_executable(schemec ${SOURCE_FILES} ${EXEC_FILES})
 
@@ -72,7 +80,7 @@ set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES ${PROJECT_SOURCE
 llvm_map_components_to_libnames(llvm_libs support core irreader bitwriter
         analysis executionengine instcombine object runtimedyld scalaropts support native)
 
-target_link_libraries(schemec ${llvm_libs})
+target_link_libraries(schemec ${llvm_libs} ${LIB_BOOST_SYS} ${LIB_BOOST_FS})
 
 IF(CMAKE_CFG_INTDIR MATCHES "Debug" OR CMAKE_BUILD_TYPE MATCHES DEBUG)
     set(EXEC_DIR ${PROJECT_SOURCE_DIR}/bin/Debug)
@@ -81,7 +89,7 @@ ELSE()
 ENDIF()
 
 target_link_libraries(schemec -Wl,-R -Wl,${EXEC_DIR})
-target_link_libraries(llscmrt ${LIB_BOEHM_GC} ${llvm_libs})
+target_link_libraries(llscmrt ${LIB_BOEHM_GC} ${llvm_libs} ${LIB_BOOST_SYS} ${LIB_BOOST_FS})
 
 IF(LIB_UNIT_TEST_CPP)
     add_executable(unit_tests EXCLUDE_FROM_ALL ${SOURCE_FILES} ${TEST_FILES})

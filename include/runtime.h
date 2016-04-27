@@ -145,6 +145,7 @@ namespace llscm {
         scm_type_t * argl_##func(scm_type_t ** arg_list)
 
         extern "C" {
+            extern uint8_t __llscheme_metainfo__[];
             extern int32_t exit_code;
             extern scm_type_t * scm_argv;
 
