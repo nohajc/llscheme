@@ -7,11 +7,10 @@ It can translate Scheme source files (.scm) directly to native object files (.o)
 ## Installation
 
 ### Dependencies
-
-llvm
-clang
-libgc (Boehm garbage collector)
-cmake
+  * llvm
+  * clang
+  * libgc (Boehm garbage collector)
+  * cmake
 
 ## Usage
 
