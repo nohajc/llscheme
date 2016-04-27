@@ -46,7 +46,6 @@ set(TEST_FILES
         src/test/main.cpp src/test/environment.cpp src/test/any_ptr.cpp)
 
 add_executable(schemec ${SOURCE_FILES} ${EXEC_FILES})
-add_executable(unit_tests EXCLUDE_FROM_ALL ${SOURCE_FILES} ${TEST_FILES})
 
 # Add a custom rule to generate the Scheme part of our runtime library
 add_custom_command(OUTPUT scmlib.o
@@ -81,7 +80,10 @@ ENDIF()
 target_link_libraries(schemec -Wl,-R -Wl,${EXEC_DIR})
 target_link_libraries(llscmrt ${LIB_BOEHM_GC} ${llvm_libs})
 
-target_link_libraries(unit_tests ${llvm_libs} ${LIB_UNIT_TEST_CPP})
+IF(${LIB_UNIT_TEST_CPP})
+    add_executable(unit_tests EXCLUDE_FROM_ALL ${SOURCE_FILES} ${TEST_FILES})
+    target_link_libraries(unit_tests ${llvm_libs} ${LIB_UNIT_TEST_CPP})
+ENDIF()
 
 add_custom_command(TARGET schemec POST_BUILD
         COMMAND mkdir -p ${EXEC_DIR}
