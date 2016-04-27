@@ -37,6 +37,9 @@ namespace llscm {
     }
 
     pair<string, bool> findFileInDirectory(const string & fname, const string & dir) {
+        if (!exists(dir)) {
+            return {"", false};
+        }
         path file = fname;
         directory_iterator dir_it(dir);
         directory_iterator end;
