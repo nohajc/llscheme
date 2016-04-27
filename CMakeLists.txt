@@ -102,7 +102,8 @@ add_custom_command(TARGET schemec POST_BUILD
 
 # Run tests after the compiler is built
 IF(RUBY)
-    add_custom_command(TARGET schemec POST_BUILD COMMAND "${PROJECT_SOURCE_DIR}/test/test.rb" "${PROJECT_SOURCE_DIR}/test/parser.tests")
+    add_custom_target(schemec_test "${PROJECT_SOURCE_DIR}/test/test.rb" "${PROJECT_SOURCE_DIR}/test/parser.tests")
+    add_dependencies(schemec_test schemec)
 ENDIF()
 
 add_custom_command(TARGET schemec POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:schemec> ${EXEC_DIR}/)
