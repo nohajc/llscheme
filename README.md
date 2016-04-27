@@ -40,6 +40,12 @@ The compiler executable and the library will be located in `bin/Release` or `bin
 
 If you want to run compiled programs outside of the `lls_programs` directory, install `libllscmrt.so` to a standard location or use `LD_LIBRARY_PATH`.
 
+## Quick start
+The Makefile prepared in `test/lls_programs` scans all *.scm files in the directory, so you can add your own source file and compile it to executable by simply executing `make` or `make DEBUG=y` (it automatically invokes linker for you).
+
+You can also try REPL (written in Scheme) to interactively compile and run entered code: `test/lls_programs/repl`
+
+
 ## Usage
 
 ### Compiler
