@@ -86,6 +86,10 @@ $ schemec -s "(display \"sometext\")" -o my_exec.o   # if no -o provided, prints
 (define foo "bar") ; variable
 (define (func x y z) (list x y z)) ; function
 
+; Module imports
+(require "path/to/library") ; without the .so extension, 
+; relative to the current working directory or the executable directory
+
 ; Atoms
 "string"
 symbol
