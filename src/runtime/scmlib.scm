@@ -27,6 +27,11 @@
     null
     (cons (fn (car lst)) (map fn (cdr lst)))))
 
+(define (foldl fn acc lst)
+  (if (null? lst)
+    acc
+	 (foldl fn (fn acc (car lst)) (cdr lst))))
+
 (define (filter pred lst)
   (if (null? lst)
     null

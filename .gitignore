@@ -8,3 +8,8 @@ build
 test/lls_programs/*
 !test/lls_programs/*.*
 !test/lls_programs/Makefile
+!test/lls_programs/lib
+test/lls_programs/lib/*
+!test/lls_programs/lib/*.*
+test/lls_programs/lib/*.so
+!test/lls_programs/lib/Makefile

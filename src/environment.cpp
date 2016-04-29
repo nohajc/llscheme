@@ -109,6 +109,7 @@ namespace llscm {
             prog_begin = prog->begin();
         }
         context = nullptr;
+        link_lib = false;
     }
 
     void ScmEnv::setProg(ScmProg & p) {

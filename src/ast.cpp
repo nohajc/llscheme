@@ -3,6 +3,8 @@
 #include <memory>
 #include <algorithm>
 #include <llvm/ADT/STLExtras.h>
+#include <fs_helpers.hpp>
+#include <lib_reader.hpp>
 #include "../include/ast.hpp"
 #include "../include/environment.hpp"
 #include "../include/codegen.hpp"
@@ -782,4 +784,77 @@ namespace llscm {
 
 	ScmLengthFunc::ScmLengthFunc() : Visitable(1, RuntimeSymbol::length){}
 
+	ostream & ScmRequire::print(ostream & os, int tabs) const {
+		printTabs(os, tabs);
+		os << "require:" << endl;
+		lib_name->print(os, tabs + 1);
+		return os;
+	}
+
+	ostream & ScmRequire::printSrc(ostream & os) const {
+		os << "(require ";
+		lib_name->printSrc(os);
+		os << ")";
+		return os;
+	}
+
+	P_ScmObj ScmRequire::CT_Eval(P_ScmEnv env) {
+		LibReader librd;
+		Metadata input_meta;
+		void * metainfo_blob;
+		string lib_name_str = DPC<ScmStr>(lib_name).get()->val;
+
+		if (!StringRef(lib_name_str).endswith(".so")) {
+			lib_name_str += ".so";
+		}
+
+		if (env->link_lib) {
+			D(cerr << "Linking the library..." << endl);
+			// If compiling "require" in REPL, we must actually link the requested library
+			string errmsg;
+			sys::DynamicLibrary dylib = sys::DynamicLibrary::getPermanentLibrary(lib_name_str.data(), &errmsg);
+			if (dylib.isValid()) {
+				metainfo_blob = dylib.getAddressOfSymbol("__llscheme_metainfo__");
+				if (!metainfo_blob) {
+					env->error("The requested library does not contain any metainfo.");
+					return shared_from_this();
+				}
+			}
+			else {
+				env->error("Could not load the requested library.");
+				return shared_from_this();
+			}
+		}
+		else {
+			auto res = getLibraryPath(lib_name_str);
+			if (!res.second) {
+				env->error("Requested library not found.");
+				return shared_from_this();
+			}
+
+			if (!librd.load(res.first)) {
+				env->error("Could not load the requested library.");
+				return shared_from_this();
+			}
+
+			metainfo_blob = librd.getAddressOfSymbol("__llscheme_metainfo__");
+			if (!metainfo_blob) {
+				env->error("The requested library does not contain any metainfo.");
+				return shared_from_this();
+			}
+		}
+
+		if (!input_meta.loadFromBlob(metainfo_blob)) {
+			env->error("Invalid metadata in the runtime library.");
+			return shared_from_this();
+		}
+
+		input_meta.foreachRecord([env](FunctionInfo *rec) {
+			D(cerr << "Found function \"" << rec->name << "\" with " << rec->argc << " args." << endl);
+			// Add the function into environment
+			env->set(rec->name, make_shared<ScmFunc>(rec->argc, rec->name));
+		});
+
+		return shared_from_this();
+	}
 }

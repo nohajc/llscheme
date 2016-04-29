@@ -452,6 +452,10 @@ namespace llscm {
         return ret;
     }
 
+    any_ptr ScmCodeGen::visit(ScmRequire *) {
+        return ConstantPointerNull::get(t.scm_type_ptr);
+    }
+
     Value * ScmCodeGen::genGlobalConstant(Constant * c) {
         return new GlobalVariable(
                 *module, c->getType(), true,

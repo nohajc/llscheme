@@ -204,6 +204,7 @@ namespace llscm {
         void defFuncWrapper(ScmFunc * node, Function * func);
 
         virtual any_ptr visit(ScmProg * node);
+        virtual any_ptr visit(ScmRequire * node);
         virtual any_ptr visit(ScmInt * node);
         virtual any_ptr visit(ScmFloat * node);
         virtual any_ptr visit(ScmTrue * node);

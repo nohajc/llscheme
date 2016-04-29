@@ -6,6 +6,7 @@
 
 namespace llscm {
     void initExecPath(char * argv0);
+    void initCWDPath();
     std::pair<std::string, bool> getLibraryPath(const std::string & name);
     std::pair<std::string, bool> findFileInDirectory(const std::string & fname, const std::string & dir);
 }

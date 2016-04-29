@@ -39,7 +39,8 @@ namespace llscm {
 		T_FUNC,
 		T_CALL,
 		T_VECTOR,
-		T_PROG
+		T_PROG,
+		T_REQ
 	};
 
 	enum ScmLocType {
@@ -110,6 +111,16 @@ namespace llscm {
 		// in the codegen phase so that we can look up their index in the right
 		// table and using that, generate proper code for object access.
 		ScmFunc * defined_in_func;
+	};
+
+	class ScmRequire: public Visitable<ScmRequire, ScmObj> {
+		virtual ostream & print(ostream & os, int tabs) const;
+		virtual ostream & printSrc(ostream & os) const;
+	public:
+		ScmRequire(P_ScmObj libn): Visitable(T_REQ), lib_name(move(libn)) {}
+		virtual P_ScmObj CT_Eval(P_ScmEnv env);
+
+		P_ScmObj lib_name;
 	};
 
 	class ScmProg: public Visitable<ScmProg, ScmObj> {

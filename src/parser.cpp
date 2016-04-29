@@ -54,7 +54,7 @@ namespace llscm {
 	}
 
 	/*
-	 * form = "(" def ")" | expr
+	 * form = "(" def ")" | expr | "(" "require" str ")"
 	 * def = "define" sym expr ...
 	 * expr = atom | "(" callsyn ")" | "'" data
 	 */
@@ -78,10 +78,24 @@ namespace llscm {
 				obj = NT_Def();
 				if (fail()) return nullptr;
 			}
+			else if (tok->t == KWRD && tok->kw == KW_REQUIRE) {
+				tok = reader->nextToken();
+				if (!tok) {
+					error("Expected name of the required module.");
+				}
+				if (tok->t == STR) {
+					obj = make_unique<ScmRequire>(make_unique<ScmStr>(tok->name));
+					reader->nextToken();
+				}
+				else {
+					error("Expected string with the required module name.");
+				}
+			}
 			else {
 				obj = NT_CallOrSyntax();
 				if (fail()) return nullptr;
 			}
+
 			if (!match(reader->currToken(), Token(KW_RPAR))) {
 				return nullptr;
 			}

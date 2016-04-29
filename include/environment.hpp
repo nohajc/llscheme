@@ -30,6 +30,7 @@ namespace llscm {
         list<P_ScmObj>::iterator prog_begin;
         shared_ptr<ScmEnv> parent_env;
         P_ScmObj context; // Function using this environment or nullptr
+        bool link_lib;
 
         ScmEnv(ScmProg * p, P_ScmEnv penv = nullptr);
 

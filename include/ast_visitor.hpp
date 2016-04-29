@@ -7,6 +7,7 @@
 namespace llscm {
     class ScmProg;
     class ScmObj;
+    class ScmRequire;
     class ScmInt;
     class ScmFloat;
     class ScmTrue;
@@ -31,6 +32,7 @@ namespace llscm {
     public:
         virtual any_ptr visit(ScmProg *node);
         virtual any_ptr visit(ScmObj * node);
+        virtual any_ptr visit(ScmRequire * node);
         virtual any_ptr visit(ScmInt * node);
         virtual any_ptr visit(ScmFloat * node);
         virtual any_ptr visit(ScmTrue * node);

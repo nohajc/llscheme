@@ -60,7 +60,8 @@ add_executable(schemec ${SOURCE_FILES} ${EXEC_FILES})
 
 # Add a custom rule to generate the Scheme part of our runtime library
 add_custom_command(OUTPUT scmlib.o
-        COMMAND schemec "${PROJECT_SOURCE_DIR}/src/runtime/scmlib.scm" -o "scmlib.o" -b lib)
+        COMMAND schemec "${PROJECT_SOURCE_DIR}/src/runtime/scmlib.scm" -o "scmlib.o" -b lib
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/runtime/scmlib.scm)
 
 set(RUNTIME_FILES
         include/runtime/types.hpp
@@ -88,7 +89,7 @@ ELSE()
     set(EXEC_DIR ${PROJECT_SOURCE_DIR}/bin/Release)
 ENDIF()
 
-target_link_libraries(schemec -Wl,-R -Wl,${EXEC_DIR})
+target_link_libraries(schemec -Wl,-R,'$ORIGIN',-R,'.')
 target_link_libraries(llscmrt ${LIB_BOEHM_GC} ${llvm_libs} ${LIB_BOOST_SYS} ${LIB_BOOST_FS})
 
 IF(LIB_UNIT_TEST_CPP)

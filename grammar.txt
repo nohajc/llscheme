@@ -1,5 +1,5 @@
 prog = form { form }
-form = "(" def ")" | expr
+form = "(" def ")" | expr | "(" "require" str ")"
 def = "define" sym expr | "define" "(" sym symlist ")" body
 expr = atom | "(" callsyn ")" | "'" data
 callsyn = "lambda" "(" symlist ")" body

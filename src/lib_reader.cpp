@@ -1,22 +1,36 @@
 #include <cinttypes>
+#include <llvm/ADT/STLExtras.h>
 #include "../include/lib_reader.hpp"
+#include "elfio/elfio.hpp"
 
 namespace llscm {
     using namespace std;
+    using namespace llvm;
     using namespace ELFIO;
 
+    struct LibReader::Impl {
+        ELFIO::elfio reader;
+        ELFIO::section * dynsym;
+    };
+
+    LibReader::LibReader() {
+        impl = make_unique<Impl>();
+    }
+
+    LibReader::~LibReader() {}
+
     bool LibReader::load(const string & libname) {
-        if (!reader.load(libname)) {
+        if (!impl->reader.load(libname)) {
             return false;
         }
 
-        Elf_Half sec_num = reader.sections.size();
+        Elf_Half sec_num = impl->reader.sections.size();
 
         for (uint32_t i = 0; i < sec_num; ++i) {
-            section * sec = reader.sections[i];
+            section * sec = impl->reader.sections[i];
 
             if (sec->get_type() == SHT_DYNSYM) {
-                dynsym = sec;
+                impl->dynsym = sec;
                 break;
             }
         }
@@ -25,7 +39,7 @@ namespace llscm {
     }
 
     void * LibReader::getAddressOfSymbol(const string & symname) {
-        const symbol_section_accessor symbols(reader, dynsym);
+        const symbol_section_accessor symbols(impl->reader, impl->dynsym);
 
         for (uint32_t j = 0; j < symbols.get_symbols_num(); ++j) {
             string name;
@@ -39,7 +53,7 @@ namespace llscm {
             symbols.get_symbol(j, name, value, size, bind, type, section_index, other);
 
             if (name == symname) {
-                section * data_sec = reader.sections[section_index];
+                section * data_sec = impl->reader.sections[section_index];
                 int64_t offset = value - data_sec->get_address();
                 const char * data = data_sec->get_data() + offset;
                 /*fprintf(stderr,

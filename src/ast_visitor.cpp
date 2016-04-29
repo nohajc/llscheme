@@ -10,6 +10,10 @@ namespace llscm {
         return node;
     }
 
+    any_ptr AstVisitor::visit(ScmRequire * node) {
+        return node;
+    }
+
     any_ptr AstVisitor::visit(ScmInt * node) {
         return node;
     }

@@ -217,6 +217,7 @@ namespace llscm {
 int main(int argc, char * argv[]) {
 	using namespace llscm;
 	initExecPath(argv[0]);
+	initCWDPath();
 
 	option::Stats stats(true, usage, argc - 1, argv + 1);
 	vector<option::Option> cmdargs(stats.options_max);

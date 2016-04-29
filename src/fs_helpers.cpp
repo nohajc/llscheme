@@ -8,25 +8,34 @@ namespace llscm {
     using namespace std;
     using namespace boost::filesystem;
 
-    static string exec_path;
-    static deque<string> search_path = {
-            "/usr/local/lib",
-            "/lib",
-            "/usr/lib"
-    };
+    static deque<string> & getSearchPath() {
+        static deque<string> search_path = {
+                "/usr/local/lib",
+                "/lib",
+                "/usr/lib"
+        };
+        return search_path;
+    }
 
     void initExecPath(char *argv0) {
         path full_path(initial_path<path>());
         full_path = canonical(system_complete(path(argv0)));
-        exec_path = full_path.parent_path().generic_string();
-
-        search_path.push_front(exec_path);
-
+        string exec_path = full_path.parent_path().generic_string();
         D(cerr << "Exec path: " << exec_path << endl);
+
+        getSearchPath().push_front(exec_path);
+    }
+
+    void initCWDPath() {
+        path full_path(current_path());
+        string cwd_path = full_path.generic_string();
+        D(cerr << "Current working dir: " << cwd_path << endl);
+
+        getSearchPath().push_front(cwd_path);
     }
 
     pair<string, bool> getLibraryPath(const string & name) {
-        for(auto & p: search_path) {
+        for(auto & p: getSearchPath()) {
             auto res = findFileInDirectory(name, p);
             if (res.second) {
                 return res;
@@ -37,11 +46,15 @@ namespace llscm {
     }
 
     pair<string, bool> findFileInDirectory(const string & fname, const string & dir) {
-        if (!exists(dir)) {
+        path file = fname;
+        // We must handle directory in fname
+        path dir_path = dir / file.parent_path();
+        if (!exists(dir_path)) {
             return {"", false};
         }
-        path file = fname;
-        directory_iterator dir_it(dir);
+
+        directory_iterator dir_it(dir_path);
+        file = file.filename(); // basename
         directory_iterator end;
 
         auto file_it = find_if(dir_it, end, [&file] (const directory_entry & e) {

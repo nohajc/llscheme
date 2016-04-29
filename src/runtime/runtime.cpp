@@ -8,6 +8,7 @@
 #include <vector>
 #include <iostream>
 #include <llvm/ADT/STLExtras.h>
+#include <fs_helpers.hpp>
 #include "../../include/runtime.h"
 #include "../../include/runtime/internal.hpp"
 #include "../../include/runtime/readlinestream.hpp"
@@ -52,6 +53,7 @@ namespace llscm {
 
         LibSetup::LibSetup() {
             srand((uint32_t)time(nullptr));
+            initCWDPath();
         }
 
         LibSetup::~LibSetup() {
@@ -337,6 +339,7 @@ namespace llscm {
 
         DEF_WITH_WRAPPER(scm_make_base_nspace) {
             GCed<ScmEnv> * env = new GCed<ScmEnv>(nullptr);
+            env->link_lib = true;
             initGlobalEnvironment(env, __llscheme_metainfo__);
 
             return alloc_nspace(env);
