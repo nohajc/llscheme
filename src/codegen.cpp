@@ -1,5 +1,8 @@
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/Analysis/Passes.h>
+#include <llvm/Transforms/Scalar.h>
+#include <llvm/Transforms/Scalar/SimplifyCFG.h>
 #include "../include/codegen.hpp"
 #include "../include/debug.hpp"
 
@@ -50,6 +53,7 @@ namespace llscm {
         module = make_shared<Module>("scm_module", context);
         initTypes();
         initExternFuncs();
+        initPassManager();
         entry_func = nullptr;
 
         // Not adding main function by default
@@ -260,6 +264,18 @@ namespace llscm {
         );
     }
 
+    void ScmCodeGen::initPassManager() {
+        passman = make_unique<legacy::FunctionPassManager>(module.get());
+
+        passman->add(createBasicAliasAnalysisPass());
+        passman->add(createInstructionCombiningPass());
+        passman->add(createReassociatePass());
+        passman->add(createGVNPass());
+        passman->add(createCFGSimplificationPass());
+        passman->add(createTailCallEliminationPass());
+
+        passman->doInitialization();
+    }
 
     void ScmCodeGen::addMainFuncProlog() {
         vector<Type*> main_args_type = {
@@ -845,6 +861,9 @@ namespace llscm {
         c_ret_val = builder.CreateBitCast(ret_val, t.scm_type_ptr);
         builder.CreateRet(c_ret_val);
         verifyFunction(*func, &errs());
+        
+        // Perform optimizations
+        passman->run(*func);
 
         builder.restoreIP(saved_ip);
 

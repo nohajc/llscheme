@@ -26,7 +26,7 @@ all: $(TARGETS)
 
 %.o: %.scm
 	$(eval $@_SRC=$<)
-	$(SCMC) $<
+	$(SCMC) $< -O3
 
 clean:
 	rm $(TARGETS) || true

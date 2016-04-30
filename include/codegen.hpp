@@ -7,6 +7,7 @@
 #include <llvm/IR/Module.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/LegacyPassManager.h>
 #include "ast_visitor.hpp"
 #include "ast.hpp"
 #include "debug.hpp"
@@ -66,6 +67,8 @@ namespace llscm {
         LLVMContext & context;
         shared_ptr<Module> module;
         IRBuilder<> builder;
+        unique_ptr<legacy::FunctionPassManager> passman;
+
         VisitableObj * ast;
         Metadata output_meta;
 
@@ -144,6 +147,7 @@ namespace llscm {
 
         void initTypes();
         void initExternFuncs();
+        void initPassManager();
 
         void addMainFuncProlog(); // Called when we want to compile a standalone app
         void addMainFuncEpilog(Value * last_val);
