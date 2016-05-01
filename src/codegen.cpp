@@ -861,7 +861,7 @@ namespace llscm {
         c_ret_val = builder.CreateBitCast(ret_val, t.scm_type_ptr);
         builder.CreateRet(c_ret_val);
         verifyFunction(*func, &errs());
-        
+
         // Perform optimizations
         passman->run(*func);
 

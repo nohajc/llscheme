@@ -8,7 +8,7 @@ endif
 
 SCMC = $(BIN)/schemec
 LD = clang
-LDFLAGS = -L$(BIN) -Wl,-R,"$(BIN)",-R,'.' -lllscmrt $(EXTRAFLAGS)
+LDFLAGS = -L$(BIN) -Wl,-R,"$(BIN)",-R,'$$ORIGIN/'"$(BIN)",-R,'.' -lllscmrt $(EXTRAFLAGS)
 
 EXT=scm
 TARGETS=$(shell ls *.$(EXT) | xargs -L1 -I % basename % .$(EXT))

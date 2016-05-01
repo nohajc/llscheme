@@ -60,7 +60,7 @@ add_executable(schemec ${SOURCE_FILES} ${EXEC_FILES})
 
 # Add a custom rule to generate the Scheme part of our runtime library
 add_custom_command(OUTPUT scmlib.o
-        COMMAND schemec "${PROJECT_SOURCE_DIR}/src/runtime/scmlib.scm" -o "scmlib.o" -b lib
+        COMMAND schemec "${PROJECT_SOURCE_DIR}/src/runtime/scmlib.scm" -o "scmlib.o" -b lib -O3
         DEPENDS ${PROJECT_SOURCE_DIR}/src/runtime/scmlib.scm)
 
 set(RUNTIME_FILES

@@ -19,7 +19,7 @@ all: $(TARGETS)
 	$(LD) -shared $< -o $@ $(LDFLAGS)
 
 %.o: %.scm
-	$(SCMC) $< -b lib
+	$(SCMC) $< -b lib -O3
 
 clean:
 	rm $(TARGETS) || true
